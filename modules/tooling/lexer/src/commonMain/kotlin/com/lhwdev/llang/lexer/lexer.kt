@@ -47,9 +47,7 @@ private fun nextSpan(): Span {
 		return buildSpan(Tokens.Eof)
 	}
 	
-	val context = lexerContext
-	
-	return if(context.stringDepth % 2 == 0) {
+	return if(lexerContext.stringDepth % 2 == 0) {
 		nextStateRoot()
 	} else {
 		nextStateString()
@@ -375,5 +373,9 @@ private fun nextStateString(): Span {
 		return buildSpan(Tokens.StringLiteral.Literal)
 	}
 	
-	
+	when(current) {
+		'\\' -> {
+		
+		}
+	}
 }

@@ -10,7 +10,7 @@ code -> tokens -> cst -> ast -> fir -> ir
   val a: Int = query("lhwdev", 10 + 9)
   ```
 
-- tokens
+- **tokens**
 
   ``` kotlin
   Keyword.Val
@@ -19,25 +19,29 @@ code -> tokens -> cst -> ast -> fir -> ir
   ...
   ```
 
+  In case of lexing, we need extra validation, such as 'if some tokens are adjacent?'.
+  In the following code: `1234abcd` we get two valid tokens: `1234` and `abcd`. But we should mark `abcd` as invalid
+  token. So we run post lexing validation.
+  Note: enable this in IC
+
 - **cst**: target of code formatting. change of ast is applied here.
+  This is merely a 'more structured token list'.
 
   ``` kotlin
   CstLocalVariableDeclaration(
-      kind = CstLocalVariableDeclaration.Kind.Val(valToken),
-      ws1 = wsToken1.ws,
-      name = aToken,
-      ws2 = null,
-      type = CstDeclarationType(
-          colon = colonToken,
-          ws1 = wsTokenType1.ws,
-          type = CstType(
-              classifier = CstClassifierReference(listOf(intToken)),
-          ),
-          initializer = CstLocalVariableDeclaration.Initializer(
-              ws1 = wsInitToken1.ws,
-              equals = equalsToken,
-              ws2 = wsInitToken2.ws,
-              expression = (such complicated!),
+      modifiers = emptyList(),
+      kind = listOf(valToken, whitespace),
+      type = listOf(colonToken, whitespace2),
+      initializer = listOf(
+          whitespace3, equalsToken, whitespace4,
+          CstCall(
+              function = CstGetValue(queryToken),
+              valueArguments = listOf(
+                  CstGroup(
+                      open = parenOpenToken,
+                      content = listOf(CstConstant.String("lhwdev"), commaToken, ...)
+                  )
+              )
           )
       ),
   )
@@ -134,3 +138,20 @@ code -> tokens -> cst -> ast -> fir -> ir
 - **Code Refactoring**: modify fir then apply to fir -> ast -> cst -> token
 - **Diagnostics**: inspect ast / fir
 - **Diagnostics Fix**: modify following ast / fir
+
+## Incremental Parsing
+
+### General Idea
+
+When we add, modify, or delete one element, we invalidate the group it is in. Modification of child group does not
+affect parent group, or another children of that parent. In this way, we can skip most works.
+
+### Lexing
+
+For simplicity, we declare code change as one Patch(offset, deletedTextLength, newInsertedText).
+We need to set 'where to start lexing', which is as simple as finding the token that includes `offset`.
+Then we need to start lexing from there, but how can we get state? All lexing operations are carefully crafted to be
+mostly stateless, but we need them sometimes. (mostly string literal) Lexer searches forward to find
+nearest `PushState`.
+Of course this can be easily cached. Then we go forward, until we have a unchanged span. (same text, same token type)
+
