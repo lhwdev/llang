@@ -7,7 +7,7 @@ import com.lhwdev.llang.module.LlangCode
 fun main() {
 	val code = """
 	fun main() { // ho ya
-		println("hello!", a = 123 + 0x14) /*ho
+		println("hello, ${'$'}name! ${'$'}{1 + 2}", a = 123 + 0x14) /*ho
 		hi */
 	}
 	""".trimIndent()

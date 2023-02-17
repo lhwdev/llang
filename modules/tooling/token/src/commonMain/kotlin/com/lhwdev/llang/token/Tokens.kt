@@ -57,9 +57,14 @@ object Tokens {
 			val EscapedLiteral = +Content("escaped literal")
 			
 			/**
-			 * $variable / ${expression}
+			 * $variable
 			 */
-			val Template = +Content("$")
+			val TemplateVariable = +Content("\$variable")
+			
+			/**
+			 * ${expression}
+			 */
+			val TemplateExpression = +Content("\${expression}")
 		}
 	}
 	
@@ -236,6 +241,15 @@ object Tokens {
 			
 			
 			/// Other
+			
+			val PropagateError = +Access("?")
+			
+			/**
+			 * Used for:
+			 * - function parameters
+			 * - tuple literal
+			 */
+			val Comma = +Other(",")
 			
 			/**
 			 * Used for:

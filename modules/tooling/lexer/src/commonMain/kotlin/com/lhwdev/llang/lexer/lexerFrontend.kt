@@ -1,5 +1,7 @@
 package com.lhwdev.llang.lexer
 
+import com.lhwdev.llang.diagnostic.Diagnostic
+import com.lhwdev.llang.diagnostic.StubDiagnosticContext
 import com.lhwdev.llang.module.LlangCode
 import com.lhwdev.llang.token.*
 import com.lhwdev.utils.collection.IdentityHashMap
@@ -137,5 +139,9 @@ private class LexerScopeImpl(
 		} else {
 			stack.last()
 		}
+	}
+	
+	override fun pushDiagnostic(diagnostic: Diagnostic) { // TODO
+		println("diagnostic pushed: ${with(StubDiagnosticContext) { diagnostic.getMessage() }}")
 	}
 }

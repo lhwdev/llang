@@ -1,7 +1,9 @@
 package com.lhwdev.llang.token
 
 
-class SpanStateKey<T>(val defaultValue: T)
+class SpanStateKey<T>(val defaultValue: T, val debugName: String? = null) {
+	override fun toString(): String = debugName ?: super.toString()
+}
 
 
 sealed class Span(var token: Token, val code: String) {

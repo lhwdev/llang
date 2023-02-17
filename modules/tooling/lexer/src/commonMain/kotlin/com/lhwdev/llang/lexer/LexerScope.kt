@@ -1,5 +1,6 @@
 package com.lhwdev.llang.lexer
 
+import com.lhwdev.llang.diagnostic.Diagnostic
 import com.lhwdev.llang.lexer.code.MutableCodeIterator
 import com.lhwdev.llang.token.LlToken
 import com.lhwdev.llang.token.Span
@@ -25,6 +26,9 @@ interface LexerScope : MutableCodeIterator {
 	fun <T> popState(key: SpanStateKey<T>): T
 	
 	fun <T> getCurrentState(key: SpanStateKey<T>): T
+	
+	
+	fun pushDiagnostic(diagnostic: Diagnostic)
 }
 
 context(LexerScope)

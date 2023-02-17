@@ -1,10 +1,7 @@
 package com.lhwdev.llang.lexer
 
 import com.lhwdev.llang.lexer.code.*
-import com.lhwdev.llang.token.LlToken
-import com.lhwdev.llang.token.Span
-import com.lhwdev.llang.token.SpanStateKey
-import com.lhwdev.llang.token.Tokens
+import com.lhwdev.llang.token.*
 
 
 class LexerRun(private val scope: LexerScope) {
@@ -34,7 +31,7 @@ private data class LexerContext(
 	val groupDepth: Int = 0,
 )
 
-private val LexerContextKey = SpanStateKey(defaultValue = LexerContext())
+private val LexerContextKey = SpanStateKey(defaultValue = LexerContext(), debugName = "lexerState")
 
 context(LexerScope)
 private val lexerContext: LexerContext
@@ -263,8 +260,10 @@ private fun handleOther(): Span {
 		'?' -> when(next) {
 			'.' -> span(Tokens.Operation.SafeCall, length = 2)
 			':' -> span(Tokens.Operation.Elvis, length = 2)
-			else -> illegalSpan()
+			else -> span(Tokens.Operation.PropagateError)
 		}
+		
+		',' -> span(Tokens.Operation.Comma)
 		
 		':' -> span(Tokens.Operation.Colon)
 		
@@ -322,6 +321,8 @@ private fun handleBlockComment(): Span = span {
 				advance(2)
 				if(depth == 0) break
 			}
+			
+			else -> advance()
 		}
 	}
 	
@@ -367,15 +368,42 @@ private fun nextStateString(): Span {
 	markStart()
 	advanceOneWhile {
 		val char = current
-		char != '\\' && char != '$'
+		char != '\\' && char != '$' && char != '"'
 	}
 	if(currentSpan.isNotEmpty()) {
 		return buildSpan(Tokens.StringLiteral.Literal)
 	}
 	
-	when(current) {
-		'\\' -> {
-		
+	return when(current) {
+		'\\' -> when(ahead()) {
+			// \\ \$ \n \r ...
+			'\\', '$', 'n', 'r', 't', 'b', '\'', '"' -> span(Tokens.StringLiteral.EscapedLiteral, 2)
+			// \u39A8
+			'u' -> span(Tokens.StringLiteral.EscapedLiteral, 6)
+			else -> span(Tokens.StringLiteral.EscapedLiteral) {
+				advance(2)
+				pushDiagnostic(LexerDiagnostic.IllegalStringEscape(currentSpan.toString()))
+			}
 		}
+		
+		// TODO: how to escape $ in raw string literal?
+		'$' -> if(ahead() == '{') span(Tokens.StringLiteral.TemplateExpression) {
+			val context = lexerContext
+			pushState(
+				LexerContextKey,
+				context.copy(stringDepth = context.stringDepth + 1, groupDepth = context.groupDepth + 1)
+			)
+			advance(2)
+		} else span(Tokens.StringLiteral.TemplateVariable) {
+			advance() // $
+			advanceOneWhile { CharacterClass.isMiddleWord(current) }
+		}
+		
+		'"' -> span(lexerContext.stringQuote.End) {
+			advance(1)
+			popState(LexerContextKey)
+		}
+		
+		else -> error("logic error; check advanceOneWhile above")
 	}
 }
