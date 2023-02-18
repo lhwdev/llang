@@ -22,6 +22,8 @@ code -> tokens -> cst -> ast -> fir -> ir
   In case of lexing, we need extra validation, such as 'if some tokens are adjacent?'.
   In the following code: `1234abcd` we get two valid tokens: `1234` and `abcd`. But we should mark `abcd` as invalid
   token. So we run post lexing validation.
+  There are 'separator' tokens, like Operation, Whitespace, Eol, etc. The all
+  non-separator tokens should not be adjacent. Quite simple? (TODO: check if this is true)  
   Note: enable this in IC
 
 - **cst**: target of code formatting. change of ast is applied here.
