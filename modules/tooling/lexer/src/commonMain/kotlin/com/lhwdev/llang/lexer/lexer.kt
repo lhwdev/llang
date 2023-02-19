@@ -399,9 +399,19 @@ private fun nextStateString(): Span {
 			advanceOneWhile { CharacterClass.isMiddleWord(current) }
 		}
 		
-		'"' -> span(lexerContext.stringQuote.End) {
-			advance(1)
-			popState(LexerContextKey)
+		'"' -> when(lexerContext.stringQuote) {
+			Tokens.StringLiteral.Escaped -> span(Tokens.StringLiteral.Escaped.End)
+			Tokens.StringLiteral.Raw -> if(ahead() == '"') {
+				if(ahead(2) == '"') {
+					span(Tokens.StringLiteral.Raw.End, length = 3)
+				} else {
+					span(Tokens.StringLiteral.Literal)
+				}
+			} else {
+				span(Tokens.StringLiteral.Literal) // should be joined when parsing
+			}
+			
+			else -> error("unknown quote")
 		}
 		
 		else -> error("logic error; check advanceOneWhile above")
