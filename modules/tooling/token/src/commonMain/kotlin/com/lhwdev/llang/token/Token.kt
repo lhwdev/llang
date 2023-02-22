@@ -1,32 +1,31 @@
 package com.lhwdev.llang.token
 
 
-// https://github.com/JetBrains/kotlin/tree/master/compiler/psi/src/org/jetbrains/kotlin/lexer
-
-
-enum class Separator {
-	Left, Right, Both
+class TokenStateKey<T>(val defaultValue: T, val debugName: String? = null) {
+	override fun toString(): String = debugName ?: super.toString()
 }
 
 
-abstract class Token(val debugName: String) {
-	override fun toString(): String = debugName
-}
-
-abstract class TokenSet(debugName: String) : Token(debugName) {
-	abstract val tokens: List<Token>
-}
-
-abstract class TokenSetBuilder(debugName: String) : TokenSet(debugName) {
-	private val mTokens = mutableListOf<Token>()
+sealed class Token(var kind: TokenKind, val code: String) {
+	class Plain(kind: TokenKind, code: String) : Token(kind, code) {
+		override fun toString(): String = "$kind $code"
+	}
 	
-	override val tokens: List<Token>
-		get() = mTokens
+	class PushState(
+		kind: TokenKind,
+		code: String,
+		val stateKey: TokenStateKey<*>,
+		val stateValue: Any?
+	) : Token(kind, code) {
+		override fun toString(): String = "$kind $code (+PushState $stateKey=$stateValue)"
+	}
 	
-	fun <T : Token> token(token: T): T = token.also { mTokens += token }
-	// fun tokenSet()
+	class PopState(
+		kind: TokenKind,
+		code: String,
+		val stateKey: TokenStateKey<*>
+	) : Token(kind, code) {
+		override fun toString(): String = "$kind $code (+PopState $stateKey)"
+	}
+	
 }
-
-context(TokenSetBuilder)
-@Suppress("NOTHING_TO_INLINE")
-inline operator fun <T : Token> T.unaryPlus(): T = token(this)

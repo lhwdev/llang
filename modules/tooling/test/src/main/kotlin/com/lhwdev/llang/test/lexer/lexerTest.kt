@@ -16,5 +16,5 @@ fun main() {
 	
 	val lexer = Lexer(llangCode)
 	lexer.parse()
-	lexer.spans.forEach { println(it) }
+	lexer.tokens.forEach { println(it) }
 }

@@ -11,7 +11,7 @@ class Lexer(code: LlangCode) {
 	var code: LlangCode = code
 		private set
 	
-	var spans: List<Span> = emptyList()
+	var tokens: List<Token> = emptyList()
 		private set
 	
 	fun parse() {
@@ -19,13 +19,13 @@ class Lexer(code: LlangCode) {
 		val scope = LexerScopeImpl(code)
 		val run = LexerRun(scope)
 		
-		val list = ArrayList<Span>()
+		val list = ArrayList<Token>()
 		while(true) {
-			val span = run.advance()
-			if(span.token == Tokens.Eof) break
-			list += span
+			val token = run.advance()
+			if(token.kind == Tokens.Eof) break
+			list += token
 		}
-		this.spans = list
+		this.tokens = list
 	}
 	
 	fun updateCode(code: LlangCode) {
@@ -43,13 +43,13 @@ private class LexerScopeImpl(
 	private var offset: Int = 0,
 ) : LexerScope {
 	private sealed class StateOperation {
-		class Push(val key: SpanStateKey<*>, val value: Any?) : StateOperation()
-		class Pop(val key: SpanStateKey<*>) : StateOperation()
+		class Push(val key: TokenStateKey<*>, val value: Any?) : StateOperation()
+		class Pop(val key: TokenStateKey<*>) : StateOperation()
 	}
 	
 	private var start = -1
-	private val stateStack = IdentityHashMap<SpanStateKey<*>, ArrayDeque<Any?>>()
-	private var currentSpanStateOperation: StateOperation? = null
+	private val stateStack = IdentityHashMap<TokenStateKey<*>, ArrayDeque<Any?>>()
+	private var currentTokenStateOperation: StateOperation? = null
 	
 	override val following: CharSequence = object : CharSequence {
 		override val length: Int
@@ -78,22 +78,22 @@ private class LexerScopeImpl(
 		offset = start
 	}
 	
-	override fun buildSpan(token: LlToken): Span = when(val operation = currentSpanStateOperation) {
-		null -> Span.Plain(token, currentSpan.toString())
+	override fun buildToken(token: LlTokenKind): Token = when(val operation = currentTokenStateOperation) {
+		null -> Token.Plain(token, currentSpan.toString())
 		
-		is StateOperation.Push -> Span.PushState(
-			token = token,
+		is StateOperation.Push -> Token.PushState(
+			kind = token,
 			code = currentSpan.toString(),
 			stateKey = operation.key,
 			stateValue = operation.value
 		)
 		
-		is StateOperation.Pop -> Span.PopState(
-			token = token,
+		is StateOperation.Pop -> Token.PopState(
+			kind = token,
 			code = currentSpan.toString(),
 			stateKey = operation.key
 		)
-	}.also { currentSpanStateOperation = null }
+	}.also { currentTokenStateOperation = null }
 	
 	override val currentSpan: CharSequence = object : CharSequence {
 		override val length: Int
@@ -115,24 +115,24 @@ private class LexerScopeImpl(
 	
 	
 	@Suppress("UNCHECKED_CAST")
-	private fun <T> stateStackOf(key: SpanStateKey<T>) =
+	private fun <T> stateStackOf(key: TokenStateKey<T>) =
 		stateStack.getOrPut(key) { ArrayDeque() } as ArrayDeque<T>
 	
-	override fun <T> pushState(key: SpanStateKey<T>, value: T) {
-		if(currentSpanStateOperation != null)
-			error("does not support multiple operations at once; previous = $currentSpanStateOperation, new = push($key, $value)")
-		currentSpanStateOperation = StateOperation.Push(key, value)
+	override fun <T> pushState(key: TokenStateKey<T>, value: T) {
+		if(currentTokenStateOperation != null)
+			error("does not support multiple operations at once; previous = $currentTokenStateOperation, new = push($key, $value)")
+		currentTokenStateOperation = StateOperation.Push(key, value)
 		stateStackOf(key).addLast(value)
 	}
 	
-	override fun <T> popState(key: SpanStateKey<T>): T {
-		if(currentSpanStateOperation != null)
-			error("does not support multiple operations at once; previous = $currentSpanStateOperation, new = pop($key)")
-		currentSpanStateOperation = StateOperation.Pop(key)
+	override fun <T> popState(key: TokenStateKey<T>): T {
+		if(currentTokenStateOperation != null)
+			error("does not support multiple operations at once; previous = $currentTokenStateOperation, new = pop($key)")
+		currentTokenStateOperation = StateOperation.Pop(key)
 		return stateStackOf(key).removeLast()
 	}
 	
-	override fun <T> getCurrentState(key: SpanStateKey<T>): T {
+	override fun <T> getCurrentState(key: TokenStateKey<T>): T {
 		val stack = stateStackOf(key)
 		return if(stack.isEmpty()) {
 			key.defaultValue

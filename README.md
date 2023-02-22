@@ -155,5 +155,5 @@ We need to set 'where to start lexing', which is as simple as finding the token 
 Then we need to start lexing from there, but how can we get state? All lexing operations are carefully crafted to be
 mostly stateless, but we need them sometimes. (mostly string literal) Lexer searches forward to find
 nearest `PushState`.
-Of course this can be easily cached. Then we go forward, until we have a unchanged span. (same text, same token type)
+Of course this can be easily cached. Then we go forward, until we have a unchanged token. (same text, same token type)
 

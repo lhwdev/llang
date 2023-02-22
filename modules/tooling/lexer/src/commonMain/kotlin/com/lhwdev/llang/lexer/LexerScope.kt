@@ -2,9 +2,9 @@ package com.lhwdev.llang.lexer
 
 import com.lhwdev.llang.diagnostic.Diagnostic
 import com.lhwdev.llang.lexer.code.MutableCodeIterator
-import com.lhwdev.llang.token.LlToken
-import com.lhwdev.llang.token.Span
-import com.lhwdev.llang.token.SpanStateKey
+import com.lhwdev.llang.token.LlTokenKind
+import com.lhwdev.llang.token.Token
+import com.lhwdev.llang.token.TokenStateKey
 import com.lhwdev.llang.token.Tokens
 
 
@@ -13,7 +13,7 @@ interface LexerScope : MutableCodeIterator {
 	
 	fun moveToStart()
 	
-	fun buildSpan(token: LlToken): Span // returned spans are not interned anywhere; this is simple lightweight utility
+	fun buildToken(token: LlTokenKind): Token // returned tokens are not interned anywhere; this is simple lightweight utility
 	
 	val currentSpan: CharSequence
 	
@@ -21,33 +21,33 @@ interface LexerScope : MutableCodeIterator {
 	/**
 	 * Note: cannot push multiple state at one token so far
 	 */
-	fun <T> pushState(key: SpanStateKey<T>, value: T)
+	fun <T> pushState(key: TokenStateKey<T>, value: T)
 	
-	fun <T> popState(key: SpanStateKey<T>): T
+	fun <T> popState(key: TokenStateKey<T>): T
 	
-	fun <T> getCurrentState(key: SpanStateKey<T>): T
+	fun <T> getCurrentState(key: TokenStateKey<T>): T
 	
 	
 	fun pushDiagnostic(diagnostic: Diagnostic)
 }
 
 context(LexerScope)
-val <T> SpanStateKey<T>.value: T
+val <T> TokenStateKey<T>.value: T
 	get() = getCurrentState(this)
 
 
-fun LexerScope.span(token: LlToken, length: Int = 1): Span = span(token) { advance(length) }
+fun LexerScope.token(token: LlTokenKind, length: Int = 1): Token = token(token) { advance(length) }
 
-inline fun LexerScope.span(token: LlToken, advanceBlock: () -> Unit): Span {
+inline fun LexerScope.token(token: LlTokenKind, advanceBlock: () -> Unit): Token {
 	markStart()
 	advanceBlock()
-	return buildSpan(token)
+	return buildToken(token)
 }
 
-inline fun LexerScope.span(advanceBlock: () -> LlToken): Span {
+inline fun LexerScope.token(advanceBlock: () -> LlTokenKind): Token {
 	markStart()
-	return buildSpan(advanceBlock())
+	return buildToken(advanceBlock())
 }
 
-fun LexerScope.illegalSpan(length: Int = 1, reason: String? = null): Span =
-	span(Tokens.Illegal(reason))
+fun LexerScope.illegalToken(length: Int = 1, reason: String? = null): Token =
+	token(Tokens.Illegal(reason))

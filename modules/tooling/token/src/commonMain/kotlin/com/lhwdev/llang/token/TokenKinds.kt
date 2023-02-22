@@ -1,43 +1,43 @@
 package com.lhwdev.llang.token
 
 
-sealed class LlToken(debugName: String) : Token(debugName) {
+sealed class LlTokenKind(debugName: String) : TokenKind(debugName) {
 	open val common: Boolean
 		get() = true
 }
 
 
 object Tokens {
-	class Illegal(val reason: String? = null) : LlToken("illegal") {
+	class Illegal(val reason: String? = null) : LlTokenKind("illegal") {
 		override val common: Boolean
 			get() = false
 	}
 	
-	object Eof : LlToken("eof")
+	object Eof : LlTokenKind("eof")
 	
 	/**
 	 * All adjacent whitespaces should be merged into one.
 	 */
-	object WhiteSpace : LlToken("whitespace")
+	object WhiteSpace : LlTokenKind("whitespace")
 	
 	/**
 	 * Standard `\n`, `\r`, or `\r\n`.
 	 */
-	object Eol : LlToken("eol")
+	object Eol : LlTokenKind("eol")
 	
-	object Identifier : LlToken("identifier")
+	object Identifier : LlTokenKind("identifier")
 	
-	sealed class StringLiteral(debugName: String) : LlToken(debugName) {
+	sealed class StringLiteral(debugName: String) : LlTokenKind(debugName) {
 		class QuoteBegin(debugName: String) : StringLiteral("$debugName(begin)")
 		class QuoteEnd(debugName: String) : StringLiteral("$debugName(end)")
-		class Quote(debugName: String) : TokenSetBuilder(debugName) {
+		class Quote(debugName: String) : TokenKindSetBuilder(debugName) {
 			val Begin = +QuoteBegin(debugName)
 			val End = +QuoteEnd(debugName)
 		}
 		
 		class Content(debugName: String) : StringLiteral(debugName)
 		
-		companion object All : TokenSetBuilder("string literals") {
+		companion object All : TokenKindSetBuilder("string literals") {
 			/**
 			 * Like `"Hello, world!" "escape \" string"`
 			 */
@@ -68,8 +68,8 @@ object Tokens {
 		}
 	}
 	
-	class NumberLiteral(debugName: String) : LlToken("$debugName literal") {
-		companion object All : TokenSetBuilder("number literals") {
+	class NumberLiteral(debugName: String) : LlTokenKind("$debugName literal") {
+		companion object All : TokenKindSetBuilder("number literals") {
 			/**
 			 * Integer literal, which can be `IntN`, (Int8, Int16, Int32, ..., Byte) `FloatN`, `UIntN`, `UFloatN`, etc.
 			 */
@@ -86,8 +86,8 @@ object Tokens {
 		}
 	}
 	
-	class Comment(debugName: String) : LlToken(debugName) {
-		companion object All : TokenSetBuilder("comments") {
+	class Comment(debugName: String) : LlTokenKind(debugName) {
+		companion object All : TokenKindSetBuilder("comments") {
 			/**
 			 * Like `some code // comment`
 			 */
@@ -112,7 +112,7 @@ object Tokens {
 	}
 	
 	
-	sealed class Operation(debugName: String) : LlToken(debugName) {
+	sealed class Operation(debugName: String) : LlTokenKind(debugName) {
 		class Arithmetic(debugName: String) : Operation(debugName)
 		class Compare(debugName: String) : Operation(debugName)
 		class Logic(debugName: String) : Operation(debugName)
@@ -122,7 +122,7 @@ object Tokens {
 		class Access(debugName: String) : Operation(debugName)
 		class Other(debugName: String) : Operation(debugName)
 		
-		companion object All : TokenSetBuilder("operations") {
+		companion object All : TokenKindSetBuilder("operations") {
 			/// Arithmetic
 			
 			val Plus = +Arithmetic("+") // unary(prefix) or binary
@@ -277,13 +277,13 @@ object Tokens {
 	
 	
 	// hard
-	sealed class Keyword(debugName: String) : LlToken(debugName) {
+	sealed class Keyword(debugName: String) : LlTokenKind(debugName) {
 		class Module(debugName: String) : Keyword(debugName)
 		class Declaration(debugName: String) : Keyword(debugName)
 		class Literal(debugName: String) : Keyword(debugName)
 		class ControlFlow(debugName: String) : Keyword(debugName)
 		
-		companion object All : TokenSetBuilder("keywords") {
+		companion object All : TokenKindSetBuilder("keywords") {
 			/// Module
 			
 			val Module = +Module("module")
@@ -372,8 +372,8 @@ object Tokens {
 	
 	
 	// soft
-	class SoftKeyword(debugName: String) : LlToken(debugName) {
-		companion object All : TokenSetBuilder("soft keywords") {
+	class SoftKeyword(debugName: String) : LlTokenKind(debugName) {
+		companion object All : TokenKindSetBuilder("soft keywords") {
 			val Constructor = +SoftKeyword("constructor")
 			
 			val Init = +SoftKeyword("init")
@@ -400,7 +400,7 @@ object Tokens {
 	
 	
 	// soft
-	sealed class Modifier(debugName: String) : LlToken(debugName) {
+	sealed class Modifier(debugName: String) : LlTokenKind(debugName) {
 		class Visibility(debugName: String) : Modifier(debugName)
 		class Modality(debugName: String) : Modifier(debugName)
 		class General(debugName: String) : Modifier(debugName)
@@ -410,7 +410,7 @@ object Tokens {
 		class TypeParameter(debugName: String) : Modifier(debugName)
 		class ValueParameter(debugName: String) : Modifier(debugName)
 		
-		companion object All : TokenSetBuilder("modifiers") {
+		companion object All : TokenKindSetBuilder("modifiers") {
 			/// Visibility (general)
 			
 			val Public = +Visibility("public")

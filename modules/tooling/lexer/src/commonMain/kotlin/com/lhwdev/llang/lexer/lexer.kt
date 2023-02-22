@@ -5,8 +5,8 @@ import com.lhwdev.llang.token.*
 
 
 class LexerRun(private val scope: LexerScope) {
-	fun advance(): Span = with(scope) {
-		nextSpan()
+	fun advance(): Token = with(scope) {
+		nextToken()
 	}
 }
 
@@ -31,17 +31,17 @@ private data class LexerContext(
 	val groupDepth: Int = 0,
 )
 
-private val LexerContextKey = SpanStateKey(defaultValue = LexerContext(), debugName = "lexerState")
+private val LexerContextKey = TokenStateKey(defaultValue = LexerContext(), debugName = "lexerState")
 
 context(LexerScope)
 private val lexerContext: LexerContext
 	get() = LexerContextKey.value
 
 context(LexerScope)
-private fun nextSpan(): Span {
+private fun nextToken(): Token {
 	if(eof) {
 		markStart()
-		return buildSpan(Tokens.Eof)
+		return buildToken(Tokens.Eof)
 	}
 	
 	return if(lexerContext.stringDepth % 2 == 0) {
@@ -52,11 +52,11 @@ private fun nextSpan(): Span {
 }
 
 context(LexerScope)
-private fun nextStateRoot(): Span {
+private fun nextStateRoot(): Token {
 	// only guaranteed one or more chars exist in [following].
 	val first = current
 	
-	val span = when(CharacterClass(first)) {
+	val token = when(CharacterClass(first)) {
 		CharacterClass.word -> handleWord()
 		
 		CharacterClass.number -> handleNumber()
@@ -72,10 +72,10 @@ private fun nextStateRoot(): Span {
 				
 				else -> error("unreachable")
 			}
-			span(Tokens.Eol, length)
+			token(Tokens.Eol, length)
 		}
 		
-		CharacterClass.whitespace -> span(Tokens.WhiteSpace) {
+		CharacterClass.whitespace -> token(Tokens.WhiteSpace) {
 			advance()
 			advanceOneWhile { CharacterClass.isWhitespace(current) }
 		}
@@ -83,11 +83,11 @@ private fun nextStateRoot(): Span {
 		CharacterClass.other -> handleOther()
 	}
 	
-	return span
+	return token
 }
 
 context(LexerScope)
-private fun handleWord() = span {
+private fun handleWord() = token {
 	advance()
 	advanceOneWhile { CharacterClass.isMiddleWord(current) }
 	
@@ -129,20 +129,20 @@ private fun handleWord() = span {
 }
 
 context(LexerScope)
-private fun handleNumber(): Span {
+private fun handleNumber(): Token {
 	// Note: In case of float with leading dot(`.123`), handleOther -> handleNumber
 	
 	// TODO: how to handle illegal identifier after number? shell I handle in cst parsing?
 	//       like `12345abc`
 	
 	if(current == '0') when(ahead()) {
-		'x' -> return span(Tokens.NumberLiteral.Hex) {
+		'x' -> return token(Tokens.NumberLiteral.Hex) {
 			advance(2)
 			@Suppress("SpellCheckingInspection")
 			advanceOneWhile { current in "0123456789abcdef" }
 		}
 		
-		'b' -> return span(Tokens.NumberLiteral.Binary) {
+		'b' -> return token(Tokens.NumberLiteral.Binary) {
 			advance(2)
 			advanceOneWhile { current in "01" }
 		}
@@ -151,7 +151,7 @@ private fun handleNumber(): Span {
 	}
 	
 	
-	return span {
+	return token {
 		var hasDot = false
 		advanceOneWhile {
 			when(current) {
@@ -174,139 +174,139 @@ private fun handleNumber(): Span {
 }
 
 context(LexerScope)
-private fun handleOther(): Span {
+private fun handleOther(): Token {
 	val next = ahead()
 	return when(current) {
 		/// Tokens.Operation
 		'+' -> when(next) {
-			'=' -> span(Tokens.Operation.PlusEq, length = 2)
-			else -> span(Tokens.Operation.Plus)
+			'=' -> token(Tokens.Operation.PlusEq, length = 2)
+			else -> token(Tokens.Operation.Plus)
 		}
 		
 		'-' -> when(next) {
-			'=' -> span(Tokens.Operation.MinusEq, length = 2)
-			'>' -> span(Tokens.Operation.ArrowRight, length = 2)
-			else -> span(Tokens.Operation.Minus)
+			'=' -> token(Tokens.Operation.MinusEq, length = 2)
+			'>' -> token(Tokens.Operation.ArrowRight, length = 2)
+			else -> token(Tokens.Operation.Minus)
 		}
 		
-		'*' -> span(Tokens.Operation.Times)
+		'*' -> token(Tokens.Operation.Times)
 		
 		'/' -> when(next) {
-			'/' -> span(Tokens.Comment.Eol) { advanceBeforeEol() }
+			'/' -> token(Tokens.Comment.Eol) { advanceBeforeEol() }
 			'*' -> handleBlockComment() /// -> Tokens.Comment
-			else -> span(Tokens.Operation.Divide)
+			else -> token(Tokens.Operation.Divide)
 		}
 		
-		'%' -> span(Tokens.Operation.Remainder)
+		'%' -> token(Tokens.Operation.Remainder)
 		
 		'=' -> when(next) {
 			'=' -> when(ahead(2)) {
-				'=' -> span(Tokens.Operation.IdentityEquals, length = 3)
-				else -> span(Tokens.Operation.Equals, length = 2)
+				'=' -> token(Tokens.Operation.IdentityEquals, length = 3)
+				else -> token(Tokens.Operation.Equals, length = 2)
 			}
 			
-			else -> span(Tokens.Operation.Eq, length = 1)
+			else -> token(Tokens.Operation.Eq, length = 1)
 		}
 		
 		'!' -> when(next) {
 			'=' -> when(ahead(2)) {
-				'=' -> span(Tokens.Operation.NotIdentityEquals, length = 3)
-				else -> span(Tokens.Operation.NotEquals, length = 2)
+				'=' -> token(Tokens.Operation.NotIdentityEquals, length = 3)
+				else -> token(Tokens.Operation.NotEquals, length = 2)
 			}
 			
 			else -> when {
-				matchesNext("is", offset = 1) -> span(Tokens.Operation.NotIs, length = 3)
-				matchesNext("in", offset = 1) -> span(Tokens.Operation.NotIn, length = 3)
-				else -> span(Tokens.Operation.Not)
+				matchesNext("is", offset = 1) -> token(Tokens.Operation.NotIs, length = 3)
+				matchesNext("in", offset = 1) -> token(Tokens.Operation.NotIn, length = 3)
+				else -> token(Tokens.Operation.Not)
 			}
 		}
 		
 		'<' -> when(next) {
-			'=' -> span(Tokens.Operation.LtEq, length = 2)
-			else -> span(Tokens.Operation.Lt)
+			'=' -> token(Tokens.Operation.LtEq, length = 2)
+			else -> token(Tokens.Operation.Lt)
 		}
 		
 		'>' -> when(next) {
-			'=' -> span(Tokens.Operation.GtEq, length = 2)
-			else -> span(Tokens.Operation.Gt)
+			'=' -> token(Tokens.Operation.GtEq, length = 2)
+			else -> token(Tokens.Operation.Gt)
 		}
 		
 		'&' -> when(next) {
-			'&' -> span(Tokens.Operation.And, length = 2)
-			else -> illegalSpan()
+			'&' -> token(Tokens.Operation.And, length = 2)
+			else -> illegalToken()
 		}
 		
 		'|' -> when(next) {
-			'|' -> span(Tokens.Operation.And, length = 2)
-			else -> illegalSpan()
+			'|' -> token(Tokens.Operation.And, length = 2)
+			else -> illegalToken()
 		}
 		
 		'.' -> @Suppress("IntroduceWhenSubject") when { // TODO: limit on adjacent tokens
 			next == '.' -> when(ahead(2)) {
-				'<' -> span(Tokens.Operation.RangeUntil, length = 3)
-				else -> span(Tokens.Operation.RangeTo, length = 2)
+				'<' -> token(Tokens.Operation.RangeUntil, length = 3)
+				else -> token(Tokens.Operation.RangeTo, length = 2)
 			}
 			// CharacterClass.isNumber(next) -> handleNumber() // we have tuple! (`tuple.0`)
-			else -> span(Tokens.Operation.Dot)
+			else -> token(Tokens.Operation.Dot)
 		}
 		
-		'(' -> span(Tokens.Operation.LeftParen)
-		')' -> span(Tokens.Operation.RightParen)
-		'[' -> span(Tokens.Operation.LeftBracket)
-		']' -> span(Tokens.Operation.RightBracket)
+		'(' -> token(Tokens.Operation.LeftParen)
+		')' -> token(Tokens.Operation.RightParen)
+		'[' -> token(Tokens.Operation.LeftBracket)
+		']' -> token(Tokens.Operation.RightBracket)
 		'{' -> groupOpen(Tokens.Operation.LeftBrace)
 		'}' -> groupClose(Tokens.Operation.RightBrace)
 		
 		'?' -> when(next) {
-			'.' -> span(Tokens.Operation.SafeCall, length = 2)
-			':' -> span(Tokens.Operation.Elvis, length = 2)
-			else -> span(Tokens.Operation.PropagateError)
+			'.' -> token(Tokens.Operation.SafeCall, length = 2)
+			':' -> token(Tokens.Operation.Elvis, length = 2)
+			else -> token(Tokens.Operation.PropagateError)
 		}
 		
-		',' -> span(Tokens.Operation.Comma)
+		',' -> token(Tokens.Operation.Comma)
 		
-		':' -> span(Tokens.Operation.Colon)
+		':' -> token(Tokens.Operation.Colon)
 		
 		'#' -> when(next) {
 			// #!/usr/bin/hello
-			'!' -> span(Tokens.Comment.Shebang) { advanceBeforeEol() }
+			'!' -> token(Tokens.Comment.Shebang) { advanceBeforeEol() }
 			
 			// #[annotation]
-			'[' -> span(Tokens.Operation.Annotation) // excluding [
+			'[' -> token(Tokens.Operation.Annotation) // excluding [
 			
-			else -> illegalSpan()
+			else -> illegalToken()
 		}
 		
 		/// Tokens.StringLiteral
 		'"' -> handleString()
 		
 		
-		else -> illegalSpan()
+		else -> illegalToken()
 	}
 }
 
 context(LexerScope)
-private fun groupOpen(token: LlToken): Span = span(token) {
+private fun groupOpen(token: LlTokenKind): Token = token(token) {
 	val context = lexerContext
 	pushState(LexerContextKey, context.copy(groupDepth = context.groupDepth + 1))
 	advance()
 }
 
 context(LexerScope)
-private fun groupClose(token: LlToken): Span = span(token) {
+private fun groupClose(token: LlTokenKind): Token = token(token) {
 	popState(LexerContextKey)
 	advance()
 }
 
 context(LexerScope)
-private fun handleBlockComment(): Span = span {
+private fun handleBlockComment(): Token = token {
 	// Block or LDocBlock; following starts with '/' '*'
 	advance(2)
 	
 	val isLDoc = current == '*'
 	if(isLDoc) advance() // TODO: tokenize more for LDoc highlighting
 	
-	// TODO: maybe split into more spans for IC optimization?
+	// TODO: maybe split into more tokens for IC optimization?
 	var depth = 1
 	
 	while(true) {
@@ -334,10 +334,10 @@ private fun handleBlockComment(): Span = span {
 }
 
 context(LexerScope)
-private fun handleString(): Span {
+private fun handleString(): Token {
 	val isRaw = matchesNext("\"\"", offset = 1)
 	return if(isRaw) {
-		span(Tokens.StringLiteral.Raw.Begin) {
+		token(Tokens.StringLiteral.Raw.Begin) {
 			val context = lexerContext
 			pushState(
 				LexerContextKey,
@@ -349,7 +349,7 @@ private fun handleString(): Span {
 			advance(3)
 		}
 	} else {
-		span(Tokens.StringLiteral.Escaped.Begin) {
+		token(Tokens.StringLiteral.Escaped.Begin) {
 			val context = lexerContext
 			pushState(
 				LexerContextKey,
@@ -364,51 +364,51 @@ private fun handleString(): Span {
 }
 
 context(LexerScope)
-private fun nextStateString(): Span {
+private fun nextStateString(): Token {
 	markStart()
 	advanceOneWhile {
 		val char = current
 		char != '\\' && char != '$' && char != '"'
 	}
 	if(currentSpan.isNotEmpty()) {
-		return buildSpan(Tokens.StringLiteral.Literal)
+		return buildToken(Tokens.StringLiteral.Literal)
 	}
 	
 	return when(current) {
 		'\\' -> when(ahead()) {
 			// \\ \$ \n \r ...
-			'\\', '$', 'n', 'r', 't', 'b', '\'', '"' -> span(Tokens.StringLiteral.EscapedLiteral, 2)
+			'\\', '$', 'n', 'r', 't', 'b', '\'', '"' -> token(Tokens.StringLiteral.EscapedLiteral, 2)
 			// \u39A8
-			'u' -> span(Tokens.StringLiteral.EscapedLiteral, 6)
-			else -> span(Tokens.StringLiteral.EscapedLiteral) {
+			'u' -> token(Tokens.StringLiteral.EscapedLiteral, 6)
+			else -> token(Tokens.StringLiteral.EscapedLiteral) {
 				advance(2)
 				pushDiagnostic(LexerDiagnostic.IllegalStringEscape(currentSpan.toString()))
 			}
 		}
 		
 		// TODO: how to escape $ in raw string literal?
-		'$' -> if(ahead() == '{') span(Tokens.StringLiteral.TemplateExpression) {
+		'$' -> if(ahead() == '{') token(Tokens.StringLiteral.TemplateExpression) {
 			val context = lexerContext
 			pushState(
 				LexerContextKey,
 				context.copy(stringDepth = context.stringDepth + 1, groupDepth = context.groupDepth + 1)
 			)
 			advance(2)
-		} else span(Tokens.StringLiteral.TemplateVariable) {
+		} else token(Tokens.StringLiteral.TemplateVariable) {
 			advance() // $
 			advanceOneWhile { CharacterClass.isMiddleWord(current) }
 		}
 		
 		'"' -> when(lexerContext.stringQuote) {
-			Tokens.StringLiteral.Escaped -> span(Tokens.StringLiteral.Escaped.End)
+			Tokens.StringLiteral.Escaped -> token(Tokens.StringLiteral.Escaped.End)
 			Tokens.StringLiteral.Raw -> if(ahead() == '"') {
 				if(ahead(2) == '"') {
-					span(Tokens.StringLiteral.Raw.End, length = 3)
+					token(Tokens.StringLiteral.Raw.End, length = 3)
 				} else {
-					span(Tokens.StringLiteral.Literal)
+					token(Tokens.StringLiteral.Literal)
 				}
 			} else {
-				span(Tokens.StringLiteral.Literal) // should be joined when parsing
+				token(Tokens.StringLiteral.Literal) // should be joined when parsing
 			}
 			
 			else -> error("unknown quote")
