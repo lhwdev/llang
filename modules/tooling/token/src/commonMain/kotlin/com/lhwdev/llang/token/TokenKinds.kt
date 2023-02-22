@@ -7,7 +7,7 @@ sealed class LlTokenKind(debugName: String) : TokenKind(debugName) {
 }
 
 
-object Tokens {
+object TokenKinds {
 	class Illegal(val reason: String? = null) : LlTokenKind("illegal") {
 		override val common: Boolean
 			get() = false

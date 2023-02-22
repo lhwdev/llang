@@ -22,7 +22,7 @@ class Lexer(code: LlangCode) {
 		val list = ArrayList<Token>()
 		while(true) {
 			val token = run.advance()
-			if(token.kind == Tokens.Eof) break
+			if(token.kind == TokenKinds.Eof) break
 			list += token
 		}
 		this.tokens = list
@@ -72,10 +72,6 @@ private class LexerScopeImpl(
 	
 	override fun markStart() {
 		start = offset
-	}
-	
-	override fun moveToStart() {
-		offset = start
 	}
 	
 	override fun buildToken(token: LlTokenKind): Token = when(val operation = currentTokenStateOperation) {

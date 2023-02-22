@@ -4,14 +4,12 @@ import com.lhwdev.llang.diagnostic.Diagnostic
 import com.lhwdev.llang.lexer.code.MutableCodeIterator
 import com.lhwdev.llang.token.LlTokenKind
 import com.lhwdev.llang.token.Token
+import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.token.TokenStateKey
-import com.lhwdev.llang.token.Tokens
 
 
 interface LexerScope : MutableCodeIterator {
 	fun markStart()
-	
-	fun moveToStart()
 	
 	fun buildToken(token: LlTokenKind): Token // returned tokens are not interned anywhere; this is simple lightweight utility
 	
@@ -50,4 +48,4 @@ inline fun LexerScope.token(advanceBlock: () -> LlTokenKind): Token {
 }
 
 fun LexerScope.illegalToken(length: Int = 1, reason: String? = null): Token =
-	token(Tokens.Illegal(reason))
+	token(TokenKinds.Illegal(reason))

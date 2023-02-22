@@ -14,7 +14,7 @@ class LexerRun(private val scope: LexerScope) {
 private data class LexerContext(
 	// val commentDepth: Int = 0,
 	
-	val stringQuote: Tokens.StringLiteral.Quote = Tokens.StringLiteral.Escaped, /* stub */
+	val stringQuote: TokenKinds.StringLiteral.Quote = TokenKinds.StringLiteral.Escaped, /* stub */
 	
 	/**
 	 * If `stringDepth % 2 == 0`, we parse expression or anything.
@@ -41,7 +41,7 @@ context(LexerScope)
 private fun nextToken(): Token {
 	if(eof) {
 		markStart()
-		return buildToken(Tokens.Eof)
+		return buildToken(TokenKinds.Eof)
 	}
 	
 	return if(lexerContext.stringDepth % 2 == 0) {
@@ -72,10 +72,10 @@ private fun nextStateRoot(): Token {
 				
 				else -> error("unreachable")
 			}
-			token(Tokens.Eol, length)
+			token(TokenKinds.Eol, length)
 		}
 		
-		CharacterClass.whitespace -> token(Tokens.WhiteSpace) {
+		CharacterClass.whitespace -> token(TokenKinds.WhiteSpace) {
 			advance()
 			advanceOneWhile { CharacterClass.isWhitespace(current) }
 		}
@@ -94,37 +94,37 @@ private fun handleWord() = token {
 	// handle hard keywords
 	when(currentSpan.toString()) {
 		/// Tokens.Keyword
-		"module" -> Tokens.Keyword.Module
-		"group" -> Tokens.Keyword.Group
-		"use" -> Tokens.Keyword.Use
-		"class" -> Tokens.Keyword.Class
-		"interface" -> Tokens.Keyword.Interface
-		"object" -> Tokens.Keyword.Object
-		"fun" -> Tokens.Keyword.Fun
-		"impl" -> Tokens.Keyword.Impl
-		"const" -> Tokens.Keyword.Const
-		"val" -> Tokens.Keyword.Val
-		"var" -> Tokens.Keyword.Var
-		"true" -> Tokens.Keyword.True
-		"false" -> Tokens.Keyword.False
-		"if" -> Tokens.Keyword.If
-		"else" -> Tokens.Keyword.Else
-		"when" -> Tokens.Keyword.When
-		"loop" -> Tokens.Keyword.Loop
-		"while" -> Tokens.Keyword.While
-		"for" -> Tokens.Keyword.For
-		"do" -> Tokens.Keyword.Do
-		"return" -> Tokens.Keyword.Return
-		"break" -> Tokens.Keyword.Break
-		"continue" -> Tokens.Keyword.Continue
+		"module" -> TokenKinds.Keyword.Module
+		"group" -> TokenKinds.Keyword.Group
+		"use" -> TokenKinds.Keyword.Use
+		"class" -> TokenKinds.Keyword.Class
+		"interface" -> TokenKinds.Keyword.Interface
+		"object" -> TokenKinds.Keyword.Object
+		"fun" -> TokenKinds.Keyword.Fun
+		"impl" -> TokenKinds.Keyword.Impl
+		"const" -> TokenKinds.Keyword.Const
+		"val" -> TokenKinds.Keyword.Val
+		"var" -> TokenKinds.Keyword.Var
+		"true" -> TokenKinds.Keyword.True
+		"false" -> TokenKinds.Keyword.False
+		"if" -> TokenKinds.Keyword.If
+		"else" -> TokenKinds.Keyword.Else
+		"when" -> TokenKinds.Keyword.When
+		"loop" -> TokenKinds.Keyword.Loop
+		"while" -> TokenKinds.Keyword.While
+		"for" -> TokenKinds.Keyword.For
+		"do" -> TokenKinds.Keyword.Do
+		"return" -> TokenKinds.Keyword.Return
+		"break" -> TokenKinds.Keyword.Break
+		"continue" -> TokenKinds.Keyword.Continue
 		
 		/// Tokens.Operation
-		"is" -> Tokens.Operation.Is
-		"in" -> Tokens.Operation.In
+		"is" -> TokenKinds.Operation.Is
+		"in" -> TokenKinds.Operation.In
 		
 		// soft keywords are parsed from (tokens -> cst) parser
 		
-		else -> Tokens.Identifier
+		else -> TokenKinds.Identifier
 	}
 }
 
@@ -136,13 +136,13 @@ private fun handleNumber(): Token {
 	//       like `12345abc`
 	
 	if(current == '0') when(ahead()) {
-		'x' -> return token(Tokens.NumberLiteral.Hex) {
+		'x' -> return token(TokenKinds.NumberLiteral.Hex) {
 			advance(2)
 			@Suppress("SpellCheckingInspection")
 			advanceOneWhile { current in "0123456789abcdef" }
 		}
 		
-		'b' -> return token(Tokens.NumberLiteral.Binary) {
+		'b' -> return token(TokenKinds.NumberLiteral.Binary) {
 			advance(2)
 			advanceOneWhile { current in "01" }
 		}
@@ -166,9 +166,9 @@ private fun handleNumber(): Token {
 		}
 		
 		if(hasDot) {
-			Tokens.NumberLiteral.Float
+			TokenKinds.NumberLiteral.Float
 		} else {
-			Tokens.NumberLiteral.Integer
+			TokenKinds.NumberLiteral.Integer
 		}
 	}
 }
@@ -179,100 +179,100 @@ private fun handleOther(): Token {
 	return when(current) {
 		/// Tokens.Operation
 		'+' -> when(next) {
-			'=' -> token(Tokens.Operation.PlusEq, length = 2)
-			else -> token(Tokens.Operation.Plus)
+			'=' -> token(TokenKinds.Operation.PlusEq, length = 2)
+			else -> token(TokenKinds.Operation.Plus)
 		}
 		
 		'-' -> when(next) {
-			'=' -> token(Tokens.Operation.MinusEq, length = 2)
-			'>' -> token(Tokens.Operation.ArrowRight, length = 2)
-			else -> token(Tokens.Operation.Minus)
+			'=' -> token(TokenKinds.Operation.MinusEq, length = 2)
+			'>' -> token(TokenKinds.Operation.ArrowRight, length = 2)
+			else -> token(TokenKinds.Operation.Minus)
 		}
 		
-		'*' -> token(Tokens.Operation.Times)
+		'*' -> token(TokenKinds.Operation.Times)
 		
 		'/' -> when(next) {
-			'/' -> token(Tokens.Comment.Eol) { advanceBeforeEol() }
+			'/' -> token(TokenKinds.Comment.Eol) { advanceBeforeEol() }
 			'*' -> handleBlockComment() /// -> Tokens.Comment
-			else -> token(Tokens.Operation.Divide)
+			else -> token(TokenKinds.Operation.Divide)
 		}
 		
-		'%' -> token(Tokens.Operation.Remainder)
+		'%' -> token(TokenKinds.Operation.Remainder)
 		
 		'=' -> when(next) {
 			'=' -> when(ahead(2)) {
-				'=' -> token(Tokens.Operation.IdentityEquals, length = 3)
-				else -> token(Tokens.Operation.Equals, length = 2)
+				'=' -> token(TokenKinds.Operation.IdentityEquals, length = 3)
+				else -> token(TokenKinds.Operation.Equals, length = 2)
 			}
 			
-			else -> token(Tokens.Operation.Eq, length = 1)
+			else -> token(TokenKinds.Operation.Eq, length = 1)
 		}
 		
 		'!' -> when(next) {
 			'=' -> when(ahead(2)) {
-				'=' -> token(Tokens.Operation.NotIdentityEquals, length = 3)
-				else -> token(Tokens.Operation.NotEquals, length = 2)
+				'=' -> token(TokenKinds.Operation.NotIdentityEquals, length = 3)
+				else -> token(TokenKinds.Operation.NotEquals, length = 2)
 			}
 			
 			else -> when {
-				matchesNext("is", offset = 1) -> token(Tokens.Operation.NotIs, length = 3)
-				matchesNext("in", offset = 1) -> token(Tokens.Operation.NotIn, length = 3)
-				else -> token(Tokens.Operation.Not)
+				matchesNext("is", offset = 1) -> token(TokenKinds.Operation.NotIs, length = 3)
+				matchesNext("in", offset = 1) -> token(TokenKinds.Operation.NotIn, length = 3)
+				else -> token(TokenKinds.Operation.Not)
 			}
 		}
 		
 		'<' -> when(next) {
-			'=' -> token(Tokens.Operation.LtEq, length = 2)
-			else -> token(Tokens.Operation.Lt)
+			'=' -> token(TokenKinds.Operation.LtEq, length = 2)
+			else -> token(TokenKinds.Operation.Lt)
 		}
 		
 		'>' -> when(next) {
-			'=' -> token(Tokens.Operation.GtEq, length = 2)
-			else -> token(Tokens.Operation.Gt)
+			'=' -> token(TokenKinds.Operation.GtEq, length = 2)
+			else -> token(TokenKinds.Operation.Gt)
 		}
 		
 		'&' -> when(next) {
-			'&' -> token(Tokens.Operation.And, length = 2)
+			'&' -> token(TokenKinds.Operation.And, length = 2)
 			else -> illegalToken()
 		}
 		
 		'|' -> when(next) {
-			'|' -> token(Tokens.Operation.And, length = 2)
+			'|' -> token(TokenKinds.Operation.And, length = 2)
 			else -> illegalToken()
 		}
 		
 		'.' -> @Suppress("IntroduceWhenSubject") when { // TODO: limit on adjacent tokens
 			next == '.' -> when(ahead(2)) {
-				'<' -> token(Tokens.Operation.RangeUntil, length = 3)
-				else -> token(Tokens.Operation.RangeTo, length = 2)
+				'<' -> token(TokenKinds.Operation.RangeUntil, length = 3)
+				else -> token(TokenKinds.Operation.RangeTo, length = 2)
 			}
 			// CharacterClass.isNumber(next) -> handleNumber() // we have tuple! (`tuple.0`)
-			else -> token(Tokens.Operation.Dot)
+			else -> token(TokenKinds.Operation.Dot)
 		}
 		
-		'(' -> token(Tokens.Operation.LeftParen)
-		')' -> token(Tokens.Operation.RightParen)
-		'[' -> token(Tokens.Operation.LeftBracket)
-		']' -> token(Tokens.Operation.RightBracket)
-		'{' -> groupOpen(Tokens.Operation.LeftBrace)
-		'}' -> groupClose(Tokens.Operation.RightBrace)
+		'(' -> token(TokenKinds.Operation.LeftParen)
+		')' -> token(TokenKinds.Operation.RightParen)
+		'[' -> token(TokenKinds.Operation.LeftBracket)
+		']' -> token(TokenKinds.Operation.RightBracket)
+		'{' -> groupOpen(TokenKinds.Operation.LeftBrace)
+		'}' -> groupClose(TokenKinds.Operation.RightBrace)
 		
 		'?' -> when(next) {
-			'.' -> token(Tokens.Operation.SafeCall, length = 2)
-			':' -> token(Tokens.Operation.Elvis, length = 2)
-			else -> token(Tokens.Operation.PropagateError)
+			'.' -> token(TokenKinds.Operation.SafeCall, length = 2)
+			':' -> token(TokenKinds.Operation.Elvis, length = 2)
+			else -> token(TokenKinds.Operation.PropagateError)
 		}
 		
-		',' -> token(Tokens.Operation.Comma)
+		',' -> token(TokenKinds.Operation.Comma)
 		
-		':' -> token(Tokens.Operation.Colon)
+		':' -> token(TokenKinds.Operation.Colon)
 		
 		'#' -> when(next) {
 			// #!/usr/bin/hello
-			'!' -> token(Tokens.Comment.Shebang) { advanceBeforeEol() }
+			'!' -> token(TokenKinds.Comment.Shebang) { advanceBeforeEol() }
 			
 			// #[annotation]
-			'[' -> token(Tokens.Operation.Annotation) // excluding [
+			'[' -> token(TokenKinds.Operation.Annotation) // excluding [
 			
 			else -> illegalToken()
 		}
@@ -327,9 +327,9 @@ private fun handleBlockComment(): Token = token {
 	}
 	
 	if(isLDoc) {
-		Tokens.Comment.LDocBlock
+		TokenKinds.Comment.LDocBlock
 	} else {
-		Tokens.Comment.Block
+		TokenKinds.Comment.Block
 	}
 }
 
@@ -337,24 +337,24 @@ context(LexerScope)
 private fun handleString(): Token {
 	val isRaw = matchesNext("\"\"", offset = 1)
 	return if(isRaw) {
-		token(Tokens.StringLiteral.Raw.Begin) {
+		token(TokenKinds.StringLiteral.Raw.Begin) {
 			val context = lexerContext
 			pushState(
 				LexerContextKey,
 				context.copy(
-					stringQuote = Tokens.StringLiteral.Raw,
+					stringQuote = TokenKinds.StringLiteral.Raw,
 					stringDepth = context.stringDepth + 1
 				)
 			)
 			advance(3)
 		}
 	} else {
-		token(Tokens.StringLiteral.Escaped.Begin) {
+		token(TokenKinds.StringLiteral.Escaped.Begin) {
 			val context = lexerContext
 			pushState(
 				LexerContextKey,
 				context.copy(
-					stringQuote = Tokens.StringLiteral.Escaped,
+					stringQuote = TokenKinds.StringLiteral.Escaped,
 					stringDepth = context.stringDepth + 1
 				)
 			)
@@ -371,44 +371,44 @@ private fun nextStateString(): Token {
 		char != '\\' && char != '$' && char != '"'
 	}
 	if(currentSpan.isNotEmpty()) {
-		return buildToken(Tokens.StringLiteral.Literal)
+		return buildToken(TokenKinds.StringLiteral.Literal)
 	}
 	
 	return when(current) {
 		'\\' -> when(ahead()) {
 			// \\ \$ \n \r ...
-			'\\', '$', 'n', 'r', 't', 'b', '\'', '"' -> token(Tokens.StringLiteral.EscapedLiteral, 2)
+			'\\', '$', 'n', 'r', 't', 'b', '\'', '"' -> token(TokenKinds.StringLiteral.EscapedLiteral, 2)
 			// \u39A8
-			'u' -> token(Tokens.StringLiteral.EscapedLiteral, 6)
-			else -> token(Tokens.StringLiteral.EscapedLiteral) {
+			'u' -> token(TokenKinds.StringLiteral.EscapedLiteral, 6)
+			else -> token(TokenKinds.StringLiteral.EscapedLiteral) {
 				advance(2)
 				pushDiagnostic(LexerDiagnostic.IllegalStringEscape(currentSpan.toString()))
 			}
 		}
 		
 		// TODO: how to escape $ in raw string literal?
-		'$' -> if(ahead() == '{') token(Tokens.StringLiteral.TemplateExpression) {
+		'$' -> if(ahead() == '{') token(TokenKinds.StringLiteral.TemplateExpression) {
 			val context = lexerContext
 			pushState(
 				LexerContextKey,
 				context.copy(stringDepth = context.stringDepth + 1, groupDepth = context.groupDepth + 1)
 			)
 			advance(2)
-		} else token(Tokens.StringLiteral.TemplateVariable) {
+		} else token(TokenKinds.StringLiteral.TemplateVariable) {
 			advance() // $
 			advanceOneWhile { CharacterClass.isMiddleWord(current) }
 		}
 		
 		'"' -> when(lexerContext.stringQuote) {
-			Tokens.StringLiteral.Escaped -> token(Tokens.StringLiteral.Escaped.End)
-			Tokens.StringLiteral.Raw -> if(ahead() == '"') {
+			TokenKinds.StringLiteral.Escaped -> token(TokenKinds.StringLiteral.Escaped.End)
+			TokenKinds.StringLiteral.Raw -> if(ahead() == '"') {
 				if(ahead(2) == '"') {
-					token(Tokens.StringLiteral.Raw.End, length = 3)
+					token(TokenKinds.StringLiteral.Raw.End, length = 3)
 				} else {
-					token(Tokens.StringLiteral.Literal)
+					token(TokenKinds.StringLiteral.Literal)
 				}
 			} else {
-				token(Tokens.StringLiteral.Literal) // should be joined when parsing
+				token(TokenKinds.StringLiteral.Literal) // should be joined when parsing
 			}
 			
 			else -> error("unknown quote")
