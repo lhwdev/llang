@@ -86,8 +86,13 @@ code into tokens. Basic approach here is being conservative, ensuring soundness.
    texts, so it can be easily retrieved.
 
 2. **Find first span affected**
-   
-   
-   
-   
-   
+
+   Choose which tokens to start parsing at. If you choose wrong token, you may encounter
+   soundness problem. In simplest way, choose the very token containing `oldRange.first`.
+   But this may cause problems. Think `Patch` from `Hello World` to `HelloWorld`. Two
+   distinct tokens are joined into one, but if start lexing from after 'Hello', you will
+   get two tokens for `HelloWorld`, which is definitely wrong. To mitigate this, I
+   introduced 'separator token'. Separator tokens are always interpreted as same
+   `TokenKind`, like `(`, `)`, `,`. `>` cannot be separator as it can be interpreted as
+   `>` (Gt), `>=` (GtEq), or `->` (RightArrow). Think of when `- >` becomes `->` vs.
+   `hello()` becomes `hello( )` or anything.
