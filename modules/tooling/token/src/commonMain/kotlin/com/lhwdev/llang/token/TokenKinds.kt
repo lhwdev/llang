@@ -11,6 +11,8 @@ object TokenKinds {
 	class Illegal(val reason: String? = null) : LlTokenKind("illegal") {
 		override val common: Boolean
 			get() = false
+		
+		override fun toString(): String = "Illegal token: $reason"
 	}
 	
 	object Eof : LlTokenKind("eof")
@@ -18,12 +20,16 @@ object TokenKinds {
 	/**
 	 * All adjacent whitespaces should be merged into one.
 	 */
-	object WhiteSpace : LlTokenKind("whitespace")
+	object WhiteSpace : LlTokenKind("whitespace") {
+		override val isSeparator: Boolean get() = true
+	}
 	
 	/**
 	 * Standard `\n`, `\r`, or `\r\n`.
 	 */
-	object Eol : LlTokenKind("eol")
+	object Eol : LlTokenKind("eol") {
+		override val isSeparator: Boolean get() = true
+	}
 	
 	object Identifier : LlTokenKind("identifier")
 	
@@ -118,9 +124,12 @@ object TokenKinds {
 		class Logic(debugName: String) : Operation(debugName)
 		class Expression(debugName: String) : Operation(debugName)
 		class Assign(debugName: String) : Operation(debugName)
-		class Group(debugName: String) : Operation(debugName)
+		class Group(debugName: String) : Operation(debugName) {
+			override val isSeparator: Boolean get() = true
+		}
+		
 		class Access(debugName: String) : Operation(debugName)
-		class Other(debugName: String) : Operation(debugName)
+		class Other(debugName: String, override val isSeparator: Boolean = false) : Operation(debugName)
 		
 		companion object All : TokenKindSetBuilder("operations") {
 			/// Arithmetic
@@ -224,11 +233,16 @@ object TokenKinds {
 			
 			val RightBracket = +Group("]")
 			
+			/**
+			 * Used for:
+			 * - lambda expression
+			 */
 			val LeftBrace = +Group("{")
 			
 			val RightBrace = +Group("}")
 			
 			// Instead of +Group("<") +Group(">") we use Lt / Gt
+			// Also <, > is not group; they are not separator
 			
 			
 			/// Access
@@ -249,14 +263,14 @@ object TokenKinds {
 			 * - function parameters
 			 * - tuple literal
 			 */
-			val Comma = +Other(",")
+			val Comma = +Other(",", isSeparator = true)
 			
 			/**
 			 * Used for:
 			 * - mark type of variable
 			 * - mark parent classes or interfaces
 			 */
-			val Colon = +Other(":")
+			val Colon = +Other(":", isSeparator = true)
 			
 			/**
 			 * Used to:

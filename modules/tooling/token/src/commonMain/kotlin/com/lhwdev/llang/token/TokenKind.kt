@@ -10,6 +10,9 @@ enum class Separator {
 
 
 abstract class TokenKind(val debugName: String) {
+	open val isSeparator: Boolean
+		get() = false
+	
 	override fun toString(): String = debugName
 }
 
