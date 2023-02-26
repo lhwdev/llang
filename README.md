@@ -1,6 +1,10 @@
 # llang
 
-Note that 'llang' is alias and I really couldn't come up with cool name.
+Note that 'llang' is alias and I really couldn't come up with cool name.  
+Llang is my toy project and now work in progress. As a developer, one should have thought, 'I want to write programming
+language!' and that's it.
+
+Also see [book](book.md) and [syntax reference](syntax-reference.md).
 
 code -> tokens -> cst -> ast -> fir -> ir
 
