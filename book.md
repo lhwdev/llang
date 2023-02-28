@@ -96,3 +96,13 @@ code into tokens. Basic approach here is being conservative, ensuring soundness.
    `TokenKind`, like `(`, `)`, `,`. `>` cannot be separator as it can be interpreted as
    `>` (Gt), `>=` (GtEq), or `->` (RightArrow). Think of when `- >` becomes `->` vs.
    `hello()` becomes `hello( )` or anything.
+
+3. **Begin parsing with state**
+
+   You can just start parsing like initial, but it isn't that simple. For example, if we
+   are in `" "` or `/* */`, need to parse differently.How can we get current state?
+   Well, it is as simple as traversing `PushState` or `PopState` ahead and find matching
+   closest `PushState` with same level. This also can be cached in common situations
+   like inserting code in IDE, as you are in same context across inputs.
+
+   TODO: cache like what I said above

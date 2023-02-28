@@ -27,7 +27,6 @@ internal abstract class LexerScopeImplBase(
 	}
 	
 	private var start = -1
-	private val stateStack = IdentityHashMap<TokenStateKey<*>, ArrayDeque<Any?>>()
 	private var currentTokenStateOperation: StateOperation? = null
 	
 	override val following: CharSequence = object : CharSequence {
@@ -81,33 +80,24 @@ internal abstract class LexerScopeImplBase(
 			lexer.code.substring(start, offset)
 	}
 	
-	
-	@Suppress("UNCHECKED_CAST")
-	private fun <T> stateStackOf(key: TokenStateKey<T>) =
-		stateStack.getOrPut(key) { ArrayDeque() } as ArrayDeque<T>
+	protected abstract fun <T> stateStackOf(key: TokenStateKey<T>): LexerStateStack<T>
 	
 	override fun <T> pushState(key: TokenStateKey<T>, value: T) {
 		if(currentTokenStateOperation != null)
 			error("does not support multiple operations at once; previous = $currentTokenStateOperation, new = push($key, $value)")
 		currentTokenStateOperation = StateOperation.Push(key, value)
-		stateStackOf(key).addLast(value)
+		stateStackOf(key).push(value)
 	}
 	
 	override fun <T> popState(key: TokenStateKey<T>): T {
 		if(currentTokenStateOperation != null)
 			error("does not support multiple operations at once; previous = $currentTokenStateOperation, new = pop($key)")
 		currentTokenStateOperation = StateOperation.Pop(key)
-		return stateStackOf(key).removeLast()
+		return stateStackOf(key).pop()
 	}
 	
-	override fun <T> getCurrentState(key: TokenStateKey<T>): T {
-		val stack = stateStackOf(key)
-		return if(stack.isEmpty()) {
-			key.defaultValue
-		} else {
-			stack.last()
-		}
-	}
+	override fun <T> getCurrentState(key: TokenStateKey<T>): T =
+		stateStackOf(key).current
 	
 	override fun pushDiagnostic(diagnostic: Diagnostic) { // TODO
 		println("diagnostic pushed: ${with(StubDiagnosticContext) { diagnostic.getMessage() }}")
@@ -115,9 +105,84 @@ internal abstract class LexerScopeImplBase(
 }
 
 
-internal class LexerScopeOnInitialization(lexer: Lexer) : LexerScopeImplBase(lexer, offset = 0)
+internal class LexerScopeOnInitialization(lexer: Lexer) : LexerScopeImplBase(lexer, offset = 0) {
+	private val stateStack = IdentityHashMap<TokenStateKey<*>, LexerStateStack<Any?>>()
+	
+	@Suppress("UNCHECKED_CAST")
+	override fun <T> stateStackOf(key: TokenStateKey<T>) =
+		stateStack.getOrPut(key) { LexerStateStack(key) as LexerStateStack<Any?> } as LexerStateStack<T>
+}
 
 internal class LexerScopeIncremental(lexer: Lexer) : LexerScopeImplBase(
 	lexer = lexer,
 	offset = lexer.modification.oldCodeSpan.start
-)
+) {
+	private inner class LookaheadStateStack<T>(private val key: TokenStateKey<T>) : LexerStateStack<T> {
+		private var lookaheadIndex = lexer.modification.oldCodeSpan.start // in 0..initialOffset
+		
+		private val cacheDeque = ArrayDeque<T>()
+		
+		override val current: T
+			get() = when {
+				cacheDeque.isNotEmpty() -> cacheDeque.last()
+				lookaheadIndex == 0 -> key.defaultValue
+				else -> lookaheadForStateOrDefault()
+			}
+		
+		private fun lookaheadForStateOrDefault(): T {
+			while(lookaheadIndex > 0) {
+				lookaheadIndex--
+				when(val token = lexer.tokens[lookaheadIndex]) {
+					is Token.Plain -> TODO()
+					is Token.PopState -> TODO()
+					is Token.PushState -> TODO()
+				}
+				
+			}
+			return key.defaultValue
+		}
+		
+		override fun push(value: T) {
+			TODO("Not yet implemented")
+		}
+		
+		override fun pop(): T {
+			TODO("Not yet implemented")
+		}
+	}
+	
+	// TODO: maybe leaving depth with tokens good for optimization?
+	private val stateStack = IdentityHashMap<TokenStateKey<*>, LookaheadStateStack<Any?>>()
+	
+	@Suppress("UNCHECKED_CAST")
+	override fun <T> stateStackOf(key: TokenStateKey<T>) =
+		stateStack.getOrPut(key) { LookaheadStateStack(key) as LookaheadStateStack<Any?> } as LexerStateStack<T>
+}
+
+
+internal interface LexerStateStack<T> {
+	val current: T
+	
+	fun push(value: T)
+	
+	fun pop(): T
+}
+
+internal fun <T> LexerStateStack(key: TokenStateKey<T>): LexerStateStack<T> = object : LexerStateStack<T> {
+	private val deque = ArrayDeque<T>()
+	
+	override val current: T
+		get() = if(deque.isEmpty()) {
+			key.defaultValue
+		} else {
+			deque.last()
+		}
+	
+	override fun push(value: T) {
+		deque.addLast(value)
+	}
+	
+	override fun pop(): T {
+		return deque.removeLast()
+	}
+}
