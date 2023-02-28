@@ -117,37 +117,60 @@ internal class LexerScopeIncremental(lexer: Lexer) : LexerScopeImplBase(
 	lexer = lexer,
 	offset = lexer.modification.oldCodeSpan.start
 ) {
+	// TODO: optimizations around common IDE cases
+	//       like user sequentially input characters in the same place
+	//       state does not change; you can leave lookaheadIndex and cacheDeque of previous lexing
 	private inner class LookaheadStateStack<T>(private val key: TokenStateKey<T>) : LexerStateStack<T> {
 		private var lookaheadIndex = lexer.modification.oldCodeSpan.start // in 0..initialOffset
 		
 		private val cacheDeque = ArrayDeque<T>()
 		
 		override val current: T
-			get() = when {
-				cacheDeque.isNotEmpty() -> cacheDeque.last()
-				lookaheadIndex == 0 -> key.defaultValue
-				else -> lookaheadForStateOrDefault()
+			get() = if(cacheDeque.isNotEmpty()) {
+				cacheDeque.last()
+			} else {
+				lookaheadForStateOrDefault()
 			}
 		
+		/**
+		 * Think of `a { b { c { d } e } f g }` and you are at `f`.
+		 * You need to find current state, so you start traversing forward.
+		 *
+		 * When you meet `}`(PopState), you need to jump to matching `{`(PushState), and this may be cascaded.
+		 * This may be simply implemented by recursion, but I thought using depth is simple enough.
+		 * So, `}` increases depth so that you need one more `{` to pass by. And `{` decreases depth. If met `{` with
+		 * `depth == 0`, done. You found it.
+		 */
 		private fun lookaheadForStateOrDefault(): T {
-			while(lookaheadIndex > 0) {
+			var depth = 0
+			while(lookaheadIndex > 0) { // note: case where lookaheadIndex == 0 (SHOULD) fails fast
 				lookaheadIndex--
 				when(val token = lexer.tokens[lookaheadIndex]) {
-					is Token.Plain -> TODO()
-					is Token.PopState -> TODO()
-					is Token.PushState -> TODO()
+					is Token.Plain -> continue
+					
+					is Token.PopState -> if(token.stateKey == key) depth++
+					
+					is Token.PushState -> if(token.stateKey == key) {
+						if(depth == 0) {
+							@Suppress("UNCHECKED_CAST")
+							val value = token.stateValue as T
+							cacheDeque.addFirst(value)
+							return value
+						}
+						depth--
+					}
 				}
-				
 			}
 			return key.defaultValue
 		}
 		
 		override fun push(value: T) {
-			TODO("Not yet implemented")
+			cacheDeque.addLast(value)
 		}
 		
 		override fun pop(): T {
-			TODO("Not yet implemented")
+			lookaheadForStateOrDefault() // in case cacheDeque is empty, but you have more states to pop
+			return cacheDeque.removeLast()
 		}
 	}
 	
