@@ -27,14 +27,11 @@ But we need to implement incremental lexing(IC) later, so we need to change this
 below.
 
 ``` kotlin
-fun nextToken(code: LlangCode, index: Int): Token
+fun nextToken(code: LlangCode): Pair<Token, LlangCode> // currentToken to remainingCode
 ```
 
-We analyze code sequentially from start to end.
-Only parameters is `code` and `index`. `index` is initially `0` and increased by
-`previousToken.value.length`. Most portion of code works like this. In this way, is
-some code is modified, we can start from there, not from start.
-
+We analyze code sequentially from start to end, and this function can be reduced into
+`List<Token>`.
 But there are some parts where state is needed, like in string literal. See following
 code.
 
@@ -56,6 +53,9 @@ In actual code, there is `val stringDepth: Int` in state, whose value is like:
 
 If depth is odd, you parse string literal. If depth is even, you parse normal expression.
 This rule applies well when you nest template expression a lot.
+
+In pure functional programming, you can just pass stack of state along with `LlangCode`.
+But... I decided to write it like a state machine. Rewriting it in FP would be fun! (TODO?)
 
 So lexer is defined like this:
 
@@ -79,11 +79,14 @@ code into tokens. Basic approach here is being conservative, ensuring soundness.
 **Steps for Incremental Lexing**
 (low level optimizations omitted; shell I use gap buffer?)
 
-1. **Get modification in form of `Patch`**
+1. **Get modification in form of `CodeModification`**
 
-   `Patch` is just like `String.replace(oldRange, newText)`: find common heading and
-   trailing. In IDE, most operation is to insert keystrokes at cursor or delete some
-   texts, so it can be easily retrieved.
+   `CodeModification` is just like `String.replace(oldRange, newText)`: find common
+   heading and trailing. In IDE, most operation is to insert keystrokes at cursor or
+   delete some texts, so it can be easily retrieved.
+
+   TODO: accept Patch which has multiple CodeModification (which does not overlap).
+   Shell we Myers-diff?
 
 2. **Find first span affected**
 
@@ -106,3 +109,9 @@ code into tokens. Basic approach here is being conservative, ensuring soundness.
    like inserting code in IDE, as you are in same context across inputs.
 
    TODO: cache like what I said above
+
+4. **How far shell we go?**
+
+   After we go past boundary of `CodeModification`, (`offset >= newSpan.end`) if lexer
+   yield the same token in the same location and state, we can conclude that following
+   tokens will be identical as lexing goes from start to end.
