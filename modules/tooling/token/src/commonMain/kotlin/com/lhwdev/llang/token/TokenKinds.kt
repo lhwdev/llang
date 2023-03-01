@@ -1,47 +1,43 @@
 package com.lhwdev.llang.token
 
 
-sealed class LlTokenKind(debugName: String) : TokenKind(debugName) {
+sealed class LlTokenKind(debugName: String, group: TokenGroup) : TokenKind(debugName, group) {
 	open val common: Boolean
 		get() = true
 }
 
 
 object TokenKinds {
-	class Illegal(val reason: String? = null) : LlTokenKind("illegal") {
+	class Illegal(val reason: String? = null) : LlTokenKind("illegal", TokenGroup.Other) {
 		override val common: Boolean
 			get() = false
 		
 		override fun toString(): String = "Illegal token: $reason"
 	}
 	
-	object Eof : LlTokenKind("eof")
+	object Eof : LlTokenKind("eof", TokenGroup.Separator)
 	
 	/**
 	 * All adjacent whitespaces should be merged into one.
 	 */
-	object WhiteSpace : LlTokenKind("whitespace") {
-		override val isSeparator: Boolean get() = true
-	}
+	object WhiteSpace : LlTokenKind("whitespace", TokenGroup.Separator)
 	
 	/**
 	 * Standard `\n`, `\r`, or `\r\n`.
 	 */
-	object Eol : LlTokenKind("eol") {
-		override val isSeparator: Boolean get() = true
-	}
+	object Eol : LlTokenKind("eol", TokenGroup.Separator)
 	
-	object Identifier : LlTokenKind("identifier")
+	object Identifier : LlTokenKind("identifier", TokenGroup.Word)
 	
-	sealed class StringLiteral(debugName: String) : LlTokenKind(debugName) {
-		class QuoteBegin(debugName: String) : StringLiteral("$debugName(begin)")
-		class QuoteEnd(debugName: String) : StringLiteral("$debugName(end)")
+	sealed class StringLiteral(debugName: String, group: TokenGroup) : LlTokenKind(debugName, group) {
+		class QuoteBegin(debugName: String) : StringLiteral("$debugName(begin)", TokenGroup.WordOpen)
+		class QuoteEnd(debugName: String) : StringLiteral("$debugName(end)", TokenGroup.WordClose)
 		class Quote(debugName: String) : TokenKindSetBuilder(debugName) {
 			val Begin = +QuoteBegin(debugName)
 			val End = +QuoteEnd(debugName)
 		}
 		
-		class Content(debugName: String) : StringLiteral(debugName)
+		class Content(debugName: String) : StringLiteral(debugName, TokenGroup.Other)
 		
 		companion object All : TokenKindSetBuilder("string literals") {
 			/**
@@ -74,7 +70,7 @@ object TokenKinds {
 		}
 	}
 	
-	class NumberLiteral(debugName: String) : LlTokenKind("$debugName literal") {
+	class NumberLiteral(debugName: String) : LlTokenKind("$debugName literal", TokenGroup.Word) {
 		companion object All : TokenKindSetBuilder("number literals") {
 			/**
 			 * Integer literal, which can be `IntN`, (Int8, Int16, Int32, ..., Byte) `FloatN`, `UIntN`, `UFloatN`, etc.
@@ -92,7 +88,7 @@ object TokenKinds {
 		}
 	}
 	
-	class Comment(debugName: String) : LlTokenKind(debugName) {
+	class Comment(debugName: String) : LlTokenKind(debugName, TokenGroup.Separator) {
 		companion object All : TokenKindSetBuilder("comments") {
 			/**
 			 * Like `some code // comment`
@@ -118,18 +114,15 @@ object TokenKinds {
 	}
 	
 	
-	sealed class Operation(debugName: String) : LlTokenKind(debugName) {
+	sealed class Operation(debugName: String, group: TokenGroup = TokenGroup.Operator) : LlTokenKind(debugName, group) {
 		class Arithmetic(debugName: String) : Operation(debugName)
 		class Compare(debugName: String) : Operation(debugName)
 		class Logic(debugName: String) : Operation(debugName)
 		class Expression(debugName: String) : Operation(debugName)
 		class Assign(debugName: String) : Operation(debugName)
-		class Group(debugName: String) : Operation(debugName) {
-			override val isSeparator: Boolean get() = true
-		}
-		
+		class Group(debugName: String) : Operation(debugName, group = TokenGroup.Separator)
 		class Access(debugName: String) : Operation(debugName)
-		class Other(debugName: String, override val isSeparator: Boolean = false) : Operation(debugName)
+		class Other(debugName: String, group: TokenGroup = TokenGroup.Operator) : Operation(debugName, group)
 		
 		companion object All : TokenKindSetBuilder("operations") {
 			/// Arithmetic
@@ -263,14 +256,14 @@ object TokenKinds {
 			 * - function parameters
 			 * - tuple literal
 			 */
-			val Comma = +Other(",", isSeparator = true)
+			val Comma = +Other(",", group = TokenGroup.Separator)
 			
 			/**
 			 * Used for:
 			 * - mark type of variable
 			 * - mark parent classes or interfaces
 			 */
-			val Colon = +Other(":", isSeparator = true)
+			val Colon = +Other(":", group = TokenGroup.Separator)
 			
 			/**
 			 * Used to:
@@ -291,7 +284,7 @@ object TokenKinds {
 	
 	
 	// hard
-	sealed class Keyword(debugName: String) : LlTokenKind(debugName) {
+	sealed class Keyword(debugName: String) : LlTokenKind(debugName, TokenGroup.Word) {
 		class Module(debugName: String) : Keyword(debugName)
 		class Declaration(debugName: String) : Keyword(debugName)
 		class Literal(debugName: String) : Keyword(debugName)
@@ -386,7 +379,7 @@ object TokenKinds {
 	
 	
 	// soft
-	class SoftKeyword(debugName: String) : LlTokenKind(debugName) {
+	class SoftKeyword(debugName: String) : LlTokenKind(debugName, TokenGroup.Word) {
 		companion object All : TokenKindSetBuilder("soft keywords") {
 			val Constructor = +SoftKeyword("constructor")
 			
@@ -414,7 +407,7 @@ object TokenKinds {
 	
 	
 	// soft
-	sealed class Modifier(debugName: String) : LlTokenKind(debugName) {
+	sealed class Modifier(debugName: String) : LlTokenKind(debugName, TokenGroup.Word) {
 		class Visibility(debugName: String) : Modifier(debugName)
 		class Modality(debugName: String) : Modifier(debugName)
 		class General(debugName: String) : Modifier(debugName)
