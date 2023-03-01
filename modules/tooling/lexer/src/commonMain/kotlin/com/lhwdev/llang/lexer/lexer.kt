@@ -150,15 +150,22 @@ private fun handleNumber(): Token {
 		else -> Unit
 	}
 	
-	
 	return token {
 		var hasDot = false
+		var hasE = false
+		
 		advanceOneWhile {
 			when(current) {
 				in '0'..'9' -> true
 				'.' -> {
 					hasDot = true
 					true
+				}
+				
+				'e' -> {
+					if(hasE) pushDiagnostic(LexerDiagnostic.IllegalNumber(message = "illegal scientific(e) notation"))
+					hasE = true
+					true // validation of notation is up to next parser(so far)
 				}
 				
 				else -> false
