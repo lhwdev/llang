@@ -10,4 +10,7 @@ object LexerDiagnostic {
 	
 	fun IllegalStringEscape(value: String) =
 		diagnostic("IllegalStringEscape", DiagnosticLevel.Error, message = "Illegal string escape '$value'")
+	
+	fun TokenValidationFailed(message: String) =
+		diagnostic("TokenValidationFailed", DiagnosticLevel.Error, message = "Token validation failed: $message")
 }

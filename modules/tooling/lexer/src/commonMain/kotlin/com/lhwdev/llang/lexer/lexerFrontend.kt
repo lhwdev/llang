@@ -36,6 +36,7 @@ class LexerFrontend(code: LlangCode) {
 			if(token.kind == TokenKinds.Eof) break
 			list += token
 		}
+		scope.validateTokens(list)
 		backend.tokens = list
 	}
 	
@@ -51,6 +52,7 @@ class LexerFrontend(code: LlangCode) {
 		backend.modification = modification
 		
 		val scope = LexerScopeIncremental(backend)
+		TODO()
 	}
 	
 	fun discardAndSetCode(newCode: LlangCode) {

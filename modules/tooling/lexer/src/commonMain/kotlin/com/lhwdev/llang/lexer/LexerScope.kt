@@ -8,10 +8,18 @@ import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.token.TokenStateKey
 
 
+sealed class LexerIndex {
+	class Code(val index: Int) : LexerIndex()
+	class Token(val index: Int) : LexerIndex()
+}
+
+
 interface LexerScope : MutableCodeIterator {
 	fun markStart()
 	
 	fun buildToken(token: LlTokenKind): Token // returned tokens are not interned anywhere; this is simple lightweight utility
+	
+	val currentIndex: LexerIndex
 	
 	val currentSpan: CharSequence
 	
@@ -26,7 +34,7 @@ interface LexerScope : MutableCodeIterator {
 	fun <T> getCurrentState(key: TokenStateKey<T>): T
 	
 	
-	fun pushDiagnostic(diagnostic: Diagnostic)
+	fun pushDiagnostic(diagnostic: Diagnostic, index: LexerIndex = currentIndex)
 }
 
 context(LexerScope)

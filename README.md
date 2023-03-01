@@ -6,6 +6,10 @@ language!' and that's it.
 
 Also see [book](book.md) and [syntax reference](syntax-reference.md).
 
+**Useful Links:**
+
+- [Lexer](modules/tooling/lexer/src/commonMain/kotlin/com/lhwdev/llang/lexer/lexer.kt)
+
 code -> tokens -> cst -> ast -> fir -> ir
 
 - code
@@ -147,17 +151,4 @@ code -> tokens -> cst -> ast -> fir -> ir
 
 ## Incremental Parsing
 
-### General Idea
-
-When we add, modify, or delete one element, we invalidate the group it is in. Modification of child group does not
-affect parent group, or another children of that parent. In this way, we can skip most works.
-
-### Lexing
-
-For simplicity, we declare code change as one Patch(offset, deletedTextLength, newInsertedText).
-We need to set 'where to start lexing', which is as simple as finding the token that includes `offset`.
-Then we need to start lexing from there, but how can we get state? All lexing operations are carefully crafted to be
-mostly stateless, but we need them sometimes. (mostly string literal) Lexer searches forward to find
-nearest `PushState`.
-Of course this can be easily cached. Then we go forward, until we have a unchanged token. (same text, same token type)
-
+Oops, see [book.md](book.md).

@@ -29,6 +29,9 @@ internal abstract class LexerScopeImplBase(
 	private var start = -1
 	private var currentTokenStateOperation: StateOperation? = null
 	
+	override val currentIndex: LexerIndex
+		get() = LexerIndex.Code(offset)
+	
 	override val following: CharSequence = object : CharSequence {
 		override val length: Int
 			get() = lexer.code.length - offset
@@ -99,8 +102,8 @@ internal abstract class LexerScopeImplBase(
 	override fun <T> getCurrentState(key: TokenStateKey<T>): T =
 		stateStackOf(key).current
 	
-	override fun pushDiagnostic(diagnostic: Diagnostic) { // TODO
-		println("diagnostic pushed: ${with(StubDiagnosticContext) { diagnostic.getMessage() }}")
+	override fun pushDiagnostic(diagnostic: Diagnostic, index: LexerIndex) { // TODO
+		println("diagnostic pushed: ${with(StubDiagnosticContext) { diagnostic.getMessage() }}, index=$index")
 	}
 }
 
