@@ -8,7 +8,7 @@ import com.lhwdev.llang.token.TokenStateKey
 import com.lhwdev.utils.collection.IdentityHashMap
 
 
-internal abstract class LexerScopeImplBase(
+internal abstract class LexerScopeCommon(
 	protected val lexer: Lexer,
 	protected var offset: Int,
 ) : LexerScope {
@@ -56,6 +56,7 @@ internal abstract class LexerScopeImplBase(
 	}
 	
 	override fun buildToken(token: LlTokenKind): Token {
+		if(start == -1) error("call markStart before calling buildToken to mark the start of token")
 		val operation = currentTokenStateOperation
 		return if(operation == null) {
 			Token.Plain(token, currentSpan.toString())
@@ -108,7 +109,7 @@ internal abstract class LexerScopeImplBase(
 }
 
 
-internal class LexerScopeOnInitialization(lexer: Lexer) : LexerScopeImplBase(lexer, offset = 0) {
+internal class LexerScopeOnInitialization(lexer: Lexer) : LexerScopeCommon(lexer, offset = 0) {
 	private val stateStack = IdentityHashMap<TokenStateKey<*>, LexerStateStack<Any?>>()
 	
 	@Suppress("UNCHECKED_CAST")
@@ -116,7 +117,7 @@ internal class LexerScopeOnInitialization(lexer: Lexer) : LexerScopeImplBase(lex
 		stateStack.getOrPut(key) { LexerStateStack(key) as LexerStateStack<Any?> } as LexerStateStack<T>
 }
 
-internal class LexerScopeIncremental(lexer: Lexer) : LexerScopeImplBase(
+internal class LexerScopeIncremental(lexer: Lexer) : LexerScopeCommon(
 	lexer = lexer,
 	offset = lexer.modification.oldCodeSpan.start
 ) {

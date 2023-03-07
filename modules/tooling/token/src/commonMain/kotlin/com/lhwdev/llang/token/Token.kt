@@ -7,8 +7,6 @@ class TokenStateKey<T>(val defaultValue: T, val debugName: String? = null) {
 
 
 sealed class Token(var kind: TokenKind, val code: String) {
-	
-	
 	class Plain(kind: TokenKind, code: String) : Token(kind, code) {
 		override fun equals(other: Any?): Boolean =
 			other is Plain && super.equals(other)
@@ -42,6 +40,9 @@ sealed class Token(var kind: TokenKind, val code: String) {
 		override fun equals(other: Any?): Boolean =
 			other is PopState && super.equals(other) &&
 				stateKey == other.stateKey
+		
+		override fun hashCode(): Int =
+			super.hashCode() * 31 + stateKey.hashCode()
 		
 		override fun toString(): String = "$kind $code (+PopState $stateKey)"
 	}

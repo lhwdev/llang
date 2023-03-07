@@ -76,6 +76,7 @@ includesAll(rootPath = "modules") {
 	group("tooling") {
 		module("test")
 		
+		module("common")
 		module("module")
 		
 		module("token")
