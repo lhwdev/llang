@@ -457,6 +457,8 @@ object TokenKinds {
 			/**
 			 * Class with `value` modifier is stored and passed as value. If you need a reference to value class,
 			 * use `Ref<T>`. If you need to possess a value class as reference, use `Box<T>`.
+			 *
+			 * TODO: considering that, instead of `class`/`value class`, use `class`/`struct`?
 			 */
 			val Value = +Class("value")
 			
@@ -471,14 +473,20 @@ object TokenKinds {
 			
 			val Infix = +Function("infix")
 			
+			/**
+			 * `suspend` is a color, rather than something like `AstFunction.isInfix`.
+			 */
 			val Suspend = +Function("suspend")
 			
-			val Tailrec = +Function("tailrec")
+			// use [tailrec] annotation instead
+			// val Tailrec = +Function("tailrec")
 			
 			/**
 			 * Llang automatically inlines functions if necessary for performance. But if inlining a function changes
 			 * semantic of calling that function, use `inline` keyword. Note that, If you are to enforce inline
 			 * optimization, use `#[inline]` annotation instead.
+			 *
+			 * Inline is also a color.
 			 */
 			val Inline = +Function("inline")
 			
