@@ -244,7 +244,7 @@ private fun handleOther(): Token {
 		}
 		
 		'|' -> when(next) {
-			'|' -> token(TokenKinds.Operation.And, length = 2)
+			'|' -> token(TokenKinds.Operation.Or, length = 2)
 			else -> illegalToken()
 		}
 		
