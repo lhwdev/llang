@@ -250,6 +250,7 @@ private fun handleOther(): Token {
 		
 		'.' -> @Suppress("IntroduceWhenSubject") when { // TODO: limit on adjacent tokens
 			next == '.' -> when(ahead(2)) {
+				'.' -> token(TokenKinds.Operation.Etc, length = 3)
 				'<' -> token(TokenKinds.Operation.RangeUntil, length = 3)
 				else -> token(TokenKinds.Operation.RangeTo, length = 2)
 			}
@@ -276,7 +277,7 @@ private fun handleOther(): Token {
 		
 		'#' -> when(next) {
 			// #!/usr/bin/hello
-			'!' -> token(TokenKinds.Comment.Shebang) { advanceBeforeEol() }
+			'!' -> token(TokenKinds.Shebang) { advanceBeforeEol() }
 			
 			// #[annotation]
 			'[' -> token(TokenKinds.Operation.Annotation) // excluding [

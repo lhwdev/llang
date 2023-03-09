@@ -27,6 +27,12 @@ object TokenKinds {
 	 */
 	object Eol : LlTokenKind("eol", TokenGroup.Separator)
 	
+	/**
+	 * Like `#!/usr/bin/bash`. Only allowed at the first line of LlangFile.
+	 * As this is ignored by parser, this is categorized as comment.
+	 */
+	val Shebang = Comment("#!shebang")
+	
 	object Identifier : LlTokenKind("identifier", TokenGroup.Word)
 	
 	sealed class StringLiteral(debugName: String, group: TokenGroup) : LlTokenKind(debugName, group) {
@@ -104,12 +110,6 @@ object TokenKinds {
 			 * Like `/** document for declaration */ declaration`
 			 */
 			val LDocBlock = +Comment("/** LDoc */")
-			
-			/**
-			 * Like `#!/usr/bin/bash`. Only allowed at the first line of LlangFile.
-			 * As this is ignored by parser, this is categorized as comment.
-			 */
-			val Shebang = +Comment("#!shebang")
 		}
 	}
 	
@@ -250,6 +250,8 @@ object TokenKinds {
 			/// Other
 			
 			val PropagateError = +Access("?")
+			
+			val Etc = +Other("...")
 			
 			/**
 			 * Used for:
