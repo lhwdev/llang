@@ -9,6 +9,8 @@ interface Visibility {
 	object Protected : DefaultVisibility()
 	
 	object Public : DefaultVisibility()
+	
+	object Local : DefaultVisibility()
 }
 
 
