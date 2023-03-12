@@ -5,7 +5,8 @@ import com.lhwdev.llang.ast.reference.AstTypeReference
 
 
 interface AstBody : AstStatementContainer {
-	val returnType: AstTypeReference
+	@AstInferable
+	val returnType: AstTypeReference?
 	
 	override val statements: List<AstStatement>
 }

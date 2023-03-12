@@ -5,22 +5,38 @@ import com.lhwdev.llang.ast.reference.AstTypeReference
 
 
 interface AstValueParameter : AstDeclaration {
-	val type: AstTypeReference
+	val type: AstTypeReference?
 	
 	
-	interface Declared : AstValueParameter, AstNamed {
+	interface Simple : AstValueParameter, AstNamed {
 		val isVararg: Boolean
 		
 		val isCrossinline: Boolean
 		
 		override val name: String
 		
+		override val type: AstTypeReference?
+	}
+	
+	interface SimpleDeclared : Simple {
 		override val type: AstTypeReference
 	}
 	
-	interface DispatchReceiver : AstValueParameter
+	interface SimpleLambda : Simple {
+		@AstInferable
+		override val type: AstTypeReference?
+	}
 	
-	interface ExtensionReceiver : AstValueParameter
+	interface DispatchReceiver : AstValueParameter {
+		override val type: AstTypeReference
+	}
 	
-	interface ContextReceiver : AstValueParameter
+	interface ExtensionReceiver : AstValueParameter {
+		override val type: AstTypeReference
+	}
+	
+	
+	interface ContextReceiver : AstValueParameter {
+		override val type: AstTypeReference
+	}
 }

@@ -17,14 +17,16 @@ sealed interface AstFunction : AstCodeDeclaration {
 	
 	override val name: String
 	
-	val valueParameters: List<AstValueParameter>
+	val valueParameters: List<AstValueParameter.Simple>
 	
+	@AstInferable
 	val returnType: AstTypeReference
 	
 	val body: AstBody
 }
 
 
+// top-level, local, lambda, member
 sealed interface AstSimpleFunction : AstFunction {
 	val contextReceivers: List<AstValueParameter.ContextReceiver>
 	
@@ -34,15 +36,29 @@ sealed interface AstSimpleFunction : AstFunction {
 	@AstBuiltinColor
 	val isSuspend: Boolean
 	
-	val isInfix: Boolean
-	
 	val extensionReceiver: AstValueParameter.ExtensionReceiver?
 	
 	val typeParameters: List<AstTypeParameter>
 }
 
-interface AstBasicFunction : AstSimpleFunction, AstTopLevelDeclaration, AstLocalDeclaration
+// top-level, local, member, constructor
+interface AstDeclaredFunction : AstFunction {
+	val isInfix: Boolean
+}
 
+// top-level, local, member
+interface AstBasicFunction : AstSimpleFunction {
+	override val valueParameters: List<AstValueParameter.SimpleDeclared>
+}
+
+interface AstLambdaFunction : AstSimpleFunction {
+	override val valueParameters: List<AstValueParameter.SimpleLambda>
+	
+	override val isInfix: Boolean
+		get() = false
+}
+
+// TODO: WIP, see excel file!
 
 sealed interface AstMemberFunction : AstFunction, AstMemberDeclaration {
 	override val modality: Modality
@@ -51,7 +67,7 @@ sealed interface AstMemberFunction : AstFunction, AstMemberDeclaration {
 }
 
 
-interface AstSimpleMemberFunction : AstMemberFunction, AstSimpleFunction {
+interface AstBasicMemberFunction : AstMemberFunction, AstDeclaredFunction {
 	val isOverride: Boolean
 }
 
