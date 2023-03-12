@@ -11,6 +11,8 @@ interface Visibility {
 	object Public : DefaultVisibility()
 	
 	object Local : DefaultVisibility()
+	
+	object Hidden : DefaultVisibility()
 }
 
 

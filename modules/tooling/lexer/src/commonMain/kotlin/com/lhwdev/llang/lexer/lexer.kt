@@ -256,7 +256,7 @@ private fun handleOther(): Token {
 				'<' -> token(TokenKinds.Operation.RangeUntil, length = 3)
 				else -> token(TokenKinds.Operation.RangeTo, length = 2)
 			}
-			// CharacterClass.isNumber(next) -> handleNumber() // we have tuple! (`tuple.0`)
+			// CharacterClass.isNumber(next) -> handleNumber() // we have tuple! (`tuple.0`) // then how to handle sth like .1?
 			else -> token(TokenKinds.Operation.Dot)
 		}
 		
