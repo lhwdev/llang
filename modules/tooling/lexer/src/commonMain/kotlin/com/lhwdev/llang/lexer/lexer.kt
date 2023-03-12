@@ -75,7 +75,7 @@ private fun nextStateRoot(): Token {
 			token(TokenKinds.Eol, length)
 		}
 		
-		CharacterClass.whitespace -> token(TokenKinds.WhiteSpace) {
+		CharacterClass.whitespace -> token(TokenKinds.Whitespace) {
 			advance()
 			advanceOneWhile { CharacterClass.isWhitespace(current) }
 		}
@@ -113,7 +113,7 @@ private fun handleWord() = token {
 		"loop" -> TokenKinds.Keyword.Loop
 		"while" -> TokenKinds.Keyword.While
 		"for" -> TokenKinds.Keyword.For
-		"do" -> TokenKinds.Keyword.Do
+		// "do" -> TokenKinds.Keyword.Do
 		"return" -> TokenKinds.Keyword.Return
 		"break" -> TokenKinds.Keyword.Break
 		"continue" -> TokenKinds.Keyword.Continue
@@ -185,6 +185,8 @@ private fun handleOther(): Token {
 	val next = ahead()
 	return when(current) {
 		/// Tokens.Operation
+		';' -> token(TokenKinds.Operation.Semicolon)
+		
 		'+' -> when(next) {
 			'=' -> token(TokenKinds.Operation.PlusEq, length = 2)
 			else -> token(TokenKinds.Operation.Plus)

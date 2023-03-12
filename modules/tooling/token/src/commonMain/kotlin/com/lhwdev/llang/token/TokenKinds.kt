@@ -20,7 +20,7 @@ object TokenKinds {
 	/**
 	 * All adjacent whitespaces should be merged into one.
 	 */
-	object WhiteSpace : LlTokenKind("whitespace", TokenGroup.Separator)
+	object Whitespace : LlTokenKind("whitespace", TokenGroup.Separator)
 	
 	/**
 	 * Standard `\n`, `\r`, or `\r\n`.
@@ -249,7 +249,9 @@ object TokenKinds {
 			
 			/// Other
 			
-			val PropagateError = +Access("?")
+			val Semicolon = +Other(";", group = TokenGroup.Separator)
+			
+			val PropagateError = +Other("?")
 			
 			val Etc = +Other("...")
 			
@@ -322,7 +324,7 @@ object TokenKinds {
 			val Impl = +Declaration("impl")
 			
 			/**
-			 * Note that all constant, value, variable is generalized into 'variable'.
+			 * Note that all constant, value, variable is generalized into term 'variable'.
 			 *
 			 * ## Considerations around variable keyword
 			 * (**immutable** / read-only / mutable)
@@ -332,6 +334,8 @@ object TokenKinds {
 			 *
 			 * ## Final Decisions
 			 * `const` for constants(immutable), `val` for read-only value, `var` for variable(mutable).
+			 * `val` has no assumptions around variable. ('Note that all constant, value, variable is generalized into
+			 * term "variable".') `const` and `var` adds more assumption.
 			 */
 			val Const = +Declaration("constant")
 			
@@ -367,7 +371,8 @@ object TokenKinds {
 			
 			val For = +ControlFlow("for")
 			
-			val Do = +ControlFlow("do") // used in do-while loop
+			// no do-while, just use loop { ...; if(...) break }
+			// val Do = +ControlFlow("do") // used in do-while loop
 			
 			/// Control flows - directions
 			

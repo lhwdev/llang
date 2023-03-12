@@ -114,4 +114,25 @@ code into tokens. Basic approach here is being conservative, ensuring soundness.
 
    After we go past boundary of `CodeModification`, (`offset >= newSpan.end`) if lexer
    yield the same token in the same location and state, we can conclude that following
-   tokens will be identical as lexing goes from start to end.
+   tokens will be identical as lexing goes from start to end. 🚧 TODO: WIP
+
+## Cst Parser
+
+### Problem 1: range of code
+
+Llang does not require semicolon `;` at the end of a statement. Parser should figure it
+out. How can we?
+
+It comes out that it is not that hard. This comprises 3 simple steps.
+
+1. If `depth > 0`, continue to next line.
+   If code has unmatched group open like `(` and `{`, continue parsing.
+   Note that for maximum resistance for IDE, we should cut out and leave statement before
+   incomplete, like below:
+   ```
+   val a = hello("lhwdev", // work in progress here
+   val b = 3
+   ```
+   To find matching brace `)` will require invalidation of whole code, maybe causing lag.
+
+2. 

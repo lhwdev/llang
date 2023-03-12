@@ -9,6 +9,7 @@ Also see [book](book.md) and [syntax reference](syntax-reference.md).
 **Useful Links:**
 
 - [Lexer](modules/tooling/lexer/src/commonMain/kotlin/com/lhwdev/llang/lexer/lexer.kt)
+- [all tokens](modules/tooling/token/src/commonMain/kotlin/com/lhwdev/llang/token/TokenKinds.kt)
 
 code -> tokens -> cst -> ast -> fir -> ir
 

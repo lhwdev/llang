@@ -7,6 +7,11 @@ import com.lhwdev.llang.common.Modality
 import com.lhwdev.llang.common.Visibility
 
 
+/*
+ * If union type like `Boolean | Implicit` were available, I could get rid of these all messes, merge
+ * AstInferredSimpleFunction into AstFunction...
+ */
+
 interface AstFunction : AstDeclaration {
 	val visibility: Visibility
 }
