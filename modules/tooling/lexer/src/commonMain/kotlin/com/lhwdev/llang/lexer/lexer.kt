@@ -93,10 +93,11 @@ private fun handleWord() = token {
 	
 	// handle hard keywords
 	when(currentSpan.toString()) {
-		/// Tokens.Keyword
+		/// TokenKinds.Keyword
 		"module" -> TokenKinds.Keyword.Module
 		"group" -> TokenKinds.Keyword.Group
 		"use" -> TokenKinds.Keyword.Use
+		
 		"class" -> TokenKinds.Keyword.Class
 		"interface" -> TokenKinds.Keyword.Interface
 		"object" -> TokenKinds.Keyword.Object
@@ -106,8 +107,10 @@ private fun handleWord() = token {
 		"const" -> TokenKinds.Keyword.Const
 		"val" -> TokenKinds.Keyword.Val
 		"var" -> TokenKinds.Keyword.Var
+		
 		"true" -> TokenKinds.Keyword.True
 		"false" -> TokenKinds.Keyword.False
+		
 		"if" -> TokenKinds.Keyword.If
 		"else" -> TokenKinds.Keyword.Else
 		"when" -> TokenKinds.Keyword.When
@@ -115,15 +118,58 @@ private fun handleWord() = token {
 		"while" -> TokenKinds.Keyword.While
 		"for" -> TokenKinds.Keyword.For
 		// "do" -> TokenKinds.Keyword.Do
+		
 		"return" -> TokenKinds.Keyword.Return
 		"break" -> TokenKinds.Keyword.Break
 		"continue" -> TokenKinds.Keyword.Continue
 		
-		/// Tokens.Operation
+		
+		/// TokenKinds.Operation
 		"is" -> TokenKinds.Operation.Is
 		"in" -> TokenKinds.Operation.In
 		
-		// soft keywords are parsed from (tokens -> cst) parser
+		
+		/// TokenKinds.SoftKeyword
+		"constructor" -> TokenKinds.SoftKeyword.Constructor.maybe
+		"init" -> TokenKinds.SoftKeyword.Constructor.maybe
+		"get" -> TokenKinds.SoftKeyword.Get.maybe
+		"set" -> TokenKinds.SoftKeyword.Set.maybe
+		"field" -> TokenKinds.SoftKeyword.Field.maybe
+		"where" -> TokenKinds.SoftKeyword.Where.maybe
+		"by" -> TokenKinds.SoftKeyword.By.maybe
+		
+		
+		/// TokenKinds.Modifier
+		"public" -> TokenKinds.Modifier.Public.maybe
+		"internal" -> TokenKinds.Modifier.Internal.maybe
+		"protected" -> TokenKinds.Modifier.Protected.maybe
+		"private" -> TokenKinds.Modifier.Private.maybe
+		
+		"final" -> TokenKinds.Modifier.Final.maybe
+		"open" -> TokenKinds.Modifier.Open.maybe
+		"abstract" -> TokenKinds.Modifier.Abstract.maybe
+		"sealed" -> TokenKinds.Modifier.Sealed.maybe
+		
+		"context" -> TokenKinds.Modifier.Context.maybe
+		"expect" -> TokenKinds.Modifier.Expect.maybe
+		"actual" -> TokenKinds.Modifier.Actual.maybe
+		
+		"enum" -> TokenKinds.Modifier.Enum.maybe
+		"value" -> TokenKinds.Modifier.Value.maybe
+		"inner" -> TokenKinds.Modifier.Inner.maybe
+		"companion" -> TokenKinds.Modifier.Companion.maybe
+		
+		"infix" -> TokenKinds.Modifier.Infix.maybe
+		"suspend" -> TokenKinds.Modifier.Suspend.maybe
+		"inline" -> TokenKinds.Modifier.Inline.maybe
+		
+		"override" -> TokenKinds.Modifier.Override.maybe
+		
+		"out" -> TokenKinds.Modifier.Out.maybe
+		"erased" -> TokenKinds.Modifier.Erased.maybe
+		
+		"vararg" -> TokenKinds.Modifier.Vararg.maybe
+		"crossinline" -> TokenKinds.Modifier.Crossinline.maybe
 		
 		else -> TokenKinds.Identifier
 	}

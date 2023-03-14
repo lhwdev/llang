@@ -33,7 +33,17 @@ object TokenKinds {
 	 */
 	val Shebang = Comment("#!shebang")
 	
-	object Identifier : LlTokenKind("identifier", TokenGroup.Word)
+	sealed class Word(debugName: String) : LlTokenKind(debugName, TokenGroup.Word)
+	
+	object Identifier : Word("identifier")
+	
+	abstract class SoftSpecial(debugName: String) : Word(debugName) {
+		@Suppress("LeakingThis")
+		val maybe = MaybeSpecial(this)
+	}
+	
+	class MaybeSpecial(val special: SoftSpecial) : Word("either")
+	
 	
 	sealed class StringLiteral(debugName: String, group: TokenGroup) : LlTokenKind(debugName, group) {
 		class QuoteBegin(debugName: String) : StringLiteral("$debugName(begin)", TokenGroup.WordOpen)
@@ -388,7 +398,7 @@ object TokenKinds {
 	
 	
 	// soft
-	class SoftKeyword(debugName: String) : LlTokenKind(debugName, TokenGroup.Word) {
+	class SoftKeyword(debugName: String) : SoftSpecial(debugName) {
 		companion object All : TokenKindSetBuilder("soft keywords") {
 			val Constructor = +SoftKeyword("constructor")
 			
@@ -416,7 +426,7 @@ object TokenKinds {
 	
 	
 	// soft
-	sealed class Modifier(debugName: String) : LlTokenKind(debugName, TokenGroup.Word) {
+	sealed class Modifier(debugName: String) : SoftSpecial(debugName) {
 		class Visibility(debugName: String) : Modifier(debugName)
 		class Modality(debugName: String) : Modifier(debugName)
 		class General(debugName: String) : Modifier(debugName)
@@ -447,7 +457,7 @@ object TokenKinds {
 			
 			val Open = +Modality("open")
 			
-			val abstract = +General("abstract")
+			val Abstract = +General("abstract")
 			
 			val Sealed = +Class("sealed")
 			
@@ -512,7 +522,7 @@ object TokenKinds {
 			
 			val Out = +TypeParameter("out")
 			
-			val StarProjection = +TypeParameter("star")
+			// val StarProjection = +TypeParameter("star") // see Operation.Times
 			
 			val Erased = +TypeParameter("erased")
 			
@@ -525,7 +535,7 @@ object TokenKinds {
 			 * Enforces a semantic that inside a lambda value parameter for a inline function, you should not
 			 * early return.
 			 */
-			val CrossInline = +ValueParameter("crossinline")
+			val Crossinline = +ValueParameter("crossinline")
 			
 			// noinline keyword is for optimization rather than for semantics.
 			// Compiler takes care of it, and if you want to force it, use [noinline] annotation.
