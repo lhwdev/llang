@@ -102,6 +102,7 @@ private fun handleWord() = token {
 		"object" -> TokenKinds.Keyword.Object
 		"fun" -> TokenKinds.Keyword.Fun
 		"impl" -> TokenKinds.Keyword.Impl
+		"type" -> TokenKinds.Keyword.Type
 		"const" -> TokenKinds.Keyword.Const
 		"val" -> TokenKinds.Keyword.Val
 		"var" -> TokenKinds.Keyword.Var

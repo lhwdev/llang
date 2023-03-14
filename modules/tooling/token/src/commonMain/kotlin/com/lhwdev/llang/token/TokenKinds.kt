@@ -323,6 +323,8 @@ object TokenKinds {
 			 */
 			val Impl = +Declaration("impl")
 			
+			val Type = +Declaration("type")
+			
 			/**
 			 * Note that all constant, value, variable is generalized into term 'variable'.
 			 *
@@ -476,7 +478,8 @@ object TokenKinds {
 			
 			/// Function
 			
-			val AnnotationDeclaration = +Class("annotation")
+			// declared by `[annotation]`
+			// val AnnotationDeclaration = +Class("annotation")
 			
 			val Infix = +Function("infix")
 			

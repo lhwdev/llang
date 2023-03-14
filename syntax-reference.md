@@ -6,6 +6,8 @@ MOSTLY EQUAL TO KOTLIN YEAH
 
 - `var` = mutable, `val` = immutable
 - no `null`, `Option` instead
+- keyword `type` (replacement for `typealias` but superior..?)
+- associated type, on top of generics like T.Error
 - `++` is not expression, only statement. (but `++`/`--`is not implemented yet)
 - rust-like error handling, Result & Option + Try(? mark)
 - immutability exists
@@ -20,14 +22,27 @@ MOSTLY EQUAL TO KOTLIN YEAH
   * Set-based type definition. For example, integer can always be used as real (number)
     without any distinction. (only exception is overload where `f(int)` and `f(real)`
     both exists.)
-    So we don't call assigning int into real as 'type coercion', though it does exist in
-    compiler backend.
+  * Abstract algebra thingy like Ring.
   * ~~Index starts from 1. (of course this is joke)~~
+- both compile-time and runtime generics exist
+  * default is half compile-time, where `value class` becomes compile-time and other
+    `class` becomes runtime (semantically equals to erased).
+  * you can do like `<erased T>` to force erased.
+  * and do `<inline T>` to have full information about T, like `value is T`, `T.Hello`
 
 ## Difference in Compiler Api
 
-- `someDeclaration.color`: Can abstract away things like `suspend`, `@Composable`
+- `someDeclaration.color`: Can abstract away things like `suspend`, `[composable]`
   * Can be utilized to reduce frontend burden
-  * Hierarchy color like applier in composable
+  * Can be included in top-down type inference;
+    ``` kotlin
+    [annotation()]
+    object myColor
+    fun hello(block: [myColor] () -> Unit)
+    hello { /* <- this block has type of [myType] () -> Unit */ }
+    ```
+
+    Note that most annotations are not inferred top-down, instead they are ignored.
+  * ex: Hierarchy color like applier in composable
 - `someDeclaration.implicitColor`: like pure(colorless) / impure(color),
   calls in place(colorless) / not(color)
