@@ -6,7 +6,6 @@ enum class ClassKind {
 	Object,
 	EnumClass,
 	Interface,
-	Annotation,
 }
 
 
@@ -16,5 +15,4 @@ val ClassKind.isAbstract: Boolean?
 		ClassKind.Object -> false
 		ClassKind.EnumClass -> false
 		ClassKind.Interface -> true
-		ClassKind.Annotation -> true
 	}

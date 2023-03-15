@@ -10,9 +10,9 @@ interface AstDeclaration : AstNode, AstNamed {
 	val parent: AstDeclaration
 }
 
-interface AstTopLevelDeclaration
+interface AstTopLevelDeclaration : AstDeclaration
 
-interface AstEnclosedDeclaration
+interface AstEnclosedDeclaration : AstDeclaration
 
 interface AstMemberDeclaration : AstEnclosedDeclaration {
 	val modality: Modality

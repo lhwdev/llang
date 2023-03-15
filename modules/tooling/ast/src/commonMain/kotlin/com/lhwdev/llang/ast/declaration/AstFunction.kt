@@ -16,13 +16,15 @@ interface AstFunction : AstDeclaration {
 	val visibility: Visibility
 }
 
+sealed interface AstInferableFunction : AstFunction
+
 
 // top-level, local, lambda, member (not constructor)
 sealed interface AstSimpleFunction : AstFunction
 
 
 // top-level, local, member, constructor (not lambda)
-interface AstDeclaredFunction : AstFunction, AstCodeDeclaration, AstNamed, AstAnnotatable {
+interface AstDeclaredFunction : AstInferableFunction, AstCodeDeclaration, AstNamed, AstAnnotatable {
 	override val annotations: List<AstAnnotation>
 	
 	override val visibility: Visibility
@@ -58,9 +60,18 @@ interface AstDeclaredSimpleFunction : AstSimpleFunction, AstDeclaredFunction {
 
 
 // lambda
-interface AstInferredSimpleFunction : AstSimpleFunction {
+interface AstInferredFunction : AstInferableFunction {
 	val annotations: PartiallyInferable<List<AstAnnotation>>
 	
+	val valueParameters: Inferable<List<Inferable<AstValueParameter.SimpleInferred>>>
+	
+	val returnType: Inferable<AstTypeReference>
+	
+	val body: AstBody?
+}
+
+// lambda
+interface AstInferredSimpleFunction : AstSimpleFunction, AstInferredFunction {
 	@AstBuiltinColor
 	val isInline: Implicit<Boolean>
 		get() = Inferable.Implicit
@@ -77,12 +88,6 @@ interface AstInferredSimpleFunction : AstSimpleFunction {
 	
 	val extensionReceiver: Implicit<AstValueParameter.ExtensionReceiver?>
 		get() = Inferable.Implicit
-	
-	val valueParameters: Inferable<List<Inferable<AstValueParameter.SimpleInferred>>>
-	
-	val returnType: Inferable<AstTypeReference>
-	
-	val body: AstBody?
 }
 
 
