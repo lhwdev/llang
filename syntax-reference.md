@@ -26,9 +26,13 @@ MOSTLY EQUAL TO KOTLIN YEAH
   * ~~Index starts from 1. (of course this is joke)~~
 - both compile-time and runtime generics exist
   * default is half compile-time, where `value class` becomes compile-time and other
-    `class` becomes runtime (semantically equals to erased).
+    `class`(referential) becomes runtime
+  * have full information about T by default even if T is referential class, like
+    `value is T`, `T.Hello`.
   * you can do like `<erased T>` to force erased.
-  * and do `<inline T>` to have full information about T, like `value is T`, `T.Hello`
+  * ~~and do `<inline T>` to optimize around.~~ just use value class to force this. If
+    you use referential class, this is needless. `<inline T>` exists only for abi
+    compatibility and explicitness.
 
 ## Difference in Compiler Api
 

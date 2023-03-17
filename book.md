@@ -127,12 +127,64 @@ It comes out that it is not that hard. This comprises 3 simple steps.
 
 1. If `depth > 0`, continue to next line.
    If code has unmatched group open like `(` and `{`, continue parsing.
-   Note that for maximum resistance for IDE, we should cut out and leave statement before
-   incomplete, like below:
+   Note that for maximum resistance for IDE, we should cut out and leave statement
+   incomplete for some cases, like below:
    ```
    val a = hello("lhwdev", // work in progress here
    val b = 3
    ```
    To find matching brace `)` will require invalidation of whole code, maybe causing lag.
 
-2. 
+2. If next line can be parsed independently, make it independent.
+   For example, suppose a code like this:
+   ``` kotlin
+   val number = 3
+   + 2
+   ```
+
+   Here, one may think number should be 5, as it becomes `(3 + 2)`, but it isn't. We will
+   cut following line if it can be independent in any cases. If there is a code like
+   `val abc = true (next line) && false`, `&& false` cannot be a separate statement, and
+   they are joined. So this requires some reduce-like workflow for parsing statements.
+
+3. Join the lines otherwise, like example in 2.
+
+### Problem 2: Operator precedence
+
+~~WTF which algorithm I should use? Should I traverse all operators from high precedence
+to low one grouping all statements?~~
+
+#### Proposed method 1. local maximum
+
+Think of following case where only binary operators exist:
+
+```kotlin
+a = 3 + 4 * 7 + 1
+```
+
+Operator precedences for this is `=`(1) < `+`(2) < `*`(3).
+Parsing consists of iterating over operators.
+
+| stack               | buffer(stack)             | state for lookahead    | operation to run |
+|---------------------|---------------------------|------------------------|------------------|
+|                     | a = 3 + 4 * 7 + 1         | initial                | push             |
+| a =                 | 3 + 4 * 7 + 1             | ascending(1 -> 2)      | push             |
+| a = 3 +             | 4 * 7 + 1                 | ascending(2 -> 3)      | push             |
+| a = 3 + 4 *         | 7 + 1                     | **descending**(3 -> 2) | **ops**          |
+| a = 3 +             | (4 * 7) + 1               | **equal**(1 -> 1)      | **ops**          |
+| a =                 | (3 + (4 * 7)) + 1         | ascending(1 -> 2)      | push             |
+| a = (3 + (4 * 7)) + | 1                         | **eof**                | **ops**          |
+| a =                 | ((3 + (4 * 7)) + 1)       | **eof**                | **ops**          |
+|                     | (a = ((3 + (4 * 7)) + 1)) | **eof**                | (done)           |
+
+There are two operation: push and ops.
+In `push`, pop two tokens(element + operator) from buffer and add it to stack.
+In `ops`, pop two tokens(element + operator) from stack, combine with
+`buffer.pop()`(element) and make them a binary operation, then push into buffer.
+
+-----
+
+But, in this method, available syntax is too restricted. We need more flexibility, like
+unary operator or group.
+
+(WIP here)
