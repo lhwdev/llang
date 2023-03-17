@@ -156,7 +156,22 @@ to low one grouping all statements?~~
 
 #### Proposed method 1. local maximum
 
-Think of following case where only binary operators exist:
+> Note: This must be a known method, but I am finding out myself.
+> Headache...
+
+Think of following case where only binary operators exist.
+
+We will find operations based on local maximum point.
+Think of graph which is connected lines of dots of
+`f(operator_index) = operator_precedence`. Operator with maximum precedence will be shown
+as maximum. Interestingly, not only maximum points but also all **local** maximum points
+can be grouped into operations first. As such operations become element into other
+operation, it no longer has operator to consider; so we remove its operation from list.
+
+What happens next? If one operation is removed, operator right in front of removed one
+may become local maximum. Think of operator precedences list `[1, 3, 4, 2]` then `4` is
+removed. In `[1, 3, 2]`, `3`(which is right in front of `4`) becomes local maximum.
+Of course this is not always the case.
 
 ```kotlin
 a = 3 + 4 * 7 + 1
