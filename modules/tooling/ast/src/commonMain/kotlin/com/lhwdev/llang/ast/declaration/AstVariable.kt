@@ -5,7 +5,7 @@ import com.lhwdev.llang.common.Modality
 import com.lhwdev.llang.common.Visibility
 
 
-sealed interface AstVariable : AstCodeDeclaration {
+sealed interface AstVariable : AstCodeDeclarationWithVisibility {
 	override val annotations: List<AstAnnotation>
 	
 	override val visibility: Visibility

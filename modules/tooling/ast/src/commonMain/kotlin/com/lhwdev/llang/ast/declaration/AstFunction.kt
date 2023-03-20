@@ -1,7 +1,8 @@
 package com.lhwdev.llang.ast.declaration
 
 import com.lhwdev.llang.ast.AstNamed
-import com.lhwdev.llang.ast.reference.AstTypeReference
+import com.lhwdev.llang.ast.expression.AstTypeConstraint
+import com.lhwdev.llang.ast.type.AstType
 import com.lhwdev.llang.common.BodyOmissionKind
 import com.lhwdev.llang.common.Modality
 import com.lhwdev.llang.common.Visibility
@@ -24,7 +25,7 @@ sealed interface AstSimpleFunction : AstFunction
 
 
 // top-level, local, member, constructor (not lambda)
-interface AstDeclaredFunction : AstInferableFunction, AstCodeDeclaration, AstNamed, AstAnnotatable {
+interface AstDeclaredFunction : AstInferableFunction, AstCodeDeclarationWithVisibility, AstNamed, AstAnnotatable {
 	override val annotations: List<AstAnnotation>
 	
 	override val visibility: Visibility
@@ -33,7 +34,7 @@ interface AstDeclaredFunction : AstInferableFunction, AstCodeDeclaration, AstNam
 	
 	val valueParameters: List<AstValueParameter.SimpleDeclared>
 	
-	val returnType: AstTypeReference
+	val returnType: AstType
 	
 	val body: AstBody?
 	
@@ -55,6 +56,8 @@ interface AstDeclaredSimpleFunction : AstSimpleFunction, AstDeclaredFunction {
 	
 	val typeParameters: List<AstTypeParameter>
 	
+	val typeConstraints: List<AstTypeConstraint>
+	
 	val isInfix: Boolean
 }
 
@@ -65,7 +68,7 @@ interface AstInferredFunction : AstInferableFunction {
 	
 	val valueParameters: Inferable<List<Inferable<AstValueParameter.SimpleInferred>>>
 	
-	val returnType: Inferable<AstTypeReference>
+	val returnType: Inferable<AstType>
 	
 	val body: AstBody?
 }
@@ -83,6 +86,8 @@ interface AstInferredSimpleFunction : AstSimpleFunction, AstInferredFunction {
 	val typeParameters: Implicit<List<AstTypeParameter>>
 		get() = Inferable.Implicit
 	
+	val typeConstraints: Implicit<List<AstTypeConstraint>>
+		get() = Inferable.Implicit
 	val contextReceivers: Implicit<List<AstValueParameter.ContextReceiver>>
 		get() = Inferable.Implicit
 	
@@ -118,11 +123,12 @@ interface AstTopLevelFunction : AstDeclaredSimpleFunction, AstStandaloneFunction
 	// `fun`
 	
 	override val typeParameters: List<AstTypeParameter>
+	override val typeConstraints: List<AstTypeConstraint>
 	
 	override val extensionReceiver: AstValueParameter.ExtensionReceiver?
 	override val name: String
 	override val valueParameters: List<AstValueParameter.SimpleDeclared>
-	override val returnType: AstTypeReference
+	override val returnType: AstType
 	
 	override val body: AstBody?
 }
@@ -141,11 +147,12 @@ interface AstLocalFunction : AstDeclaredSimpleFunction, AstStandaloneFunction, A
 	// `fun`
 	
 	override val typeParameters: List<AstTypeParameter>
+	override val typeConstraints: List<AstTypeConstraint>
 	
 	override val extensionReceiver: AstValueParameter.ExtensionReceiver?
 	override val name: String
 	override val valueParameters: List<AstValueParameter.SimpleDeclared>
-	override val returnType: AstTypeReference
+	override val returnType: AstType
 	
 	override val body: AstBody?
 }
@@ -167,12 +174,14 @@ interface AstLambdaFunction : AstInferredSimpleFunction {
 	
 	override val typeParameters: Implicit<List<AstTypeParameter>>
 		get() = Inferable.Implicit
+	override val typeConstraints: Implicit<List<AstTypeConstraint>>
+		get() = Inferable.Implicit
 	
 	override val extensionReceiver: Implicit<AstValueParameter.ExtensionReceiver?>
 		get() = Inferable.Implicit
 	override val name: String
 	override val valueParameters: Inferable<List<Inferable<AstValueParameter.SimpleInferred>>>
-	override val returnType: Inferable<AstTypeReference>
+	override val returnType: Inferable<AstType>
 	
 	override val body: AstBody
 }
@@ -193,11 +202,12 @@ interface AstNormalMemberFunction : AstDeclaredSimpleFunction, AstMemberFunction
 	// `fun`
 	
 	override val typeParameters: List<AstTypeParameter>
+	override val typeConstraints: List<AstTypeConstraint>
 	
 	override val extensionReceiver: AstValueParameter.ExtensionReceiver?
 	override val name: String
 	override val valueParameters: List<AstValueParameter.SimpleDeclared>
-	override val returnType: AstTypeReference
+	override val returnType: AstType
 	
 	override val body: AstBody?
 }
@@ -215,7 +225,7 @@ interface AstConstructor : AstDeclaredFunction, AstMemberFunction {
 	
 	override val name: String
 	override val valueParameters: List<AstValueParameter.SimpleDeclared>
-	override val returnType: AstTypeReference
+	override val returnType: AstType
 	
 	override val body: AstBody?
 }

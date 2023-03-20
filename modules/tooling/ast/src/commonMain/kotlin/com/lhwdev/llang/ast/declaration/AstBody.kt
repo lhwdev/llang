@@ -1,12 +1,12 @@
 package com.lhwdev.llang.ast.declaration
 
 import com.lhwdev.llang.ast.expression.AstStatement
-import com.lhwdev.llang.ast.reference.AstTypeReference
+import com.lhwdev.llang.ast.type.AstType
 
 
 interface AstBody : AstStatementContainer {
 	@AstInferable
-	val returnType: AstTypeReference?
+	val returnType: AstType?
 	
 	override val statements: List<AstStatement>
 }

@@ -166,6 +166,7 @@ private fun handleWord() = token {
 		"override" -> TokenKinds.Modifier.Override.maybe
 		
 		"out" -> TokenKinds.Modifier.Out.maybe
+		"referential" -> TokenKinds.Modifier.Referential.maybe
 		"erased" -> TokenKinds.Modifier.Erased.maybe
 		
 		"vararg" -> TokenKinds.Modifier.Vararg.maybe
@@ -279,6 +280,15 @@ private fun handleOther(): Token {
 		
 		'<' -> when(next) {
 			'=' -> token(TokenKinds.Operation.LtEq, length = 2)
+			'.' -> when(ahead(2)) {
+				'.' -> when(ahead(3)) {
+					'<' -> token(TokenKinds.Operation.RangeExclusiveUntil, 4)
+					else -> token(TokenKinds.Operation.RangeExclusiveTo, 3)
+				}
+				
+				else -> illegalToken(2)
+			}
+			
 			else -> token(TokenKinds.Operation.Lt)
 		}
 		

@@ -189,6 +189,10 @@ object TokenKinds {
 			
 			val RangeUntil = +Expression("..<")
 			
+			val RangeExclusiveTo = +Expression("<..")
+			
+			val RangeExclusiveUntil = +Expression("<..<")
+			
 			val Is = +Expression("is")
 			
 			val NotIs = +Expression("!is")
@@ -523,6 +527,8 @@ object TokenKinds {
 			val Out = +TypeParameter("out")
 			
 			// val StarProjection = +TypeParameter("star") // see Operation.Times
+			
+			val Referential = +TypeParameter("referential")
 			
 			val Erased = +TypeParameter("erased")
 			

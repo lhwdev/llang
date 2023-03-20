@@ -1,4 +1,6 @@
 package com.lhwdev.llang.ast.expression
 
 
-interface AstExpression : AstStatement
+interface AstExpression : AstStatement {
+	// val type: AstTypeReference // only in FirExpression & IrExpression
+}
