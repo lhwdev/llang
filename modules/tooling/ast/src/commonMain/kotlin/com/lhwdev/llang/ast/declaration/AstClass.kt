@@ -1,7 +1,7 @@
 package com.lhwdev.llang.ast.declaration
 
 import com.lhwdev.llang.ast.expression.AstExpression
-import com.lhwdev.llang.ast.reference.AstTypeReference
+import com.lhwdev.llang.ast.type.AstType
 import com.lhwdev.llang.common.BodyOmissionKind
 import com.lhwdev.llang.common.ClassKind
 import com.lhwdev.llang.common.Modality
@@ -9,7 +9,7 @@ import com.lhwdev.llang.common.Visibility
 
 
 interface AstClassSuper {
-	val reference: AstTypeReference.Solid
+	val reference: AstType.Exact
 	
 	val delegation: AstExpression?
 }
@@ -22,7 +22,7 @@ interface AstClassSuper {
  * }
  * ```
  */
-interface AstClass : AstCodeDeclaration, AstDeclarationContainer {
+interface AstClass : AstCodeDeclarationWithVisibility, AstDeclarationContainer {
 	override val annotations: List<AstAnnotation>
 	
 	override val visibility: Visibility
