@@ -208,28 +208,28 @@ To define how much flexibility we need, we should define operations.
 
 (Note: `precedence = eager` means highest one)
 
-| operator              | name                            | kind                            | precedence | example                       |
-|-----------------------|---------------------------------|---------------------------------|------------|-------------------------------|
-| `()`                  | expression.group                | unary, group                    | eager      | `4 * (1 + 3)`                 |
-| `v(p)`                | expression.call                 | binary, group                   | eager      | `println("hello, world!")`    |
-| `.`                   | memberAccess                    | binary                          | eager      | `value.member`, `Class.Other` |
-| `?.`                  | expression.safeMemberAccess     | binary                          | eager      | `value?.member`               |
-| `+`/`-`               | arithmetic.unaryPlus/unaryMinus | unary.prefix                    |            | `-7`, `+3`                    |
-| `!`                   | logic.not                       | unary.prefix                    |            | `!isHello`                    |
-| `as`                  | typeOps.cast                    | binary                          |            | `parent as Child`             |
-| `as?`                 | typeOps.safeCast                | binary                          |            | `parent as? Child`            |
-| `*`/`/`               | arithmetic.multiply/divide      | binary                          |            | `3 * 5`                       |
-| `+`/`-`               | arithmetic.plus/minus           | binary                          |            | `3 + 2`                       |
-| `..` etc              | expression.rangeTo ...          | binary                          |            | `1..10`                       |
-| _identifier_          | expression.infixCall            | binary                          |            | `0x10 xor 0x11`               |
-| `?:`                  | expression.elvis                | binary                          |            | `optional ?: default`         |
-| `in`/`!in`            | expression.in/notIn             | binary                          |            | `"lhwdev" in users`           |
-| `is`/`!is`            | typeOps.is/notIs                | binary                          |            | `animal is Dog`               |
-| `<`/`>`/`<=`/`>=`     | logic.lt/gt/ltEq/gtEq           | binary                          |            | `age >= 19`                   |
-| `==`/`!=`/`===`/`!==` | logic.equals/identityEquals ... | binary                          |            | `you == me`                   |
-| `&&`                  | logic.conjunction               | binary                          |            |                               |
-| `||`                  | logic.disjunction               | binary                          |            | `idiot || genius`             |
-| `...`                 | functionSpreadArguments         | unary.prefix                    |            | println(...list)              |
-| `=`/`+=` etc.         | assignment ...                  | binary                          |            | myVar = 3                     |
+| operator                  | name                            | kind          | precedence | example                                |
+|---------------------------|---------------------------------|---------------|------------|----------------------------------------|
+| `()`                      | expression.group                | unary, group  | eager      | `4 * (1 + 3)`                          |
+| `v(p)`                    | expression.call                 | binary, group | eager      | `println("hello, world!")`             |
+| `.`                       | memberAccess                    | binary        | eager      | `value.member`, `Class.Other`          |
+| `?.`                      | expression.safeMemberAccess     | binary        | eager      | `value?.member`                        |
+| `+`/`-`                   | arithmetic.unaryPlus/unaryMinus | unary.prefix  |            | `-7`, `+3`                             |
+| `!`                       | logic.not                       | unary.prefix  |            | `!isHello`                             |
+| `as`                      | typeOps.cast                    | binary        |            | `parent as Child`                      |
+| `as?`                     | typeOps.safeCast                | binary        |            | `parent as? Child`                     |
+| `*`/`/`                   | arithmetic.multiply/divide      | binary        |            | `3 * 5`                                |
+| `+`/`-`                   | arithmetic.plus/minus           | binary        |            | `3 + 2`                                |
+| `..` etc                  | expression.rangeTo ...          | binary        |            | `1..10`                                |
+| _identifier_              | expression.infixCall            | binary        |            | `0x10 xor 0x11`                        |
+| `?:`                      | expression.elvis                | binary        |            | `optional ?: default`                  |
+| `in`/`!in`                | expression.in/notIn             | binary        |            | `"lhwdev" in users`                    |
+| `is`/`!is`                | typeOps.is/notIs                | binary        |            | `animal is Dog`                        |
+| `<`/`>`/`<=`/`>=`         | logic.lt/gt/ltEq/gtEq           | binary        |            | `age >= 19`                            |
+| `==`/`!=`/`===`/`!==`     | logic.equals/identityEquals ... | binary        |            | `you == me`                            |
+| `&&`                      | logic.conjunction               | binary        |            |                                        |
+| <code>&#124;&#124;</code> | logic.disjunction               | binary        |            | <code>idiot &#124;&#124; genius</code> |
+| `...`                     | functionSpreadArguments         | unary.prefix  |            | `println(...list)`                     |
+| `=`/`+=` etc.             | assignment ...                  | binary        |            | `myVar = 3`                            |
 
 You can see that all '(mostly) any-place' operators can be divided into unary/binary.
