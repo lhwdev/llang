@@ -6,7 +6,7 @@ class TokenStateKey<T>(val defaultValue: T, val debugName: String? = null) {
 }
 
 
-sealed class Token(var kind: TokenKind, val code: String) {
+sealed class Token(var kind: TokenKind, val code: String) : CstToken {
 	class Plain(kind: TokenKind, code: String) : Token(kind, code) {
 		override fun equals(other: Any?): Boolean =
 			other is Plain && super.equals(other)

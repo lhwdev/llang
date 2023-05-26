@@ -8,4 +8,8 @@ plugins {
 
 commonConfig.kotlin {
 	llangLibrary()
+	
+	dependencies {
+		implementation(projects.tooling.token)
+	}
 }

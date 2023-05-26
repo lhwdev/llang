@@ -227,7 +227,7 @@ To define how much flexibility we need, we should define operations.
 | `is`/`!is`                | typeOps.is/notIs                | binary        |            | `animal is Dog`                        |
 | `<`/`>`/`<=`/`>=`         | logic.lt/gt/ltEq/gtEq           | binary        |            | `age >= 19`                            |
 | `==`/`!=`/`===`/`!==`     | logic.equals/identityEquals ... | binary        |            | `you == me`                            |
-| `&&`                      | logic.conjunction               | binary        |            |                                        |
+| `&&`                      | logic.conjunction               | binary        |            | `you.age >= 19 && you.height >= 180`   |
 | <code>&#124;&#124;</code> | logic.disjunction               | binary        |            | <code>idiot &#124;&#124; genius</code> |
 | `...`                     | functionSpreadArguments         | unary.prefix  |            | `println(...list)`                     |
 | `=`/`+=` etc.             | assignment ...                  | binary        |            | `myVar = 3`                            |
