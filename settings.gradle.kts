@@ -83,7 +83,7 @@ includesAll(rootPath = "modules") {
 		module("cst")
 		module("ast")
 		
-		module("lexer")
+		module("parser")
 	}
 	
 	module("utils")

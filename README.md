@@ -11,7 +11,7 @@ Also see [book](book.md) and [syntax reference](syntax-reference.md).
 - [Lexer](modules/tooling/lexer/src/commonMain/kotlin/com/lhwdev/llang/lexer/lexer.kt)
 - [all tokens](modules/tooling/token/src/commonMain/kotlin/com/lhwdev/llang/token/TokenKinds.kt)
 
-code -> tokens -> cst -> ast -> fir -> ir
+code -> cst(with token) -> ast -> fir -> ir
 
 - code
 
@@ -19,24 +19,14 @@ code -> tokens -> cst -> ast -> fir -> ir
   val a: Int = query("lhwdev", 10 + 9)
   ```
 
-- **tokens**
-
-  ``` kotlin
-  Keyword.Val
-  Whitespace
-  Identifier
-  ...
-  ```
-
-  In case of lexing, we need extra validation, such as 'if some tokens are adjacent?'.
-  In the following code: `1234abcd` we get two valid tokens: `1234` and `abcd`. But we should mark `abcd` as invalid
-  token. So we run post lexing validation.
-  There are 'separator' tokens, like Operation, Whitespace, Eol, etc. The all
-  non-separator tokens should not be adjacent. Quite simple? (TODO: check if this is true)  
-  Note: enable this in IC
-
 - **cst**: target of code formatting. change of ast is applied here.
   This is merely a 'more structured token list'.
+
+  Note that we skipped 'tokenize' phase and 'tokens'.
+  Parsing tokens also requires some context (although less than cst),
+  so I'm convinced that 'Why resolve same context two times? Just do
+  everything at once.' As said earlier, cst is merely 'structured token
+  list'. It's similar to the output of tokenizer, but more structured.
 
   ``` kotlin
   CstLocalVariableDeclaration(

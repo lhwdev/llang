@@ -6,7 +6,7 @@ plugins {
 
 commonConfig.kotlin {
 	dependencies {
-		implementation(projects.tooling.lexer)
+		implementation(projects.tooling.parser)
 		implementation(projects.tooling.token)
 		implementation(projects.tooling.module)
 		implementation(projects.utils)

@@ -10,6 +10,9 @@ interface AstBody : AstStatementContainer {
 	override val statements: List<AstStatement>
 }
 
+/**
+ * When like `fun hello() = 3`
+ */
 interface AstExpressionBody : AstBody
 
 /**

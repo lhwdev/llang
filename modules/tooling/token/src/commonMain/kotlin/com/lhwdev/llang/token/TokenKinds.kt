@@ -1,13 +1,55 @@
 package com.lhwdev.llang.token
 
 
-sealed class LlTokenKind(debugName: String, group: TokenGroup) : TokenKind(debugName, group) {
+sealed class LlTokenKind(debugName: String) : TokenKind(debugName, group) {
 	open val common: Boolean
 		get() = true
 }
 
 
 object TokenKinds {
+	sealed class Ws(debugName: String) : LlTokenKind(debugName)
+	
+	object Whitespace : Ws("whitespace")
+	
+	class Comment(debugName: String) : Ws(debugName) {
+		companion object All : TokenKindSetBuilder("comments") {
+			/**
+			 * Like `some code // comment`
+			 */
+			val Eol = +Comment("eol comment")
+			
+			/**
+			 * Like `code /* comment */ other code` which can span several lines
+			 */
+			val Block = +Comment("block comment")
+			
+			/**
+			 * Like `/** documentation */`. Semantically (mostly) identical to [Block] for
+			 * compilation etc., but needed for IDE support.
+			 */
+			val LDocBlock = +Comment("ldoc block comment")
+		}
+	}
+	
+	class LDoc(debugName: String) : Ws("ldoc $debugName") {
+		companion object All : TokenKindSetBuilder("ldocs") {
+			// TODO
+		}
+	}
+	
+	
+	object Identifier : LlTokenKind("identifier")
+	
+	sealed class StringLiteral(debugName: String) : LlTokenKind("")
+	
+	
+	class SoftSpecial(debugName: String) : LlTokenKind(debugName)
+	
+	
+}
+
+object TokenKinds_old {
 	class Illegal(val reason: String? = null) : LlTokenKind("illegal", TokenGroup.Other) {
 		override val common: Boolean
 			get() = false
