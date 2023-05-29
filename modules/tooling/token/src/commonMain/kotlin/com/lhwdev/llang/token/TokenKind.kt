@@ -4,20 +4,11 @@ package com.lhwdev.llang.token
 // https://github.com/JetBrains/kotlin/tree/master/compiler/psi/src/org/jetbrains/kotlin/lexer
 
 
-enum class TokenGroup {
-	Separator,
-	Word, // keyword, identifier, number; cannot be adjacent
-	WordOpen, // like left "; word before this is forbidden
-	WordClose, // like right "; word after this is forbidden
-	Operator, // all other operators except for separators
-	Other,
-}
-
-abstract class TokenKind(val debugName: String, val group: TokenGroup) {
+abstract class TokenKind(val debugName: String) {
 	override fun toString(): String = debugName
 }
 
-abstract class TokenKindSet(debugName: String) : TokenKind(debugName, group = TokenGroup.Other) {
+abstract class TokenKindSet(debugName: String) : TokenKind(debugName) {
 	abstract val kinds: List<TokenKind>
 }
 

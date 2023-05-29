@@ -10,6 +10,7 @@ commonConfig.kotlin {
 	llangLibrary()
 	
 	dependencies {
+		implementation(projects.tooling.module)
 		implementation(projects.tooling.token)
 	}
 }

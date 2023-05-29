@@ -1,12 +1,20 @@
 package com.lhwdev.llang.token
 
 
-sealed class LlTokenKind(debugName: String) : TokenKind(debugName, group) {
+sealed class LlTokenKind(debugName: String) : TokenKind(debugName) {
 	open val common: Boolean
 		get() = true
 }
 
 
+/**
+ * Most tokens are 'meaningful'; which means it should be parsed in regard to its surrounding
+ * context. For example, `<` can be arithmetic comparison(Lt; less than), or group start used for
+ * generics.
+ * But there are some tokens which is meaning-neutral, such as `:` (colon). Although it can be
+ * used to mark type of variable, or to mark the parent of class, assigning 'meaning' to it seems
+ * useless.
+ */
 object TokenKinds {
 	sealed class Ws(debugName: String) : LlTokenKind(debugName)
 	
@@ -41,317 +49,219 @@ object TokenKinds {
 	
 	object Identifier : LlTokenKind("identifier")
 	
-	sealed class StringLiteral(debugName: String) : LlTokenKind("")
-	
-	
-	class SoftSpecial(debugName: String) : LlTokenKind(debugName)
-	
-	
-}
-
-object TokenKinds_old {
-	class Illegal(val reason: String? = null) : LlTokenKind("illegal", TokenGroup.Other) {
-		override val common: Boolean
-			get() = false
+	sealed class StringLiteral(debugName: String) : LlTokenKind(debugName) {
+		class QuoteBegin(debugName: String) : StringLiteral("$debugName begin")
+		class QuoteEnd(debugName: String) : StringLiteral("$debugName end")
+		class Content(debugName: String) : StringLiteral(debugName)
 		
-		override fun toString(): String = "Illegal token: $reason"
-	}
-	
-	object Eof : LlTokenKind("eof", TokenGroup.Separator)
-	
-	/**
-	 * All adjacent whitespaces should be merged into one.
-	 */
-	object Whitespace : LlTokenKind("whitespace", TokenGroup.Separator)
-	
-	/**
-	 * Standard `\n`, `\r`, or `\r\n`.
-	 */
-	object Eol : LlTokenKind("eol", TokenGroup.Separator)
-	
-	/**
-	 * Like `#!/usr/bin/bash`. Only allowed at the first line of LlangFile.
-	 * As this is ignored by parser, this is categorized as comment.
-	 */
-	val Shebang = Comment("#!shebang")
-	
-	sealed class Word(debugName: String) : LlTokenKind(debugName, TokenGroup.Word)
-	
-	object Identifier : Word("identifier")
-	
-	abstract class SoftSpecial(debugName: String) : Word(debugName) {
-		@Suppress("LeakingThis")
-		val maybe = MaybeSpecial(this)
-	}
-	
-	class MaybeSpecial(val special: SoftSpecial) : Word("either")
-	
-	
-	sealed class StringLiteral(debugName: String, group: TokenGroup) : LlTokenKind(debugName, group) {
-		class QuoteBegin(debugName: String) : StringLiteral("$debugName(begin)", TokenGroup.WordOpen)
-		class QuoteEnd(debugName: String) : StringLiteral("$debugName(end)", TokenGroup.WordClose)
 		class Quote(debugName: String) : TokenKindSetBuilder(debugName) {
 			val Begin = +QuoteBegin(debugName)
 			val End = +QuoteEnd(debugName)
 		}
 		
-		class Content(debugName: String) : StringLiteral(debugName, TokenGroup.Other)
-		
 		companion object All : TokenKindSetBuilder("string literals") {
 			/**
-			 * Like `"Hello, world!" "escape \" string"`
+			 * Like `"Hello, world"`
 			 */
 			val Escaped = +Quote("\"")
 			
 			/**
-			 * Like `"""Raw string "hi" $variable $$variable_escape"""`
+			 * Like `"""Raw String; "hi" $var $$var_escape"""` (can span multiple lines)
 			 */
 			val Raw = +Quote("\"\"\"")
-			
 			
 			val Literal = +Content("literal")
 			
 			/**
-			 * Like `\r` `\n` `\$` `\u1234`
+			 * Like `\r`, `\r`, `\u1a43`
 			 */
 			val EscapedLiteral = +Content("escaped literal")
 			
 			/**
-			 * $variable
+			 * `user`
 			 */
 			val TemplateVariable = +Content("\$variable")
 			
 			/**
-			 * ${expression}
+			 * `${3 + 4}`
 			 */
 			val TemplateExpression = +Content("\${expression}")
 		}
 	}
 	
-	class NumberLiteral(debugName: String) : LlTokenKind("$debugName literal", TokenGroup.Word) {
+	class NumberLiteral(debugName: String) : LlTokenKind(debugName) {
 		companion object All : TokenKindSetBuilder("number literals") {
-			/**
-			 * Integer literal, which can be `IntN`, (Int8, Int16, Int32, ..., Byte) `FloatN`, `UIntN`, `UFloatN`, etc.
-			 */
 			val Integer = +NumberLiteral("integer")
 			
-			val Hex = +NumberLiteral("hex")
+			val hex = +NumberLiteral("hex")
 			
 			val Binary = +NumberLiteral("binary")
 			
-			/**
-			 * Float literal, which can be `FloatN`, (Float32, Float64, ...), `UFloatN`, etc.
-			 */
 			val Float = +NumberLiteral("float")
 		}
 	}
 	
-	class Comment(debugName: String) : LlTokenKind(debugName, TokenGroup.Separator) {
-		companion object All : TokenKindSetBuilder("comments") {
-			/**
-			 * Like `some code // comment`
-			 */
-			val Eol = +Comment("// eol comment")
-			
-			/**
-			 * Like `code /* comment */ other code` which can span multiline
-			 */
-			val Block = +Comment("/* block comment */")
-			
-			/**
-			 * Like `/** document for declaration */ declaration`
-			 */
-			val LDocBlock = +Comment("/** LDoc */")
+	
+	sealed class Operation(debugName: String) : LlTokenKind(debugName) {
+		class Arithmetic(debugName: String) : Operation(debugName) {
+			companion object All : TokenKindSetBuilder("arithmetics") {
+				val UnaryPlus = +Arithmetic("+(unary)")
+				val UnaryMinus = +Arithmetic("-(unary)")
+				
+				
+				val Plus = +Arithmetic("+")
+				val Minus = +Arithmetic("-")
+				
+				val Times = +Arithmetic("*")
+				
+				val Divide = +Arithmetic("/")
+				
+				val Remainder = +Arithmetic("%")
+			}
 		}
-	}
-	
-	
-	sealed class Operation(debugName: String, group: TokenGroup = TokenGroup.Operator) : LlTokenKind(debugName, group) {
-		class Arithmetic(debugName: String) : Operation(debugName)
-		class Compare(debugName: String) : Operation(debugName)
-		class Logic(debugName: String) : Operation(debugName)
-		class Expression(debugName: String) : Operation(debugName)
-		class Assign(debugName: String) : Operation(debugName)
-		class Group(debugName: String) : Operation(debugName, group = TokenGroup.Separator)
-		class Access(debugName: String) : Operation(debugName)
-		class Other(debugName: String, group: TokenGroup = TokenGroup.Operator) : Operation(debugName, group)
 		
-		companion object All : TokenKindSetBuilder("operations") {
-			/// Arithmetic
-			
-			val Plus = +Arithmetic("+") // unary(prefix) or binary
-			
-			val Minus = +Arithmetic("-") // unary(prefix) or binary
-			
-			val Times = +Arithmetic("*")
-			
-			val Divide = +Arithmetic("/")
-			
-			// val IntDivide = +Arithmetic("//")
-			
-			val Remainder = +Arithmetic("%")
-			
-			
-			// Compare
-			
-			val Equals = +Compare("==")
-			
-			val NotEquals = +Compare("!=")
-			
-			val IdentityEquals = +Compare("===")
-			
-			val NotIdentityEquals = +Compare("!==")
-			
-			/**
-			 * Used for:
-			 * - comparison
-			 * - type parameter/argument
-			 */
-			val Lt = +Compare("<")
-			
-			val LtEq = +Compare("<=")
-			
-			val Gt = +Compare(">")
-			
-			val GtEq = +Compare(">=")
-			
-			
-			/// Logic
-			
-			val And = +Logic("&&")
-			
-			val Or = +Logic("||")
-			
-			val Not = +Logic("!")
-			
-			
-			/// Other expressions
-			
-			val RangeTo = +Expression("..")
-			
-			val RangeUntil = +Expression("..<")
-			
-			val RangeExclusiveTo = +Expression("<..")
-			
-			val RangeExclusiveUntil = +Expression("<..<")
-			
-			val Is = +Expression("is")
-			
-			val NotIs = +Expression("!is")
-			
-			/**
-			 * - boolean expression (-> contains)
-			 * - for loop `for(element in collection)`
-			 * - type projection: `<in Type>`
-			 */
-			val In = +Expression("in")
-			
-			val NotIn = +Expression("!in")
-			
-			
-			/// Assign
-			
-			/**
-			 * Used for:
-			 * - variable initialization
-			 * - set variable value
-			 * - default value of value parameter
-			 * - named value argument
-			 */
-			val Eq = +Assign("=")
-			
-			val PlusEq = +Assign("+=")
-			
-			val MinusEq = +Assign("-=")
-			
-			
-			/// Group
-			
-			/**
-			 * Used for:
-			 * - group expressions
-			 * - function invocation
-			 * - tuple literal (must contain comma)
-			 * - destructuring `val (x, y) = point`
-			 */
-			val LeftParen = +Group("(")
-			
-			val RightParen = +Group(")")
-			
-			val LeftBracket = +Group("[")
-			
-			val RightBracket = +Group("]")
-			
-			/**
-			 * Used for:
-			 * - lambda expression
-			 */
-			val LeftBrace = +Group("{")
-			
-			val RightBrace = +Group("}")
-			
-			// Instead of +Group("<") +Group(">") we use Lt / Gt
-			// Also <, > is not group; they are not separator
-			
-			
-			/// Access
-			
-			val Dot = +Access(".")
-			
-			val SafeCall = +Access("?.")
-			
-			val Elvis = +Access("?:")
-			
-			
-			/// Other
-			
-			val Semicolon = +Other(";", group = TokenGroup.Separator)
-			
-			val PropagateError = +Other("?")
-			
-			val Etc = +Other("...")
-			
-			/**
-			 * Used for:
-			 * - function parameters
-			 * - tuple literal
-			 */
-			val Comma = +Other(",", group = TokenGroup.Separator)
-			
-			/**
-			 * Used for:
-			 * - mark type of variable
-			 * - mark parent classes or interfaces
-			 */
-			val Colon = +Other(":", group = TokenGroup.Separator)
-			
-			/**
-			 * Used to:
-			 * - divide lambda parameters and body
-			 * - mark condition / expression in `when`
-			 */
-			val ArrowRight = +Other("->")
-			
-			/**
-			 * ```
-			 * #[annotation]
-			 * declaration
-			 * ```
-			 */
-			val Annotation = +Other("#")
+		class Compare(debugName: String) : Operation(debugName) {
+			companion object All : TokenKindSetBuilder("compares") {
+				val Equals = +Compare("==")
+				
+				val NotEquals = +Compare("!=")
+				
+				val IdentityEquals = +Compare("===")
+				
+				val NotIdentityEquals = +Compare("!==")
+				
+				val Lt = +Compare("<")
+				
+				val LtEq = +Compare("<=")
+				
+				val Gt = +Compare(">")
+				
+				val GtEq = +Compare(">=")
+			}
+		}
+		
+		class Logic(debugName: String) : Operation(debugName) {
+			companion object All : TokenKindSetBuilder("logics") {
+				val And = +Logic("&&")
+				
+				val Or = +Logic("||")
+				
+				val Not = +Logic("!")
+			}
+		}
+		
+		class Expression(debugName: String) : Operation(debugName) {
+			companion object All : TokenKindSetBuilder("expressions") {
+				// Range Operator
+				
+				val RangeTo = +Expression("..")
+				
+				val RangeUntil = +Expression("..<")
+				
+				val RangeAfterTo = +Expression("<..")
+				
+				val RangeAfterUntil = +Expression("<..<")
+				
+				
+				/**
+				 * Type instance check operator.
+				 * `expression is Type`
+				 */
+				val Is = +Expression("is")
+				
+				val NotIs = +Expression("!is")
+				
+				/**
+				 * Collection inclusion operator.
+				 * `element in collection` => `Boolean` etc.
+				 */
+				val In = +Expression("in")
+				
+				val NotIn = +Expression("!in")
+				
+				val Elvis = +Expression("?:")
+			}
+		}
+		
+		class Assign(debugName: String) : Operation(debugName) {
+			companion object All : TokenKindSetBuilder("assigns") {
+				val Assign = +Assign("=")
+				
+				val PlusAssign = +Assign("+")
+				
+				val MinusAssign = +Assign("-")
+			}
+		}
+		
+		class Group(debugName: String) : Operation(debugName) {
+			companion object All : TokenKindSetBuilder("groups") {
+				/**
+				 * Usage:
+				 * - group expression
+				 * - tuple
+				 */
+				val LeftParen = +Group("(")
+				val RightParen = +Group("(")
+				
+				val LeftSquareBracket = +Group("[")
+				val RightSquareBracket = +Group("]")
+				
+				val LeftBrace = +Group("{")
+				val RightBrace = +Group("}")
+				
+				/**
+				 * Only used for type parameters; `<T>`, `<Type : Hello, Hi = 123>`
+				 */
+				val LeftAngleBracket = +Group("<")
+				val RightAngleBracket = +Group(">")
+			}
+		}
+		
+		class Access(debugName: String) : Operation(debugName) {
+			companion object All : TokenKindSetBuilder("accesses") {
+				val Dot = +Access(".")
+				
+				val SafeDot = +Access("?.")
+				
+				val Metadata = +Access("::")
+			}
+		}
+		
+		class Other(debugName: String) : Operation(debugName) {
+			companion object All : TokenKindSetBuilder("others") {
+				val Semicolon = +Other(";")
+				
+				val PropagateError = +Other("?")
+				
+				val Etc = +Other("...")
+				
+				
+				val Comma = +Other(",")
+				
+				val Colon = +Other(":")
+				
+				val ArrowRight = +Other("->")
+				
+				/**
+				 * ```
+				 * #[annotation]
+				 * declaration
+				 * ```
+				 */
+				val AnnotationMarker = +Other("#")
+			}
 		}
 	}
 	
 	
-	// hard
-	sealed class Keyword(debugName: String) : LlTokenKind(debugName, TokenGroup.Word) {
+	sealed class Keyword(debugName: String) : LlTokenKind(debugName) {
 		class Module(debugName: String) : Keyword(debugName)
 		class Declaration(debugName: String) : Keyword(debugName)
 		class Literal(debugName: String) : Keyword(debugName)
 		class ControlFlow(debugName: String) : Keyword(debugName)
 		
 		companion object All : TokenKindSetBuilder("keywords") {
-			/// Module
+			/// Modules
 			
 			val Module = +Module("module")
 			
@@ -368,52 +278,27 @@ object TokenKinds_old {
 			
 			val Object = +Declaration("object")
 			
-			val Fun = +Declaration("function")
+			val Fun = +Declaration("fun")
 			
-			/**
-			 * Kinda 'extension implement' thing.
-			 * Importing this is by the name of target class, rather than implementing interface,
-			 * (`Class` in `impl Interface for Class`) all impls to `Class` within same file of `Class` will be
-			 * exported without any extra imports, meaning this is similar to `: SuperClass`, without that it cannot
-			 * access private properties.
-			 */
 			val Impl = +Declaration("impl")
 			
 			val Type = +Declaration("type")
 			
-			/**
-			 * Note that all constant, value, variable is generalized into term 'variable'.
-			 *
-			 * ## Considerations around variable keyword
-			 * (**immutable** / read-only / mutable)
-			 * - `var` / _ / `mut var`: variables might not be variable(mutable)
-			 * - _ / `val` / `var`: I do not think this is confusing, but I want immutable to be a feature of this lang
-			 * - `const` / `val` / `var`: I think this is good?
-			 *
-			 * ## Final Decisions
-			 * `const` for constants(immutable), `val` for read-only value, `var` for variable(mutable).
-			 * `val` has no assumptions around variable. ('Note that all constant, value, variable is generalized into
-			 * term "variable".') `const` and `var` adds more assumption.
-			 */
-			val Const = +Declaration("constant")
+			val Val = +Declaration("val")
 			
-			val Val = +Declaration("value")
+			val Const = +Declaration("const")
 			
-			val Var = +Declaration("variable")
+			val Var = +Declaration("var")
 			
 			
-			/// Literals
+			/// Boolean Constants
 			
 			val True = +Literal("true")
 			
 			val False = +Literal("false")
 			
-			// val Null = +Literal("null")
 			
-			
-			/// Expressions
-			
-			/// Control flows - conditionals
+			/// Control Flows - conditionals
 			
 			val If = +ControlFlow("if")
 			
@@ -421,7 +306,8 @@ object TokenKinds_old {
 			
 			val When = +ControlFlow("when")
 			
-			/// Control flows - loops
+			
+			/// Control Flows - loops
 			
 			val Loop = +ControlFlow("loop")
 			
@@ -429,10 +315,7 @@ object TokenKinds_old {
 			
 			val For = +ControlFlow("for")
 			
-			// no do-while, just use loop { ...; if(...) break }
-			// val Do = +ControlFlow("do") // used in do-while loop
-			
-			/// Control flows - directions
+			/// Control Flows - escape directions
 			
 			val Return = +ControlFlow("return")
 			
@@ -442,8 +325,8 @@ object TokenKinds_old {
 		}
 	}
 	
+	sealed class SoftSpecial(debugName: String) : LlTokenKind(debugName)
 	
-	// soft
 	class SoftKeyword(debugName: String) : SoftSpecial(debugName) {
 		companion object All : TokenKindSetBuilder("soft keywords") {
 			val Constructor = +SoftKeyword("constructor")
@@ -458,21 +341,19 @@ object TokenKinds_old {
 			val Field = +SoftKeyword("field")
 			
 			
-			/**
-			 * ```
-			 * class MyClass<T, R> where T : R
-			 * ```
-			 */
 			val Where = +SoftKeyword("where")
 			
 			val By = +SoftKeyword("by")
 			
+			/**
+			 * `in` of `for(element in collection)`
+			 */
+			val ForIn = +Operation.Other("in")
 		}
 	}
 	
-	
-	// soft
 	sealed class Modifier(debugName: String) : SoftSpecial(debugName) {
+		
 		class Visibility(debugName: String) : Modifier(debugName)
 		class Modality(debugName: String) : Modifier(debugName)
 		class General(debugName: String) : Modifier(debugName)
@@ -483,31 +364,29 @@ object TokenKinds_old {
 		class ValueParameter(debugName: String) : Modifier(debugName)
 		
 		companion object All : TokenKindSetBuilder("modifiers") {
-			/// Visibility (general)
+			/// Visibility
 			
 			val Public = +Visibility("public")
 			
 			val Internal = +Visibility("internal")
 			
-			val Protected = +Visibility("protected")
+			val Protected = +Visibility("protectted")
 			
 			val Private = +Visibility("private")
 			
 			
-			/// Modality (general)
+			/// Modality
 			
-			/**
-			 * All non-abstract classes and members (functions and variables, including overriding ones) are final.
-			 */
 			val Final = +Modality("final")
 			
 			val Open = +Modality("open")
 			
-			val Abstract = +General("abstract")
+			val Sealed = +Modality("sealed")
 			
-			val Sealed = +Class("sealed")
+			val Abstract = +Class("abstract")
 			
-			/// Etc (general)
+			
+			/// Etc
 			
 			val Context = +General("context")
 			
@@ -519,12 +398,6 @@ object TokenKinds_old {
 			
 			val Enum = +Class("enum")
 			
-			/**
-			 * Class with `value` modifier is stored and passed as value. If you need a reference to value class,
-			 * use `Ref<T>`. If you need to possess a value class as reference, use `Box<T>`.
-			 *
-			 * TODO: considering that, instead of `class`/`value class`, use `class`/`struct`?
-			 */
 			val Value = +Class("value")
 			
 			val Inner = +Class("inner")
@@ -534,26 +407,10 @@ object TokenKinds_old {
 			
 			/// Function
 			
-			// declared by `[annotation]`
-			// val AnnotationDeclaration = +Class("annotation")
-			
 			val Infix = +Function("infix")
 			
-			/**
-			 * `suspend` is a color, rather than something like `AstFunction.isInfix`.
-			 */
 			val Suspend = +Function("suspend")
 			
-			// use [tailrec] annotation instead
-			// val Tailrec = +Function("tailrec")
-			
-			/**
-			 * Llang automatically inlines functions if necessary for performance. But if inlining a function changes
-			 * semantic of calling that function, use `inline` keyword. Note that, If you are to enforce inline
-			 * optimization, use `#[inline]` annotation instead.
-			 *
-			 * Inline is also a color.
-			 */
 			val Inline = +Function("inline")
 			
 			
@@ -564,30 +421,20 @@ object TokenKinds_old {
 			
 			/// Type Parameter
 			
-			// val In = +TypeParameter("in") // see Operation.In; `in` is hard keyword(operation)
+			val VarianceIn = +TypeParameter("in")
 			
-			val Out = +TypeParameter("out")
-			
-			// val StarProjection = +TypeParameter("star") // see Operation.Times
+			val VarianceOut = +TypeParameter("out")
 			
 			val Referential = +TypeParameter("referential")
 			
 			val Erased = +TypeParameter("erased")
 			
 			
-			/// Value Parameter
+			// Value Parameter
 			
 			val Vararg = +ValueParameter("vararg")
 			
-			/**
-			 * Enforces a semantic that inside a lambda value parameter for a inline function, you should not
-			 * early return.
-			 */
 			val Crossinline = +ValueParameter("crossinline")
-			
-			// noinline keyword is for optimization rather than for semantics.
-			// Compiler takes care of it, and if you want to force it, use [noinline] annotation.
-			// val NoInline = +ValueParameter("noinline")
 		}
 	}
 }

@@ -1,10 +1,15 @@
 package com.lhwdev.llang.cst.declaration
 
-import com.lhwdev.llang.cst.CstCreateContext
+import com.lhwdev.llang.cst.CstNodeFactory
+import com.lhwdev.llang.cst.CstParseContext
 import com.lhwdev.llang.token.TokenKinds
 
 
-class CstClass(c: CstCreateContext) : CstDeclaration(c) {
+class CstClass(c: CstParseContext) : CstDeclaration(c) {
+	companion object : CstNodeFactory<CstClass> {
+		override fun create(c: CstParseContext) = CstClass(c)
+	}
+	
 	override val annotations = c.cstAnnotation()
 	
 	override val modifiers = c.cstModifiers {
@@ -22,7 +27,7 @@ class CstClass(c: CstCreateContext) : CstDeclaration(c) {
 }
 
 
-fun CstCreateContext.cstClass(): CstClass =
+fun CstParseContext.cstClass(): CstClass =
 	declaration { CstClass(this) }
 
 

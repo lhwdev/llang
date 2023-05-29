@@ -1,14 +1,16 @@
 # llang
 
+> A hard work of developer who haven't learned anything about parser/compiler.
+
 Note that 'llang' is alias and I really couldn't come up with cool name.  
-Llang is my toy project and now work in progress. As a developer, one should have thought, 'I want to write programming
-language!' and that's it.
+Llang is my toy project and now work in progress. As a developer, one should have thought, 'I
+want to write programming language!' and that's it.
 
 Also see [book](book.md) and [syntax reference](syntax-reference.md).
 
 **Useful Links:**
 
-- [Lexer](modules/tooling/lexer/src/commonMain/kotlin/com/lhwdev/llang/lexer/lexer.kt)
+- [Parser](modules/tooling/parser/src/commonMain/kotlin/com/lhwdev/llang/parser/impl/parser.kt)
 - [all tokens](modules/tooling/token/src/commonMain/kotlin/com/lhwdev/llang/token/TokenKinds.kt)
 
 code -> cst(with token) -> ast -> fir -> ir
@@ -132,8 +134,8 @@ code -> cst(with token) -> ast -> fir -> ir
 
 ### Operations
 
-- **Parsing**: **code string** --(lexing)--> **token** --(parsing)--> **cst** --(semantic parsing)-->
-  **fir**
+- **Parsing**: **code string** --(lexing)--> **token** --(parsing)--> **cst** --(semantic
+  parsing) --> **fir**
 - **IDE/Code Highlighting**: ast -> annotations
 - **IDE/Code Modification**: edited code -> (incremental) token -> ... (same as parsing)
 - **Code Refactoring**: modify fir then apply to fir -> ast -> cst -> token
