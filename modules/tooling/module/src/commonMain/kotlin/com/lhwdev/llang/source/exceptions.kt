@@ -1,7 +1,7 @@
 package com.lhwdev.llang.source
 
 
-open class DiscardException : RuntimeException() {
+open class DiscardException(message: String) : RuntimeException(message) {
 	/**
 	 * Overridden for performance
 	 */
@@ -10,6 +10,9 @@ open class DiscardException : RuntimeException() {
 	}
 }
 
-class NotMatchedException : DiscardException() {
-	override val message get() = "not matched"
+class NotMatchedException(message: String = "not matched") : DiscardException(message) {
+	companion object {
+		val KeywordEncountered =
+			NotMatchedException("keyword encountered in local context; it means local declaration is expected.")
+	}
 }

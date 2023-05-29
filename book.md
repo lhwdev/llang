@@ -1,9 +1,12 @@
 # Llang Compiler Book
 
-> **Note**: this is nothing but a method for me to explain myself how this whole ast structure, lexer, parser and
+> **Note**: this is nothing but a method for me to explain myself how this whole ast structure,
+> lexer, parser and
 > compiler works. Nothing educational.
 
 ## Tokens and Lexer
+
+> Note that tokenizer(lexer) phase is integrated into Cst parsing phase.
 
 Tokens are like 'words' in English. They are flat(not nested/structured).
 It says how to split raw code into meaningful components.
@@ -156,8 +159,10 @@ to low one grouping all statements?~~
 
 #### Proposed method 1. local maximum
 
-> Note: This must be a known method, but I am finding out myself.
+> Note: I figured out whole things myself, but some known method should exist.
 > Headache...
+
+> Note 2: If this method is wrong, please create an issue. ~~If this method is right, praise me.~~
 
 Think of following case where only binary operators exist.
 
@@ -180,24 +185,48 @@ a = 3 + 4 * 7 + 1
 Operator precedences for this is `=`(1) < `+`(2) < `*`(3).
 Parsing consists of iterating over operators.
 
-(code body parser algorithm v1)
+**Local Maximum Precedence Parsing Algorithm v1**
 
-| stack               | buffer(stack)             | state for lookahead    | operation to run |
-|---------------------|---------------------------|------------------------|------------------|
-|                     | a = 3 + 4 * 7 + 1         | initial                | push             |
-| a =                 | 3 + 4 * 7 + 1             | ascending(1 -> 2)      | push             |
-| a = 3 +             | 4 * 7 + 1                 | ascending(2 -> 3)      | push             |
-| a = 3 + 4 *         | 7 + 1                     | **descending**(3 -> 2) | **ops**          |
-| a = 3 +             | (4 * 7) + 1               | **equal**(1 -> 1)      | **ops**          |
-| a =                 | (3 + (4 * 7)) + 1         | ascending(1 -> 2)      | push             |
-| a = (3 + (4 * 7)) + | 1                         | **eof**                | **ops**          |
-| a =                 | ((3 + (4 * 7)) + 1)       | **eof**                | **ops**          |
-|                     | (a = ((3 + (4 * 7)) + 1)) | **eof**                | (done)           |
+| stack                             | buffer queue        | state for lookahead    | operation to run |
+|-----------------------------------|---------------------|------------------------|------------------|
+| (stack/head)                      | `a = 3 + 4 * 7 + 1` | initial                | initialPush      |
+| ` ` / `a`                         | `= 3 + 4 * 7 + 1`   | initial                | push             |
+| `a =` / `3`                       | `+ 4 * 7 + 1`       | ascending(1 -> 2)      | push             |
+| `a = 3 +` / `4`                   | `* 7 + 1 `          | ascending(2 -> 3)      | push             |
+| `a = 3 + 4 *` / `7`               | `+ 1`               | **descending**(3 -> 2) | **ops**          |
+| `a = 3 +` / `(4 * 7)`             | `+ 1`               | **equal**(1 -> 1)      | **ops**          |
+| `a =` / `(3 + (4 * 7))`           | `+ 1`               | ascending(1 -> 2)      | push             |
+| `a = (3 + (4 * 7)) +` / `1`       | ` `                 | **eof**                | **ops**          |
+| `a =` / `((3 + (4 * 7)) + 1) `    | ` `                 | **eof**                | **ops**          |
+| ` ` / `(a = ((3 + (4 * 7)) + 1))` | ` `                 | **eof**                | (done)           |
 
-There are two operation: push and ops.
-In `push`, pop two tokens(element + operator) from buffer and add it to stack.
-In `ops`, pop two tokens(element + operator) from stack, combine with
-`buffer.pop()`(element) and make them a binary operation, then push into buffer.
+There are three operation: initialPush, push and ops.
+
+In _push_, does following tasks sequentially:
+
+- Push `head` into `stack`.
+- Pop `buffer`, then push it into `stack`.
+- Pop `buffer`, then assign it into `head`.
+
+In _ops_:
+
+- Pop two tokens(lhs + operator) from `stack`.
+- Combine with `head`(rhs) to become a binary operation.
+- Assign it into `head`.
+
+In _initialPush_:
+
+- Pop `buffer`, then assign it into `head`.
+
+Logic to determine which to call:
+
+- If `head` is empty, call _initialPush_.
+- If `buffer` is empty,
+  - If, stack is empty, we're done. Get your `head`.
+  - Otherwise, call _ops_.
+- If `buffer.peek().precedence <= stack.peek().precedence`, (that is, `state for lookahead` is
+  'descending' or 'equal') call _ops_.
+- Otherwise, call _push_.
 
 -----
 
@@ -208,11 +237,16 @@ To define how much flexibility we need, we should define operations.
 
 (Note: `precedence = eager` means highest one)
 
+**Operations from highest to lowest precedence**
+
 | operator                  | name                            | kind          | precedence | example                                |
 |---------------------------|---------------------------------|---------------|------------|----------------------------------------|
 | `()`                      | expression.group                | unary, group  | eager      | `4 * (1 + 3)`                          |
-| `v(p)`                    | expression.call                 | binary, group | eager      | `println("hello, world!")`             |
+| `(a, b, ...)`             | expression.tuple                | unary, group  | special!!  | `(1, 2, 3)`                            |
+| `v(a, b, ...)`            | expression.call                 | binary, group | eager      | `println("hello, world!")`             |
+| `v[a, b, ...]`            | expression.getElement           | binary, group | eager      | `println("hello, world!")`             |
 | `.`                       | memberAccess                    | binary        | eager      | `value.member`, `Class.Other`          |
+| `::`                      | metadataAccess                  | binary        | eager      | `value.member`, `Class.Other`          |
 | `?.`                      | expression.safeMemberAccess     | binary        | eager      | `value?.member`                        |
 | `+`/`-`                   | arithmetic.unaryPlus/unaryMinus | unary.prefix  |            | `-7`, `+3`                             |
 | `!`                       | logic.not                       | unary.prefix  |            | `!isHello`                             |
@@ -221,7 +255,7 @@ To define how much flexibility we need, we should define operations.
 | `*`/`/`                   | arithmetic.multiply/divide      | binary        |            | `3 * 5`                                |
 | `+`/`-`                   | arithmetic.plus/minus           | binary        |            | `3 + 2`                                |
 | `..` etc                  | expression.rangeTo ...          | binary        |            | `1..10`                                |
-| _identifier_              | expression.infixCall            | binary        |            | `0x10 xor 0x11`                        |
+| _identifier_              | expression.infixCall            | binary        | special    | `0x10 xor 0x11`                        |
 | `?:`                      | expression.elvis                | binary        |            | `optional ?: default`                  |
 | `in`/`!in`                | expression.in/notIn             | binary        |            | `"lhwdev" in users`                    |
 | `is`/`!is`                | typeOps.is/notIs                | binary        |            | `animal is Dog`                        |
@@ -229,7 +263,85 @@ To define how much flexibility we need, we should define operations.
 | `==`/`!=`/`===`/`!==`     | logic.equals/identityEquals ... | binary        |            | `you == me`                            |
 | `&&`                      | logic.conjunction               | binary        |            | `you.age >= 19 && you.height >= 180`   |
 | <code>&#124;&#124;</code> | logic.disjunction               | binary        |            | <code>idiot &#124;&#124; genius</code> |
-| `...`                     | functionSpreadArguments         | unary.prefix  |            | `println(...list)`                     |
-| `=`/`+=` etc.             | assignment ...                  | binary        |            | `myVar = 3`                            |
+| `...`                     | functionSpreadArguments         | unary.prefix  | special    | `println(...list)`                     |
+| `=`/`+=` etc.             | assignment ...                  | binary        | special    | `myVar = 3`                            |
 
-You can see that all '(mostly) any-place' operators can be divided into unary/binary.
+Luckily, except for all eager operations, all unary operations has highest/lowest precedence,
+which means we can use the 'local maximum approach' almost as-is.
+
+----
+
+We need the logic above the table to include unary operations and groups. When we handle groups,
+think that we handle new fresh code starting after `(`. If we meet `)`, it becomes eof.
+
+Therefore, the final logic is:
+
+**In _initialPush_**:
+
+- Pop `buffer`, then Put it into `head`.
+
+**In _push_**, run following tasks sequentially:
+
+- Push `head` into `stack`.
+- Pop `buffer`, then push it into `stack`.
+- Pop `buffer`, then Put it into `head`.
+
+**In _binaryOps_**:
+
+- Pop two tokens(lhs + operator) from `stack`.
+- Combine with `head`(rhs) to become a binary operation.
+- Put it into `head`.
+
+**In _unaryOps_**:
+
+- Combine `head` and `buffer.pop()` into unary operation.
+- Put it into `head`.
+
+**In _accessOps_**:
+
+- Combine `head`(lhs), `buffer.pop()`(dot etc.), `buffer.pop()`(rhs) into access operation, to
+  become `lhs.rhs`, `lhs?.rhs` or `lhs::rhs`.
+- Put it into `head`.
+
+**In _callOps_**:
+
+- Push `head`(function) into `stack`.
+- Put `buffer.pop()`(group start) into `head`.
+- Run _groupOrTupleOps_ with 'tuple mode'. (Saying 'this was tuple!' in advance)
+- Combine `stack.pop()`(function) and `head`(tuple) into function invocation.
+- Assign it into `head`.
+
+**In _groupOrTupleOps_**:
+
+- Run new fresh parsing with `buffer`. (Note that `buffer` does not contain group start)
+- If the result says 'this was tuple!', should I write how to parse tuple?
+- Combine `head`(group start), result of 'new fresh parsing', `buffer.pop()`(group end) into a
+  group. Note that 'new fresh parsing' already consumed buffer as much as it can.
+- Put it into `head`.
+
+**Main logic**:
+
+- If `head` is empty, call _initialPush_.
+- If `head` is group start, call _groupOrTupleOps_.
+- If `head` is unary operator, call _unaryOps_.
+- If `buffer` is empty or `buffer.peek()` is group end,
+  - If, stack is empty, we're done. Get your `head`. (Or return it to _groupOrTupleOps_.)
+  - Otherwise, call _binaryOps_.
+- If `buffer.peek()` is group start, call _callOps_.
+- If `buffer.peek()` is comma, return `head` to _groupOrTupleOps_, saying 'this was tuple!'
+- If `buffer.peek()` is `.`, `?.` or `::`, call _accessOps_.
+- If `buffer.peek().precedence <= stack.peek().precedence`, (that is, `state for lookahead` in the
+  table is 'descending' or 'equal') call _binaryOps_.
+  - Note that, if `buffer.peek()` is identifier, it becomes infix call.
+- Otherwise, call _push_.
+
+Some implications:
+
+- Generics are also parsed as _callOps_ like it were simple function; `myFunc<String>("123")` means
+  calling type function `myFunc` with `String`, and calling the result of `myFunc<String>`
+  with `"123"`. `MyClass<Type>` means calling type function `MyClass` with `Type`.
+- Array accesses are also parsed as _callOps_, as all semantics are identical to normal function
+  invocation except for group start/end operator.
+- Parsing local declaration should be easy; all declarations has hard keyword. Although it should be
+  handled in tokenizer level. Tokenizer should throw `NotMatchedException.KeywordEncountered` in
+  local context.

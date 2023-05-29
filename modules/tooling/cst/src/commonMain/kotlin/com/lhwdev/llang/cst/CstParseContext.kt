@@ -1,6 +1,7 @@
 package com.lhwdev.llang.cst
 
 import com.lhwdev.llang.source.CodeSource
+import com.lhwdev.llang.source.DiscardException
 import com.lhwdev.llang.token.CstToken
 import com.lhwdev.llang.token.TokenKind
 
