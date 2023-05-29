@@ -246,7 +246,7 @@ To define how much flexibility we need, we should define operations.
 | `v(a, b, ...)`            | expression.call                 | binary, group | eager      | `println("hello, world!")`             |
 | `v[a, b, ...]`            | expression.getElement           | binary, group | eager      | `println("hello, world!")`             |
 | `.`                       | memberAccess                    | binary        | eager      | `value.member`, `Class.Other`          |
-| `::`                      | metadataAccess                  | binary        | eager      | `value.member`, `Class.Other`          |
+| `::`                      | metadataAccess                  | binary        | eager      | `Class::Other`                         |
 | `?.`                      | expression.safeMemberAccess     | binary        | eager      | `value?.member`                        |
 | `+`/`-`                   | arithmetic.unaryPlus/unaryMinus | unary.prefix  |            | `-7`, `+3`                             |
 | `!`                       | logic.not                       | unary.prefix  |            | `!isHello`                             |
