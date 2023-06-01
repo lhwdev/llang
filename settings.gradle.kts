@@ -83,6 +83,7 @@ includesAll(rootPath = "modules") {
 		module("cst")
 		module("ast")
 		
+		module("tokenizer")
 		module("parser")
 	}
 	
