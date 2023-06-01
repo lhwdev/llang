@@ -179,26 +179,26 @@ removed. In `[1, 3, 2]`, `3`(which is right in front of `4`) becomes local maxim
 Of course this is not always the case.
 
 ```kotlin
-a = 3 + 4 * 7 + 1
+a = 3 + 4 * 7 xor 1
 ```
 
-Operator precedences for this is `=`(1) < `+`(2) < `*`(3).
+Operator precedences for this is `=`(1) < `xor`(2) < `+`(3) < `*`(4).
 Parsing consists of iterating over operators.
 
 **Local Maximum Precedence Parsing Algorithm v1**
 
-| stack                             | buffer queue        | state for lookahead    | operation to run |
-|-----------------------------------|---------------------|------------------------|------------------|
-| (stack/head)                      | `a = 3 + 4 * 7 + 1` | initial                | initialPush      |
-| ` ` / `a`                         | `= 3 + 4 * 7 + 1`   | initial                | push             |
-| `a =` / `3`                       | `+ 4 * 7 + 1`       | ascending(1 -> 2)      | push             |
-| `a = 3 +` / `4`                   | `* 7 + 1 `          | ascending(2 -> 3)      | push             |
-| `a = 3 + 4 *` / `7`               | `+ 1`               | **descending**(3 -> 2) | **ops**          |
-| `a = 3 +` / `(4 * 7)`             | `+ 1`               | **equal**(1 -> 1)      | **ops**          |
-| `a =` / `(3 + (4 * 7))`           | `+ 1`               | ascending(1 -> 2)      | push             |
-| `a = (3 + (4 * 7)) +` / `1`       | ` `                 | **eof**                | **ops**          |
-| `a =` / `((3 + (4 * 7)) + 1) `    | ` `                 | **eof**                | **ops**          |
-| ` ` / `(a = ((3 + (4 * 7)) + 1))` | ` `                 | **eof**                | (done)           |
+| stack                               | buffer queue          | state for lookahead    | operation to run |
+|-------------------------------------|-----------------------|------------------------|------------------|
+| (stack/head)                        | `a = 3 + 4 * 7 xor 1` | initial                | initialPush      |
+| ` ` / `a`                           | `= 3 + 4 * 7 xor 1`   | initial                | push             |
+| `a =` / `3`                         | `+ 4 * 7 xor 1`       | ascending(1 -> 3)      | push             |
+| `a = 3 +` / `4`                     | `* 7 xor 1 `          | ascending(3 -> 4)      | push             |
+| `a = 3 + 4 *` / `7`                 | `xor 1`               | **descending**(4 -> 2) | **ops**          |
+| `a = 3 +` / `(4 * 7)`               | `xor 1`               | **descending**(3 -> 2) | **ops**          |
+| `a =` / `(3 + (4 * 7))`             | `xor 1`               | ascending(1 -> 2)      | push             |
+| `a = (3 + (4 * 7)) xor` / `1`       | ` `                   | **eof**                | **ops**          |
+| `a =` / `((3 + (4 * 7)) xor 1) `    | ` `                   | **eof**                | **ops**          |
+| ` ` / `(a = ((3 + (4 * 7)) xor 1))` | ` `                   | **eof**                | (done)           |
 
 There are three operation: initialPush, push and ops.
 
@@ -337,11 +337,19 @@ Therefore, the final logic is:
 
 Some implications:
 
+- Operators with same precedence, like `1 + 2 + 3`, are grouped by order, like `(1 + 2) + 3`.
+  However, this behavior can be easily changed. In 'main logic', we checked
+  if `buffer.peek().precedence <= stack.peek().precedence` is true. Just checking if two precedences
+  are equal suffices. Someone would want to ensure grouping expressions well, such
+  as `[associative = false] operator fun plus()`.
 - Generics are also parsed as _callOps_ like it were simple function; `myFunc<String>("123")` means
   calling type function `myFunc` with `String`, and calling the result of `myFunc<String>`
   with `"123"`. `MyClass<Type>` means calling type function `MyClass` with `Type`.
 - Array accesses are also parsed as _callOps_, as all semantics are identical to normal function
   invocation except for group start/end operator.
+- With extra modification, trailing lambda argument can be parsed as partial function call.
+  In case of `myFunc(123) { println("hello") }`, function `myFunc(123)` is called with argument
+  `{ println("hello") }`.
 - Parsing local declaration should be easy; all declarations has hard keyword. Although it should be
   handled in tokenizer level. Tokenizer should throw `NotMatchedException.KeywordEncountered` in
-  local context.
+  local context to signal this.
