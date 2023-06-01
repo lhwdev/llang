@@ -3,8 +3,6 @@ package com.lhwdev.llang.cst
 
 interface CstNode
 
-interface CstNodeKind<T : CstNode>
+interface CstNodeKind<Node : CstNode>
 
-interface CstNodeFactory<T : CstNode> : CstNodeKind<T> {
-	fun create(c: CstParseContext): T
-}
+typealias CstNodeFactory<Node> = CstParseContext.() -> Node
