@@ -1,48 +1,61 @@
 package com.lhwdev.llang.cst
 
-import com.lhwdev.llang.source.CodeSource
-import com.lhwdev.llang.source.DiscardException
+import com.lhwdev.llang.cst.util.DiscardException
 import com.lhwdev.llang.token.CstToken
 import com.lhwdev.llang.token.TokenKind
+
+
+// Possible context kind: declaration / statements / expression
+// Possible location: global, class, function, valInit
 
 
 /**
  * [CstParseContext] can be originated from raw code source, serialized CST structure, or
  * existing other [CstParseContext] (for cloning).
  */
-interface CstParseContext : CodeSource {
+interface CstParseContext {
 	/// Token / Cst Output
+	val code: CstMutableCodeSource
 	
 	fun token(kind: TokenKind): CstToken
 	
 	
-	/// Tree
+	/// Node
 	
-	fun <T : CstNode> beginTree(kind: CstNodeKind<T>): T?
+	fun <Node : CstNode> beginNode(allowWs: Boolean = true, light: Boolean = false): Node?
 	
-	fun beginDiscardableTree()
+	fun <Node : CstNode> beginDiscardable(): Node?
 	
-	fun <T : CstNode> endTree(node: T): T
 	
-	fun discardTree()
+	
+	fun resetCurrentDiscardable()
+	
+	fun <Node : CstNode> endNode(node: Node): Node
+	
+	fun discardDiscardable()
 }
 
-inline fun <T : CstNode> CstParseContext.tree(kind: CstNodeKind<T>, block: () -> T): T {
-	beginTree(kind)?.let { return it }
-	return endTree(block())
+inline fun <Node : CstNode> CstParseContext.node(
+	allowWs: Boolean = true,
+	crossinline block: CstNodeFactory<Node>
+): Node {
+	beginNode<Node>()?.let { return it }
+	return endNode(this.block())
 }
 
 /**
- * Basic primitive for implementing [CstList][com.lhwdev.llang.cst.common.CstList],
- * [CstSelect][com.lhwdev.llang.cst.common.CstSelect] etc.
+ * Basic primitive for implementing [CstList][com.lhwdev.llang.cst.util.CstList],
+ * [CstSelect][com.lhwdev.llang.cst.common.util.CstSelect] etc.
  * Useful for branching such as: 'possible patterns: [A, B] or [C, D, E]'.
  */
-inline fun <T : CstNode> CstParseContext.discardableTree(kind: CstNodeKind<T>, block: () -> T): T? {
-	beginTree(kind)?.let { return it }
+inline fun <Node : CstNode> CstParseContext.discardable(
+	crossinline block: CstNodeFactory<Node>
+): Node? {
+	beginDiscardable<Node>()?.let { return it }
 	return try {
-		endTree(block())
+		endNode(this.block())
 	} catch(e: DiscardException) {
-		discardTree()
+		discardDiscardable()
 		null
 	}
 }

@@ -1,7 +1,9 @@
-package com.lhwdev.llang.source
+package com.lhwdev.llang.cst.util
 
 
-open class DiscardException(message: String) : RuntimeException(message) {
+open class DiscardException(message: String?) : RuntimeException(message) {
+	companion object : DiscardException(message = null)
+	
 	/**
 	 * Overridden for performance
 	 */
