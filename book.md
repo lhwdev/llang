@@ -1,24 +1,24 @@
 # Llang Compiler Book
 
 > **Note**: this is nothing but a method for me to explain myself how this whole ast structure,
-> lexer, parser and
+> tokenizer, parser and
 > compiler works. Nothing educational.
 
-## Tokens and Lexer
+## Tokens and Tokenizer
 
-> Note that tokenizer(lexer) phase is integrated into Cst parsing phase.
+> Note that tokenizer phase is integrated into Cst parsing phase.
 
 Tokens are like 'words' in English. They are flat(not nested/structured).
 It says how to split raw code into meaningful components.
 
-I decided to have a very simple handwritten lexer. Lexer is quite powerful that, even
+I decided to have a very simple handwritten tokenizer. Tokenizer is quite powerful that, even
 though I'm thinking of a very complex language inspired by Rust and Kotlin, I didn't
-squeeze my brain that much. Interface used by lexer
-([MutableCodeIterator](modules/tooling/lexer/src/commonMain/kotlin/com/lhwdev/llang/lexer/code/MutableCodeIterator.kt)
-and [LexerScope](modules/tooling/lexer/src/commonMain/kotlin/com/lhwdev/llang/lexer/LexerScope.kt))
+squeeze my brain that much. Interface used by tokenizer
+([MutableCodeIterator](modules/tooling/tokenizer/src/commonMain/kotlin/com/lhwdev/llang/tokenizer/code/MutableCodeIterator.kt)
+and [TokenizerScope](modules/tooling/tokenizer/src/commonMain/kotlin/com/lhwdev/llang/tokenizer/TokenizerScope.kt))
 is just a peek-able iterator with extra things.
 
-Ideally lexer can be defined stateless and large:
+Ideally tokenizer can be defined stateless and large:
 
 ``` kotlin
 fun analyzeLexically(code: LlangCode): List<Token>
@@ -45,7 +45,7 @@ println("Hello, ${user.name}!")
 `"`, `Hello, `, `${`, `user`, `.`, `name`, `}` is all separate tokens. One may think
 returning huge `StringLiteral("Hello, ", /* List<Token> for user.name */)` is easy,
 but for IC, we need to be flat. So we have 3 states: root, in string literal, 'in
-template expression in string literal'. This partially provides nesting for lexer.
+template expression in string literal'. This partially provides nesting for tokenizer.
 State is saved in stack, and when we pop it, we get parent state.
 
 In actual code, there is `val stringDepth: Int` in state, whose value is like:
@@ -60,7 +60,7 @@ This rule applies well when you nest template expression a lot.
 In pure functional programming, you can just pass stack of state along with `LlangCode`.
 But... I decided to write it like a state machine. Rewriting it in FP would be fun! (TODO?)
 
-So lexer is defined like this:
+So tokenizer is defined like this:
 
 ``` kotlin
 fun nextToken(code: LlangCode, index: Int, state: State): Pair<Token, StateUpdate>
@@ -115,7 +115,7 @@ code into tokens. Basic approach here is being conservative, ensuring soundness.
 
 4. **How far shell we go?**
 
-   After we go past boundary of `CodeModification`, (`offset >= newSpan.end`) if lexer
+   After we go past boundary of `CodeModification`, (`offset >= newSpan.end`) if tokenizer
    yield the same token in the same location and state, we can conclude that following
    tokens will be identical as lexing goes from start to end. 🚧 TODO: WIP
 

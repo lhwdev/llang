@@ -24,6 +24,10 @@ interface CstParseContext {
 	
 	fun <Node : CstNode> beginNode(allowWs: Boolean = true, light: Boolean = false): Node?
 	
+	fun <T> pushNodeLocalContext(key: CstLocalContextKey<T>, value: T)
+	
+	fun <T> getLocalContext(key: CstLocalContextKey<T>): T
+	
 	fun <Node : CstNode> beginDiscardable(): Node?
 	
 	
