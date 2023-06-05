@@ -1,6 +1,7 @@
 package com.lhwdev.llang.tokenizer.source
 
 import com.lhwdev.llang.parsing.util.ParseContext
+import com.lhwdev.llang.parsing.util.parseError
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenKind
 import com.lhwdev.llang.tokenizer.TokenizerContext
@@ -8,10 +9,6 @@ import com.lhwdev.llang.tokenizer.TokenizerContext
 
 interface CodeSource : ParseContext {
 	val next: CodeSequence
-	
-	// val unsafeIndex: Int
-	//
-	// val unsafeCode: CodeSequence
 	
 	
 	/// Token
@@ -21,6 +18,8 @@ interface CodeSource : ParseContext {
 	fun advance(count: Int = 1)
 	
 	fun buildToken(kind: TokenKind): Token
+	
+	fun resetToSpanStart()
 	
 	
 	/// Context
@@ -45,6 +44,14 @@ fun CodeSource.matches(text: String, offset: Int = 0): Boolean {
 		if(text[i] != next[i + offset]) return false
 	}
 	return true
+}
+
+fun CodeSource.advanceMatches(text: String) {
+	if(!matches(text)) {
+		parseError("expected $text, but encountered ${next.substring(0, text.length)}")
+	}
+	
+	advance(text.length)
 }
 
 fun CodeSource.advanceToEolAhead() {

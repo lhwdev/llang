@@ -9,8 +9,6 @@ fun CodeSource.requireEmpty() {
 	require(currentSpan.isEmpty()) { "non-empty span" }
 }
 
-fun CodeSource.mat
-
 inline fun CodeSource.token(block: CodeSource.() -> TokenKind): Token {
 	requireEmpty()
 	

@@ -1,8 +1,8 @@
 package com.lhwdev.llang.tokenizer
 
-interface TokenizerContext {
-	val location: ParseLocation
-}
+class TokenizerContext(
+	val location: ParseLocation,
+)
 
 sealed class ParseLocation {
 	/**

@@ -1,8 +1,6 @@
 package com.lhwdev.llang.cst
 
 import com.lhwdev.llang.parsing.util.ParseContext
-import com.lhwdev.llang.token.Token
-import com.lhwdev.llang.token.TokenKind
 
 
 // Possible context kind: declaration / statements / expression
@@ -18,10 +16,8 @@ interface CstParseContext : CstLocalContextSource, ParseContext {
 	annotation class InternalApi
 	
 	
-	/// Token / Cst Output
+	/// Token
 	val code: CstCodeSource
-	
-	fun token(kind: TokenKind): Token
 	
 	
 	// Local Context
@@ -44,6 +40,10 @@ interface CstParseContext : CstLocalContextSource, ParseContext {
 	@InternalApi
 	fun <Node : CstNode> beginNode(): Node?
 	
+	/**
+	 * Discardable node is intended to be very light. Nodes returned from discardable is not
+	 * cached for incremental parsing. If needed, wrap `discardable {}` with `node {}`.
+	 */
 	@InternalApi
 	fun <Node : CstNode> beginDiscardableNode(): Node?
 	
@@ -75,8 +75,13 @@ interface CstParseContext : CstLocalContextSource, ParseContext {
 		info: CstNodeInfo<Node>?
 	): Node?
 	
-	
-	fun resetCurrentDiscardableNode()
+	/**
+	 * Signal to parent discardable node that this node is not discardable. Great way to optimize
+	 * performance. No-op when parent node itself is not discardable node.
+	 *
+	 * Use cases: keyword(`class`, `fun`, `val` ...)
+	 */
+	fun preventDiscard()
 }
 
 @OptIn(CstParseContext.InternalApi::class)

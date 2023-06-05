@@ -57,5 +57,8 @@ class CstList<Item : CstNode, Separator : CstNode>(
 }
 
 
-fun <Item : CstNode> CstCommaList(c: CstParseContext, item: CstNodeFactory<Item>) =
-	CstList(c, item = item, separator = { cstLeaf(TokenKinds.Operation.Other.Comma) })
+fun <Item : CstNode> CstCommaList(c: CstParseContext, item: CstNodeFactory<Item>) = CstList(
+	c,
+	item = item,
+	separator = { cstLeaf(TokenKinds.Operation.Other.Comma, content = ",") }
+)

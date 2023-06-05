@@ -2,6 +2,8 @@ package com.lhwdev.llang.cst
 
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenKind
+import com.lhwdev.llang.tokenizer.source.advanceMatches
+import com.lhwdev.llang.tokenizer.token
 
 
 /**
@@ -11,7 +13,7 @@ class CstLeafNode(val token: Token) : CstNode {
 	companion object Info : CstNodeInfo<CstLeafNode>
 }
 
-fun CstParseContext.cstLeaf(tokenKind: TokenKind, length: Int): CstLeafNode {
-	beginNode<CstLeafNode>(light = true)?.let { return it }
-	endNode(CstLeafNode(code.token(tokenKind, length)))
+fun CstParseContext.cstLeaf(tokenKind: TokenKind, content: String): CstLeafNode = node {
+	val token = code.token(tokenKind) { advanceMatches(content) }
+	CstLeafNode(token)
 }

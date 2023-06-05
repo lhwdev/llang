@@ -5,3 +5,8 @@ interface ParseContext {
 	
 	fun parseError(exception: ParseException): Nothing
 }
+
+
+fun ParseContext.parseError(message: String): Nothing {
+	parseError(ParseException(message))
+}
