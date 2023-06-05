@@ -1,12 +1,12 @@
 package com.lhwdev.llang.cst.declaration
 
-import com.lhwdev.llang.cst.CstNodeKind
+import com.lhwdev.llang.cst.CstNodeInfo
 import com.lhwdev.llang.cst.CstParseContext
 import com.lhwdev.llang.token.TokenKinds
 
 
 class CstClass(c: CstParseContext) : CstDeclaration(c) {
-	companion object : CstNodeKind<CstClass>
+	companion object Info : CstNodeInfo<CstClass>
 	
 	override val annotations = c.cstAnnotation()
 	
