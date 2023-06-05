@@ -24,13 +24,35 @@ code -> cst(with token) -> ast -> fir -> ir
 - **cst**: target of code formatting. change of ast is applied here.
   This is merely a 'more structured token list'.
 
-  Note that we skipped 'tokenize' phase and 'tokens'.
+  Note that we merged 'tokenize' phase into 'Cst parsing phase'.
   Parsing tokens also requires some context (although less than cst),
   so I'm convinced that 'Why resolve same context two times? Just do
   everything at once.' As said earlier, cst is merely 'structured token
   list'. It's similar to the output of tokenizer, but more structured.
 
   ``` kotlin
+  // Note that all tokens including whitespace are actually saved in CstNodes, but they are
+  // saved separately by CstParseContext.
+  CstLocalVariableDeclaration(
+      modifiers = emptyList(),
+      kind = listOf(CstLeafNode(valToken)),
+      type = listOf(CstLeafNode(colonToken)),
+      initializer = CstInitializer(
+          equals = CstLeafNode(equalsToken),
+          expression = CstCall(
+              function = CstGetValue(CstIdentifier(queryToken)),
+              valueArguments = listOf(
+                  CstTuple(
+                      open = CstLeafNode(parenOpenToken),
+                      items = listOf(CstConstant.String("lhwdev"), commaToken, ...),
+                      close = CstLeafNode(parenCloseToken),
+                  )
+              )
+          )
+      ),
+  )
+  
+  // alternative declaration(including whitespace):
   CstLocalVariableDeclaration(
       modifiers = emptyList(),
       kind = listOf(valToken, whitespace),
@@ -38,11 +60,12 @@ code -> cst(with token) -> ast -> fir -> ir
       initializer = listOf(
           whitespace3, equalsToken, whitespace4,
           CstCall(
-              function = CstGetValue(queryToken),
+              function = CstGetValue(CstIdentifier(queryToken)),
               valueArguments = listOf(
-                  CstGroup(
+                  CstTuple(
                       open = parenOpenToken,
-                      content = listOf(CstConstant.String("lhwdev"), commaToken, ...)
+                      content = listOf(CstConstant.String("lhwdev"), commaToken, ...),
+                      close = parenCloseToken,
                   )
               )
           )

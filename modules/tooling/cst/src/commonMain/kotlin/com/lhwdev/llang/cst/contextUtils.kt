@@ -1,12 +1,8 @@
 package com.lhwdev.llang.cst
 
-import com.lhwdev.llang.cst.util.DiscardException
+import com.lhwdev.llang.parsing.util.DiscardException
 import com.lhwdev.llang.token.TokenKind
 
-
-fun CstParseContext.discard(exception: DiscardException = DiscardException): Nothing {
-	throw exception
-}
 
 fun CstParseContext.node(tokenKind: TokenKind): CstLeafNode {
 	return node { CstLeafNode(token(tokenKind)) }

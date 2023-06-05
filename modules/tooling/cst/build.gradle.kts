@@ -10,8 +10,12 @@ commonConfig.kotlin {
 	llangLibrary()
 	
 	dependencies {
+		implementation(kotlin("reflect"))
+		
 		implementation(projects.tooling.module)
 		implementation(projects.tooling.token)
 		implementation(projects.tooling.tokenizer)
+		implementation(projects.tooling.parserCommon)
+		implementation(projects.utils)
 	}
 }

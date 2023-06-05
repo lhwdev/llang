@@ -13,6 +13,7 @@ commonConfig.kotlin {
 		implementation(projects.tooling.module)
 		implementation(projects.tooling.token)
 		implementation(projects.tooling.tokenizer)
+		implementation(projects.tooling.parserCommon)
 		implementation(projects.tooling.cst)
 		implementation(projects.utils)
 	}

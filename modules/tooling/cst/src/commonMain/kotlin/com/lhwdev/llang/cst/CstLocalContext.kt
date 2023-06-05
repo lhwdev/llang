@@ -1,5 +1,11 @@
 package com.lhwdev.llang.cst
 
+import com.lhwdev.llang.tokenizer.ParseLocation
+
+
+interface CstLocalContextSource {
+	fun <T> getLocalContext(key: CstLocalContextKey<T>): T
+}
 
 interface CstLocalContextKey<T> {
 	context(CstCodeSource)
@@ -9,39 +15,15 @@ interface CstLocalContextKey<T> {
 
 class CstLocalContext(
 	val parent: CstLocalContext? = null,
-	val location: Location,
+	val location: ParseLocation,
 ) {
-	sealed class Location {
-		/**
-		 * Global or inside class.
-		 */
-		object Declarations : Location()
-		
-		/**
-		 * Inside BlockBody.
-		 */
-		object Statements : Location()
-		
-		/**
-		 * Inside ExpressionBody, defaultValue, parameter, operand etc.
-		 */
-		object Expression : Location()
-		
-		/**
-		 * Inside string literal.
-		 */
-		sealed class StringLiteral : Location() {
-			object Escaped : StringLiteral()
-			object Raw : StringLiteral()
-		}
-		
-		/**
-		 * Inside comment.
-		 */
-		sealed class Comment : Location() {
-			object Eol : Comment()
-			object Block : Comment()
-			object LDocBlock : Comment()
-		}
+	companion object : CstLocalContextKey<CstLocalContext> {
+		context(CstCodeSource)
+		override val defaultValue: CstLocalContext
+			get() = CstLocalContext(location = ParseLocation.Declarations)
 	}
+	
 }
+
+val CstLocalContextSource.localContext: CstLocalContext
+	get() = getLocalContext(CstLocalContext)
