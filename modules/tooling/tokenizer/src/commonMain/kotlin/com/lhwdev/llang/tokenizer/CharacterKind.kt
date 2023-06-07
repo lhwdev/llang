@@ -2,7 +2,7 @@ package com.lhwdev.llang.tokenizer
 
 
 object CharacterKind {
-	fun isLetter(char: Char): Boolean = char.isLetter()
+	fun isLetter(char: Char): Boolean = char.isLetter() || char == '_'
 	
 	fun isDigit(char: Char): Boolean = char.isDigit()
 	
