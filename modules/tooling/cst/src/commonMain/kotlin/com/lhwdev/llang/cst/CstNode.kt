@@ -24,6 +24,7 @@ interface CstNodeInfo<Node : CstNode> {
 	 *    - If no branch matches, go to 2.
 	 * 2. (otherwise,) find branch with 'least error'. Conditions considered for this is:
 	 *    - previous tree if exists; syntax can become broken for a short time while editing in IDE
+	 *      (eg: editing `val` into `var`)
 	 *    - TODO!
 	 */
 	fun dummyNode(): Node? = null

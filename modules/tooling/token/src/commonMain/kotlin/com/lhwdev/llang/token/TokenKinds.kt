@@ -16,6 +16,8 @@ sealed class LlTokenKind(debugName: String) : TokenKind(debugName) {
  * useless.
  */
 object TokenKinds {
+	object Illegal : LlTokenKind("illegal")
+	
 	sealed class Ws(debugName: String) : LlTokenKind(debugName)
 	
 	object Whitespace : Ws("whitespace")
@@ -47,7 +49,11 @@ object TokenKinds {
 	}
 	
 	
-	object Identifier : LlTokenKind("identifier")
+	sealed class Identifier(debugName: String) : LlTokenKind(debugName) {
+		object Simple : Identifier("simpleIdentifier")
+		
+		object Quoted : Identifier("`quoted identifier`")
+	}
 	
 	sealed class StringLiteral(debugName: String) : LlTokenKind(debugName) {
 		class QuoteBegin(debugName: String) : StringLiteral("$debugName begin")
@@ -91,9 +97,13 @@ object TokenKinds {
 	
 	class NumberLiteral(debugName: String) : LlTokenKind(debugName) {
 		companion object All : TokenKindSetBuilder("number literals") {
+			/**
+			 * Note: that literal is NumberLiteral.Integer does not mean that literal is going to be
+			 * the type of `Int`.
+			 */
 			val Integer = +NumberLiteral("integer")
 			
-			val hex = +NumberLiteral("hex")
+			val Hex = +NumberLiteral("hex")
 			
 			val Binary = +NumberLiteral("binary")
 			
@@ -180,6 +190,9 @@ object TokenKinds {
 				val NotIn = +Expression("!in")
 				
 				val Elvis = +Expression("?:")
+				
+				// Infix operator is handled by cst level; not token level.
+				// val Infix = +Expression("infix")
 			}
 		}
 		
@@ -254,7 +267,9 @@ object TokenKinds {
 	}
 	
 	
-	sealed class Keyword(debugName: String) : LlTokenKind(debugName) {
+	sealed class Special(debugName: String) : LlTokenKind(debugName)
+	
+	sealed class Keyword(debugName: String) : Special(debugName) {
 		class Module(debugName: String) : Keyword(debugName)
 		class Declaration(debugName: String) : Keyword(debugName)
 		class Literal(debugName: String) : Keyword(debugName)
@@ -325,7 +340,7 @@ object TokenKinds {
 		}
 	}
 	
-	sealed class SoftSpecial(debugName: String) : LlTokenKind(debugName)
+	sealed class SoftSpecial(debugName: String) : Special(debugName)
 	
 	class SoftKeyword(debugName: String) : SoftSpecial(debugName) {
 		companion object All : TokenKindSetBuilder("soft keywords") {
