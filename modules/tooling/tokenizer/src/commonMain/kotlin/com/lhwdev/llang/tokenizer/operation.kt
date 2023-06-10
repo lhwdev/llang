@@ -21,7 +21,7 @@ private fun CodeSource.parseBinaryOperation(): Token {
 	val next = peek()
 	
 	if(CharacterKind.isLetter(current)) token {
-		advanceOnIdentifier()
+		advanceIdentifier()
 		when(currentSpan) {
 			"in" -> TokenKinds.Operation.Expression.In
 			"is" -> TokenKinds.Operation.Expression.Is
@@ -34,7 +34,7 @@ private fun CodeSource.parseBinaryOperation(): Token {
 	return when(current) {
 		// Infix operator is handled by cst level; not token level.
 		'`' -> token(TokenKinds.Identifier.Quoted) {
-			advanceOnIdentifier()
+			advanceIdentifier()
 		}
 		
 		'+' -> when(next) {
@@ -69,11 +69,15 @@ private fun CodeSource.parseBinaryOperation(): Token {
 			}
 			
 			else -> if(CharacterKind.isLetter(current)) token {
-				advanceOnIdentifier()
+				advanceIdentifier()
 				when(currentSpan) {
 					"is" -> TokenKinds.Operation.Expression.NotIs
 					"in" -> TokenKinds.Operation.Expression.NotIn
+					
 					else -> TokenKinds.Illegal
+					// 'not infix' operator(ex: true !or false)
+					// -> just... use... 'nor'... not '!or'...
+					// else -> TokenKinds.Identifier.Simple
 				}
 			} else illegalToken()
 		}

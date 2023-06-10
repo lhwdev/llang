@@ -6,11 +6,6 @@ import com.lhwdev.llang.tokenizer.source.*
 
 
 fun CodeSource.parseNumber(): Token {
-	// Note: In case of float with leading dot(`.123`), handleOther -> handleNumber
-	
-	// TODO: how to handle illegal identifier after number? shell I handle in cst parsing?
-	//       like `12345abc`
-	
 	if(current == '0') when(peek()) {
 		'x' -> return token(TokenKinds.NumberLiteral.Hex) {
 			advance(2)

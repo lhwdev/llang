@@ -9,10 +9,10 @@ import com.lhwdev.utils.string.isLineBreak
 
 
 fun CodeSource.parseIdentifier(): Token = token {
-	advanceOnIdentifier()
+	advanceIdentifier()
 }
 
-fun CodeSource.advanceOnIdentifier(): TokenKind = if(current == '`') {
+fun CodeSource.advanceIdentifier(): TokenKind = if(current == '`') {
 	advance()
 	advanceWhile {
 		if(current.isLineBreak()) {
