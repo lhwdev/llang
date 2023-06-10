@@ -22,29 +22,57 @@ object TokenKinds {
 	
 	object Whitespace : Ws("whitespace")
 	
-	class Comment(debugName: String) : Ws(debugName) {
-		companion object All : TokenKindSetBuilder("comments") {
-			/**
-			 * Like `some code // comment`
-			 */
-			val Eol = +Comment("eol comment")
-			
-			/**
-			 * Like `code /* comment */ other code` which can span several lines
-			 */
-			val Block = +Comment("block comment")
-			
-			/**
-			 * Like `/** documentation */`. Semantically (mostly) identical to [Block] for
-			 * compilation etc., but needed for IDE support.
-			 */
-			val LDocBlock = +Comment("ldoc block comment")
-		}
-	}
+	object LineBreak : Ws("line break")
 	
-	class LDoc(debugName: String) : Ws("ldoc $debugName") {
-		companion object All : TokenKindSetBuilder("ldocs") {
-			// TODO
+	
+	sealed class Comment(debugName: String) : Ws(debugName) {
+		sealed class Kind(debugName: String) : TokenKindSetBuilder(debugName)
+		sealed class BlockKind(debugName: String) : Kind(debugName) {
+			abstract val Begin: CommentBegin
+			abstract val End: CommentEnd
+		}
+		
+		class CommentBegin(debugName: String, val kind: Kind) : Comment(debugName)
+		class CommentEnd(debugName: String, val kind: Kind) : Comment(debugName)
+		class Content(debugName: String) : Comment(debugName)
+		
+		
+		/**
+		 * Like `some code // comment`
+		 */
+		object Eol : Kind("eol comment") {
+			val Begin = +CommentBegin("//", this)
+		}
+		
+		/**
+		 * Like `code /* comment */ other code` which can span several lines
+		 */
+		object Block : BlockKind("block comment") {
+			override val Begin = +CommentBegin("/*", this)
+			override val End = +CommentEnd("*/", this)
+		}
+		
+		/**
+		 * Like `/** documentation */`. Semantically (mostly) identical to [Block] for
+		 * compilation etc., but needed for IDE support.
+		 */
+		object LDocBlock : BlockKind("ldoc block comment") {
+			class LDoc(debugName: String) : Ws("ldoc $debugName")
+			
+			override val Begin = +CommentBegin("/**", this)
+			override val End = +CommentEnd("*/", this)
+			
+			// TODO: ldoc elements
+		}
+		
+		companion object All : TokenKindSetBuilder("comments") {
+			init {
+				+Eol
+				+Block
+				+LDocBlock
+			}
+			
+			val Content = +Content("comment content")
 		}
 	}
 	
@@ -56,13 +84,13 @@ object TokenKinds {
 	}
 	
 	sealed class StringLiteral(debugName: String) : LlTokenKind(debugName) {
-		class QuoteBegin(debugName: String) : StringLiteral("$debugName begin")
-		class QuoteEnd(debugName: String) : StringLiteral("$debugName end")
+		class QuoteBegin(debugName: String, val quote: Quote) : StringLiteral("$debugName begin")
+		class QuoteEnd(debugName: String, val quote: Quote) : StringLiteral("$debugName end")
 		class Content(debugName: String) : StringLiteral(debugName)
 		
 		class Quote(debugName: String) : TokenKindSetBuilder(debugName) {
-			val Begin = +QuoteBegin(debugName)
-			val End = +QuoteEnd(debugName)
+			val Begin = +QuoteBegin(debugName, this)
+			val End = +QuoteEnd(debugName, this)
 		}
 		
 		companion object All : TokenKindSetBuilder("string literals") {

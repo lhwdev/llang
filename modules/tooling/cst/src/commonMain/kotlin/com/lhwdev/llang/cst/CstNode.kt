@@ -30,9 +30,6 @@ interface CstNodeInfo<Node : CstNode> {
 	fun dummyNode(): Node? = null
 }
 
-typealias CstNodeFactory<Node> = CstParseContext.() -> Node
-
-
 @Suppress("UNCHECKED_CAST")
 fun <Node : CstNode> KClass<Node>.nodeInfoOf(): CstNodeInfo<Node>? =
 	companionObject()?.objectInstance as? CstNodeInfo<Node>

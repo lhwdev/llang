@@ -1,13 +1,13 @@
 package com.lhwdev.llang.parsing.util
 
 
-open class LightException(message: String?) : RuntimeException(message) {
-	/**
-	 * Overridden for performance
-	 */
-	override fun fillInStackTrace(): Throwable {
-		return this
-	}
+open class LightException(message: String?) : RuntimeException(message, null, false, false) {
+	// /**
+	//  * Overridden for performance
+	//  */
+	// override fun fillInStackTrace(): Throwable {
+	// 	return this
+	// }
 }
 
 open class DiscardException(message: String?) : LightException(message) {

@@ -1,6 +1,6 @@
-package com.lhwdev.llang.cst
+package com.lhwdev.llang.parser
 
-import com.lhwdev.llang.tokenizer.ParseLocation
+import com.lhwdev.llang.parsing.ParseLocation
 
 
 interface CstLocalContextSource {

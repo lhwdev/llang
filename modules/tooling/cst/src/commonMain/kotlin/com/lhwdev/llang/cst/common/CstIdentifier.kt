@@ -2,18 +2,9 @@ package com.lhwdev.llang.cst.common
 
 import com.lhwdev.llang.cst.CstNode
 import com.lhwdev.llang.cst.CstNodeInfo
-import com.lhwdev.llang.cst.CstParseContext
-import com.lhwdev.llang.cst.node
-import com.lhwdev.llang.tokenizer.parseIdentifier
+import com.lhwdev.llang.token.Token
 
 
-class CstIdentifier(c: CstParseContext) : CstNode {
-	val token = c.code.parseIdentifier()
-	
+class CstIdentifier(val token: Token) : CstNode {
 	companion object Info : CstNodeInfo<CstIdentifier>
-}
-
-
-fun CstParseContext.cstIdentifier(): CstIdentifier = node {
-	CstIdentifier(this)
 }
