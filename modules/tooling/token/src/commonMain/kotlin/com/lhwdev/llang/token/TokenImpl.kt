@@ -2,6 +2,11 @@ package com.lhwdev.llang.token
 
 
 class TokenImpl(override var kind: TokenKind, override val code: String) : Token {
+	companion object {
+		fun dummy(kind: TokenKind, code: String): Token = TokenImpl(kind, code)
+	}
+	
+	
 	override fun equals(other: Any?): Boolean = when {
 		this === other -> true
 		other !is TokenImpl -> false

@@ -65,7 +65,7 @@ interface CstParseContext : CstLocalContextSource, ParseContext {
 	 * `null` otherwise.
 	 */
 	@InternalApi
-	fun <Node : CstNode> endNodeWithError(throwable: Throwable, info: CstNodeInfo<Node>?): Node?
+	fun <Node : CstNode> endNodeWithError(throwable: Throwable?, info: CstNodeInfo<Node>?): Node?
 	
 	/**
 	 * Returns node if graceful error handling is available and applicable for [Node].

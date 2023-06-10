@@ -1,4 +1,4 @@
-package com.lhwdev.llang.cst.common
+package com.lhwdev.llang.cst.core
 
 import com.lhwdev.llang.cst.CstNode
 import com.lhwdev.llang.cst.CstNodeInfo
