@@ -1,7 +1,6 @@
 package com.lhwdev.llang.tokenizer.source
 
 import com.lhwdev.llang.parsing.util.ParseContext
-import com.lhwdev.llang.parsing.util.parseError
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenKind
 import com.lhwdev.llang.tokenizer.CharacterKind
@@ -34,10 +33,16 @@ inline val CodeSource.eof: Boolean
 inline val CodeSource.current: Char
 	get() = next[0]
 
+fun CodeSource.advanceOne(): Char {
+	val current = current
+	advance()
+	return current
+}
+
 fun CodeSource.peek(index: Int = 1): Char =
 	next.getOrElse(index) { '\u0000' }
 
-fun CodeSource.match(text: String, offset: Int = 0): Boolean {
+fun CodeSource.matches(text: String, offset: Int = 0): Boolean {
 	val next = next
 	if(next.length + offset < text.length) return false
 	
@@ -47,7 +52,7 @@ fun CodeSource.match(text: String, offset: Int = 0): Boolean {
 	return true
 }
 
-fun CodeSource.matchWord(text: String, offset: Int = 0): Boolean {
+fun CodeSource.matchesWord(text: String, offset: Int = 0): Boolean {
 	val startOffset = currentSpan.length
 	var index = 0
 	if(!CharacterKind.isLetter(next[index]))
@@ -70,27 +75,46 @@ fun CodeSource.matchWord(text: String, offset: Int = 0): Boolean {
 
 fun CodeSource.advanceMatch(char: Char) {
 	if(current != char) {
-		parseError("expected $char, but encountered $current")
+		// parseError("expected $char, but encountered $current")
+		discard()
 	}
 	
 	advance()
 }
 
+fun CodeSource.matchesAdvance(char: Char): Boolean =
+	if(current == char) {
+		advance()
+		true
+	} else {
+		false
+	}
+
 inline fun CodeSource.advanceMatch(block: CodeSource.() -> Boolean) {
 	if(!block()) {
-		parseError("got $current")
+		// parseError("got $current")
+		discard()
 	}
 	
 	advance()
 }
 
 fun CodeSource.advanceMatch(text: String) {
-	if(!match(text)) {
-		parseError("expected $text, but encountered ${next.substring(0, text.length)}")
+	if(!matches(text)) {
+		// parseError("expected $text, but encountered ${next.substring(0, text.length)}")
+		discard()
 	}
 	
 	advance(text.length)
 }
+
+fun CodeSource.matchesAdvance(text: String): Boolean =
+	if(matches(text)) {
+		advance(text.length)
+		true
+	} else {
+		false
+	}
 
 fun CodeSource.advanceToAheadEol() {
 	while(!eof && !(current == '\n' || current == '\r')) {
