@@ -1,15 +1,15 @@
 package com.lhwdev.llang.tokenizer
 
 import com.lhwdev.llang.parsing.util.parseError
+import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenKinds
-import com.lhwdev.llang.tokenizer.source.*
+import com.lhwdev.llang.tokenizer.source.CodeSource
+import com.lhwdev.llang.tokenizer.source.advanceInWord
+import com.lhwdev.llang.tokenizer.source.requireNotEmpty
+import com.lhwdev.llang.tokenizer.source.token
 
 
-fun CodeSource.advanceInWord() {
-	advanceWhile { CharacterKind.isIdentifier(current) }
-}
-
-fun CodeSource.parseSpecial() = token {
+fun CodeSource.parseKeyword() = token {
 	advanceInWord()
 	requireNotEmpty()
 	
@@ -49,7 +49,15 @@ fun CodeSource.parseSpecial() = token {
 		"break" -> TokenKinds.Keyword.Break
 		"continue" -> TokenKinds.Keyword.Continue
 		
-		
+		else -> parseError("Expected special")
+	}
+}
+
+fun CodeSource.parseSoftKeyword(): Token = token {
+	advanceInWord()
+	requireNotEmpty()
+	
+	when(currentSpan.toString()) {
 		/// TokenKinds.SoftKeyword
 		"constructor" -> TokenKinds.SoftKeyword.Constructor
 		"init" -> TokenKinds.SoftKeyword.Constructor
@@ -60,7 +68,15 @@ fun CodeSource.parseSpecial() = token {
 		"by" -> TokenKinds.SoftKeyword.By
 		// "in" -> TokenKinds.SoftKeyword.ForIn // handled by cstFor
 		
-		
+		else -> parseError("Expected special")
+	}
+}
+
+fun CodeSource.parseModifier(): Token = token {
+	advanceInWord()
+	requireNotEmpty()
+	
+	when(currentSpan.toString()) {
 		/// TokenKinds.Modifier
 		"public" -> TokenKinds.Modifier.Public
 		"internal" -> TokenKinds.Modifier.Internal

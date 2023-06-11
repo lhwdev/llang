@@ -413,7 +413,7 @@ object TokenKinds {
 			
 			val Internal = +Visibility("internal")
 			
-			val Protected = +Visibility("protectted")
+			val Protected = +Visibility("protected")
 			
 			val Private = +Visibility("private")
 			

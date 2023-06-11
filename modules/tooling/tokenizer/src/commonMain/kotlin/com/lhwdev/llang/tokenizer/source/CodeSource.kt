@@ -127,3 +127,8 @@ inline fun CodeSource.advanceWhile(condition: CodeSource.() -> Boolean) {
 		advance()
 	}
 }
+
+fun CodeSource.advanceInWord() {
+	advanceMatch { CharacterKind.isLetter(current) }
+	advanceWhile { CharacterKind.isIdentifier(current) }
+}

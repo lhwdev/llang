@@ -19,7 +19,7 @@ interface CstNodeInfo<Node : CstNode> {
 	 * handled.
 	 *
 	 * For example, if wrong number literal exists, parser will do following steps:
-	 * 1. If inside discardable node & [CstParseContext.preventDiscard] was **not** called:
+	 * 1. If inside discardable node & CstParseContext.preventDiscard was **not** called:
 	 *    - throw [DiscardException] to escape discardable node
 	 *    - If no branch matches, go to 2.
 	 * 2. (otherwise,) find branch with 'least error'. Conditions considered for this is:

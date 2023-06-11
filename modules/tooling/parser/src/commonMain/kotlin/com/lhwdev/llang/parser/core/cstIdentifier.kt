@@ -6,6 +6,5 @@ import com.lhwdev.llang.parser.node
 import com.lhwdev.llang.tokenizer.parseIdentifier
 
 
-fun CstParseContext.cstIdentifier(): CstIdentifier = node {
-	CstIdentifier(code.parseIdentifier())
-}
+fun CstParseContext.cstIdentifier(): CstIdentifier =
+	node(CstIdentifier) { CstIdentifier(code.parseIdentifier()) }
