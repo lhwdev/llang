@@ -6,5 +6,6 @@ import com.lhwdev.llang.parser.structuredNode
 import com.lhwdev.llang.parser.util.cstSeparatedList
 
 
-fun CstParseContext.cstModality(): CstModality =
-	structuredNode(CstModality) { CstModality(cstSeparatedList(cstModifier, cstWs)) }
+fun CstParseContext.cstModality(): CstModality = structuredNode(CstModality) {
+	CstModality(cstSeparatedList(cstModifier, separatorBlock = { cstWsOrNull() }))
+}

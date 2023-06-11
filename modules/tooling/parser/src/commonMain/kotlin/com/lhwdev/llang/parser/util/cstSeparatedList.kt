@@ -11,14 +11,14 @@ import com.lhwdev.llang.parser.node
 
 fun <Item : CstNode, Separator : CstNode> CstParseContext.cstSeparatedList(
 	itemFactory: CstNodeFactory<Item>,
-	separatorFactory: CstNodeFactory<Separator>,
+	separatorBlock: CstParseContext.() -> Separator?,
 	// allowTrailing: Boolean = true // fixed to true
 ): CstSeparatedList<Item, Separator> = node(CstSeparatedList.info()) {
 	val items = mutableListOf<CstSeparatedListItem<Item, Separator>>()
 	
 	while(true) {
 		val item = discardable(itemFactory) ?: break
-		val separator = discardable(separatorFactory)
+		val separator = separatorBlock()
 		if(separator != null) {
 			items += CstSeparatedListItem(item, separator)
 		} else {

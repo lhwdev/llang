@@ -35,5 +35,9 @@ class CstComment(val nodes: List<CstWs>) : CstWs() {
 			CstComment(emptyList())
 	}
 	
-	class Content(val tokens: List<Token>) : CstWs()
+	class Begin(val token: Token) : CstWs()
+	
+	class End(val token: Token) : CstWs()
+	
+	class Content(val token: Token) : CstWs()
 }

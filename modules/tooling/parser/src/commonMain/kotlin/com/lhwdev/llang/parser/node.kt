@@ -9,8 +9,8 @@ import com.lhwdev.llang.cst.nodeInfoOf
 inline fun <Node : CstNode, Return> CstParseContext.rawNode(
 	kind: CstParseContext.NodeKind,
 	getInfo: () -> CstNodeInfo<Node>?,
-	crossinline block: CstParseContext.() -> Node,
-	onSuccess: (node: Node) -> Return,
+	block: CstParseContext.() -> Node,
+	onSuccess: (node: Node) -> Return, // workaround for forbidden `Node : CstNode, Node : Return`.
 	onError: (throwable: Throwable) -> Return,
 ): Return {
 	beginNode<Node>(kind)?.let { return onSuccess(it) }
@@ -33,24 +33,24 @@ inline fun <Node : CstNode, Return> CstParseContext.rawNode(
 }
 
 
-fun <Node : CstNode> CstParseContext.node(factory: CstNodeFactory<Node>): Node =
-	rawNode(
-		CstParseContext.NodeKind.Node,
-		getInfo = { factory.info },
-		block = { with(factory) { parse() } },
-		onSuccess = { it },
-		onError = { throw it })
+fun <Node : CstNode> CstParseContext.node(factory: CstNodeFactory<Node>): Node = rawNode(
+	CstParseContext.NodeKind.Node,
+	getInfo = { factory.info },
+	block = { with(factory) { parse() } },
+	onSuccess = { it },
+	onError = { throw it },
+)
 
 inline fun <Node : CstNode> CstParseContext.node(
 	info: CstNodeInfo<Node>?,
 	crossinline block: CstParseContext.() -> Node,
-): Node =
-	rawNode(
-		CstParseContext.NodeKind.Node,
-		getInfo = { info },
-		block = block,
-		onSuccess = { it },
-		onError = { throw it })
+): Node = rawNode(
+	CstParseContext.NodeKind.Node,
+	getInfo = { info },
+	block = block,
+	onSuccess = { it },
+	onError = { throw it },
+)
 
 inline fun <reified Node : CstNode> CstParseContext.node(
 	crossinline block: CstParseContext.() -> Node,
@@ -59,14 +59,15 @@ inline fun <reified Node : CstNode> CstParseContext.node(
 	getInfo = { nodeInfoOf<Node>() },
 	block = block,
 	onSuccess = { it },
-	onError = { throw it })
+	onError = { throw it },
+)
 
 fun <Node : CstNode> CstParseContext.structuredNode(factory: CstNodeFactory<Node>): Node = rawNode(
 	CstParseContext.NodeKind.StructuredNode,
 	getInfo = { factory.info },
 	block = { with(factory) { parse() } },
 	onSuccess = { it },
-	onError = { throw it }
+	onError = { throw it },
 )
 
 inline fun <Node : CstNode> CstParseContext.structuredNode(
@@ -77,7 +78,8 @@ inline fun <Node : CstNode> CstParseContext.structuredNode(
 	getInfo = { info },
 	block = block,
 	onSuccess = { it },
-	onError = { throw it })
+	onError = { throw it },
+)
 
 inline fun <reified Node : CstNode> CstParseContext.StructuredNode(
 	crossinline block: CstParseContext.() -> Node,
@@ -86,14 +88,15 @@ inline fun <reified Node : CstNode> CstParseContext.StructuredNode(
 	getInfo = { nodeInfoOf<Node>() },
 	block = block,
 	onSuccess = { it },
-	onError = { throw it })
+	onError = { throw it },
+)
 
 fun <Node : CstNode> CstParseContext.discardable(factory: CstNodeFactory<Node>): Node? = rawNode(
 	CstParseContext.NodeKind.Discardable,
 	getInfo = { factory.info },
 	block = { with(factory) { parse() } },
 	onSuccess = { it },
-	onError = { null }
+	onError = { null },
 )
 
 inline fun <Node : CstNode> CstParseContext.discardable(
@@ -104,7 +107,8 @@ inline fun <Node : CstNode> CstParseContext.discardable(
 	getInfo = { info },
 	block = block,
 	onSuccess = { it },
-	onError = { null })
+	onError = { null },
+)
 
 inline fun <reified Node : CstNode> CstParseContext.discardable(
 	crossinline block: CstParseContext.() -> Node,
@@ -113,5 +117,5 @@ inline fun <reified Node : CstNode> CstParseContext.discardable(
 	getInfo = { nodeInfoOf<Node>() },
 	block = block,
 	onSuccess = { it },
-	onError = { null }
+	onError = { null },
 )

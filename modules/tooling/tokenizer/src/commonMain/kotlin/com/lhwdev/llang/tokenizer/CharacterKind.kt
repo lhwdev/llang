@@ -8,7 +8,7 @@ object CharacterKind {
 	
 	fun isIdentifier(char: Char): Boolean = isLetter(char) || isDigit(char)
 	
-	fun isWhitespace(char: Char): Boolean = char.isWhitespace()
+	fun isWhitespace(char: Char): Boolean = !isLineBreak(char) && char.isWhitespace()
 	
 	fun isLineBreak(char: Char): Boolean = char == '\n' || char == '\r'
 }
