@@ -6,10 +6,13 @@ import com.lhwdev.llang.cst.nodeInfoOf
 
 
 @OptIn(CstParseContext.InternalApi::class)
-fun <Node : CstNode> CstParseContext.node(
-	factory: CstNodeFactory<Node>
-): Node {
-	beginNode<Node>()?.let { return it }
+fun <Node : CstNode, Return> CstParseContext.rawNode(
+	kind: CstParseContext.NodeKind,
+	factory: CstNodeFactory<Node>,
+	onSuccess: (node: Node) -> Return,
+	onError: (throwable: Throwable) -> Return,
+): Return {
+	beginNode<Node>(kind)?.let { return onSuccess(it) }
 	val nodeGroupId = currentNodeGroupId
 	return try {
 		val node = try {
@@ -17,128 +20,131 @@ fun <Node : CstNode> CstParseContext.node(
 		} finally {
 			beforeEndNodeDebugHint(nodeGroupId)
 		}
-		endNode(node)
+		onSuccess(endNode(node))
 	} catch(throwable: Throwable) {
-		endNodeWithError(throwable, factory.info) ?: throw throwable
-	}
-}
-
-@OptIn(CstParseContext.InternalApi::class)
-inline fun <Node : CstNode> CstParseContext.node(
-	info: CstNodeInfo<Node>,
-	crossinline block: CstParseContext.() -> Node
-): Node {
-	beginNode<Node>()?.let { return it }
-	val nodeGroupId = currentNodeGroupId
-	return try {
-		val node = try {
-			block()
-		} finally {
-			beforeEndNodeDebugHint(nodeGroupId)
-		}
-		endNode(node)
-	} catch(throwable: Throwable) {
-		endNodeWithError(throwable, info) ?: throw throwable
-	}
-}
-
-@OptIn(CstParseContext.InternalApi::class)
-inline fun <reified Node : CstNode> CstParseContext.node(
-	crossinline block: CstParseContext.() -> Node
-): Node {
-	beginNode<Node>()?.let { return it }
-	val nodeGroupId = currentNodeGroupId
-	return try {
-		val node = try {
-			block()
-		} finally {
-			beforeEndNodeDebugHint(nodeGroupId)
-		}
-		endNode(node)
-	} catch(throwable: Throwable) {
-		endNodeWithError(throwable, nodeInfoOf<Node>()) ?: throw throwable
-	}
-}
-
-@OptIn(CstParseContext.InternalApi::class)
-inline fun <Node : CstNode> CstParseContext.nullableNode(
-	info: CstNodeInfo<Node>,
-	crossinline block: CstParseContext.() -> Node?
-): Node? {
-	beginNode<Node>()?.let { return it }
-	val nodeGroupId = currentNodeGroupId
-	return try {
-		val node = try {
-			block()
-		} finally {
-			beforeEndNodeDebugHint(nodeGroupId)
-		}
-		if(node != null) {
-			endNode(node)
+		val dummy = endNodeWithError(throwable, factory.info)
+		if(dummy != null) {
+			onSuccess(dummy)
 		} else {
-			endNodeWithError(throwable = null, info)
+			onError(throwable)
 		}
-	} catch(throwable: Throwable) {
-		endNodeWithError(throwable, info) ?: throw throwable
 	}
 }
 
-/**
- * Basic primitive for implementing [CstList][com.lhwdev.llang.cst.util.CstSeparatedList],
- * [CstSelect][com.lhwdev.llang.cst.core.util.CstSelect] etc.
- * Useful for branching such as: 'possible patterns: [A, B] or [C, D, E]'.
- */
 @OptIn(CstParseContext.InternalApi::class)
-fun <Node : CstNode> CstParseContext.discardable(
-	factory: CstNodeFactory<Node>
-): Node? {
-	beginDiscardableNode<Node>()?.let { return it }
+inline fun <Node : CstNode, Return> CstParseContext.rawNode(
+	kind: CstParseContext.NodeKind,
+	info: CstNodeInfo<Node>?,
+	crossinline block: CstParseContext.() -> Node,
+	onSuccess: (node: Node) -> Return,
+	onError: (throwable: Throwable) -> Return,
+): Return {
+	beginNode<Node>(kind)?.let { return onSuccess(it) }
 	val nodeGroupId = currentNodeGroupId
 	return try {
 		val node = try {
-			with(factory) { parse() }
+			block()
 		} finally {
 			beforeEndNodeDebugHint(nodeGroupId)
 		}
-		endDiscardableNode(node)
+		onSuccess(endNode(node))
 	} catch(throwable: Throwable) {
-		endDiscardableNodeWithError(throwable, factory.info)
+		val dummy = endNodeWithError(throwable, info)
+		if(dummy != null) {
+			onSuccess(dummy)
+		} else {
+			onError(throwable)
+		}
 	}
 }
 
 @OptIn(CstParseContext.InternalApi::class)
+inline fun <reified Node : CstNode, Return> CstParseContext.rawNode(
+	kind: CstParseContext.NodeKind,
+	crossinline block: CstParseContext.() -> Node,
+	onSuccess: (node: Node) -> Return,
+	onError: (throwable: Throwable) -> Return,
+): Return {
+	beginNode<Node>(kind)?.let { return onSuccess(it) }
+	val nodeGroupId = currentNodeGroupId
+	return try {
+		val node = try {
+			block()
+		} finally {
+			beforeEndNodeDebugHint(nodeGroupId)
+		}
+		onSuccess(endNode(node))
+	} catch(throwable: Throwable) {
+		val dummy = endNodeWithError(throwable, nodeInfoOf<Node>())
+		if(dummy != null) {
+			onSuccess(dummy)
+		} else {
+			onError(throwable)
+		}
+	}
+}
+
+
+fun <Node : CstNode> CstParseContext.node(factory: CstNodeFactory<Node>): Node =
+	rawNode(CstParseContext.NodeKind.Node, factory, onSuccess = { it }, onError = { throw it })
+
+inline fun <Node : CstNode> CstParseContext.node(
+	info: CstNodeInfo<Node>?,
+	crossinline block: CstParseContext.() -> Node,
+): Node =
+	rawNode(CstParseContext.NodeKind.Node, info, block, onSuccess = { it }, onError = { throw it })
+
+inline fun <reified Node : CstNode> CstParseContext.node(
+	crossinline block: CstParseContext.() -> Node,
+): Node = rawNode(CstParseContext.NodeKind.Node, block, onSuccess = { it }, onError = { throw it })
+
+fun <Node : CstNode> CstParseContext.structuredNode(factory: CstNodeFactory<Node>): Node = rawNode(
+	CstParseContext.NodeKind.StructuredNode,
+	factory,
+	onSuccess = { it },
+	onError = { throw it }
+)
+
+inline fun <Node : CstNode> CstParseContext.structuredNode(
+	info: CstNodeInfo<Node>?,
+	crossinline block: CstParseContext.() -> Node,
+): Node = rawNode(
+	CstParseContext.NodeKind.StructuredNode,
+	info,
+	block,
+	onSuccess = { it },
+	onError = { throw it })
+
+inline fun <reified Node : CstNode> CstParseContext.StructuredNode(
+	crossinline block: CstParseContext.() -> Node,
+): Node = rawNode(
+	CstParseContext.NodeKind.StructuredNode,
+	block,
+	onSuccess = { it },
+	onError = { throw it })
+
+fun <Node : CstNode> CstParseContext.discardable(factory: CstNodeFactory<Node>): Node? = rawNode(
+	CstParseContext.NodeKind.Discardable,
+	factory,
+	onSuccess = { it },
+	onError = { null }
+)
+
 inline fun <Node : CstNode> CstParseContext.discardable(
-	info: CstNodeInfo<Node>,
-	block: CstParseContext.() -> Node,
-): Node? {
-	beginDiscardableNode<Node>()?.let { return it }
-	val nodeGroupId = currentNodeGroupId
-	return try {
-		val node = try {
-			block()
-		} finally {
-			beforeEndNodeDebugHint(nodeGroupId)
-		}
-		endDiscardableNode(node)
-	} catch(throwable: Throwable) {
-		endDiscardableNodeWithError(throwable, info)
-	}
-}
+	info: CstNodeInfo<Node>?,
+	crossinline block: CstParseContext.() -> Node,
+): Node? = rawNode(
+	CstParseContext.NodeKind.Discardable,
+	info,
+	block,
+	onSuccess = { it },
+	onError = { null })
 
-@OptIn(CstParseContext.InternalApi::class)
 inline fun <reified Node : CstNode> CstParseContext.discardable(
-	block: CstParseContext.() -> Node
-): Node? {
-	beginDiscardableNode<Node>()?.let { return it }
-	val nodeGroupId = currentNodeGroupId
-	return try {
-		val node = try {
-			block()
-		} finally {
-			beforeEndNodeDebugHint(nodeGroupId)
-		}
-		endDiscardableNode(node)
-	} catch(throwable: Throwable) {
-		endDiscardableNodeWithError(throwable, nodeInfoOf<Node>())
-	}
-}
+	crossinline block: CstParseContext.() -> Node,
+): Node? = rawNode(
+	CstParseContext.NodeKind.Discardable,
+	block,
+	onSuccess = { it },
+	onError = { null }
+)

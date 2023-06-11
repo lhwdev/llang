@@ -31,6 +31,10 @@ fun CodeSource.token(kind: TokenKind, length: Int = 1): Token = token(kind) {
 	advance(length)
 }
 
+fun CodeSource.parseToken(kind: TokenKind, content: String): Token = token(kind) {
+	advanceMatch(content)
+}
+
 fun CodeSource.illegalToken(length: Int = 1): Token =
 	token(kind = TokenKinds.Illegal, length = length)
 

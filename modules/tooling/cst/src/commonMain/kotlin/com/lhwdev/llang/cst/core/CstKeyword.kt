@@ -1,6 +1,5 @@
 package com.lhwdev.llang.cst.core
 
-import com.lhwdev.llang.cst.CstLeafNode
 import com.lhwdev.llang.cst.CstNodeInfo
 import com.lhwdev.llang.token.Token
 

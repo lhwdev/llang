@@ -5,7 +5,7 @@ import com.lhwdev.llang.cst.CstNodeInfo
 import com.lhwdev.llang.cst.nodeInfoOf
 
 interface CstNodeFactory<Node : CstNode> {
-	val info: CstNodeInfo<Node>
+	val info: CstNodeInfo<Node>?
 	
 	fun CstParseContext.parse(): Node
 }

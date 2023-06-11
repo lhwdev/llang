@@ -7,7 +7,11 @@ import com.lhwdev.llang.token.TokenImpl
 import com.lhwdev.llang.token.TokenKinds
 
 
-abstract class CstWs : CstNode
+abstract class CstWs : CstNode {
+	companion object Info : CstNodeInfo<CstWs> {
+		override fun dummyNode() = CstWhitespace.dummyNode()
+	}
+}
 
 
 class CstWhitespace(val token: Token) : CstWs() {
