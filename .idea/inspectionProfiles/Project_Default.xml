@@ -193,6 +193,9 @@
     <inspection_tool class="ProhibitUseSiteTargetAnnotationsOnSuperTypesMigration" enabled="true" level="ERROR" enabled_by_default="true" />
     <inspection_tool class="ProjectFingerprint" enabled="false" level="WARNING" enabled_by_default="false" />
     <inspection_tool class="PropertyAndIvarTypeMismatch" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="PropertyName" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="namePattern" value="[A-Za-z][A-Za-z\d]*" />
+    </inspection_tool>
     <inspection_tool class="PublicField" enabled="false" level="WARNING" enabled_by_default="false">
       <option name="ignoreEnums" value="false" />
       <option name="ignorableAnnotations">

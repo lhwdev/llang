@@ -26,12 +26,15 @@ interface CstNodeInfo<Node : CstNode> {
 	 *    - previous tree if exists; syntax can become broken for a short time while editing in IDE
 	 *      (eg: editing `val` into `var`)
 	 *    - TODO!
+	 *
+	 * Return null to disable graceful handling for this node. For example, keywords force the node
+	 * to be parsed only in certain ways.
 	 */
-	fun dummyNode(): Node? = null
+	fun dummyNode(): Node?
 }
 
-@Suppress("UNCHECKED_CAST")
-fun <Node : CstNode> KClass<Node>.nodeInfoOf(): CstNodeInfo<Node>? =
+@Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
+inline fun <Node : CstNode> KClass<Node>.nodeInfoOf(): CstNodeInfo<Node>? =
 	companionObject()?.objectInstance as? CstNodeInfo<Node>
 
 

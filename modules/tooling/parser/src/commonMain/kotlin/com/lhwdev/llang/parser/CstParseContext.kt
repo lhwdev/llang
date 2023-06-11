@@ -78,10 +78,10 @@ interface CstParseContext : CstLocalContextSource, ParseContext {
 	): Node?
 	
 	/**
-	 * Signal to parent discardable node that this node is not discardable. Great way to optimize
-	 * performance. No-op when parent node itself is not discardable node.
+	 * Signal to current discardable node that do not discard itself. Great way to optimize
+	 * performance. No-op when current node is not discardable node.
 	 *
-	 * Use cases: keyword(`class`, `fun`, `val` ...)
+	 * Use cases: keyword(`class`, `fun`, `val` ...), some operators
 	 */
 	fun preventDiscard()
 }

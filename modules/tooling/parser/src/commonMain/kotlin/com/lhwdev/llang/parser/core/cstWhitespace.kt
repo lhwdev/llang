@@ -8,7 +8,7 @@ import com.lhwdev.llang.tokenizer.parseWhitespace
 
 
 fun CstParseContext.cstWhitespace(): CstWhitespace =
-	node { CstWhitespace(code.parseWhitespace() ?: discard()) }
+	node(CstWhitespace) { CstWhitespace(code.parseWhitespace() ?: discard()) }
 
 fun CstParseContext.cstWhitespaceOrNull(): CstWhitespace? =
 	nullableNode(CstWhitespace) { code.parseWhitespace()?.let { CstWhitespace(it) } }
