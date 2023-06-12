@@ -4,7 +4,7 @@ import com.lhwdev.llang.cst.CstNodeInfo
 import com.lhwdev.llang.token.Token
 
 
-class CstIdentifier(token: Token) : CstLeafNode(token) {
+class CstIdentifier(token: Token) : CstLeafNode(token), CstAccessTarget {
 	companion object Info : CstNodeInfo<CstIdentifier> {
 		override fun dummyNode() = null
 		

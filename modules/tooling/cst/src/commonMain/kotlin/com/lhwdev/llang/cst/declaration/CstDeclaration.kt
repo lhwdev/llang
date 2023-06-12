@@ -10,6 +10,10 @@ interface CstDeclaration : CstStatement {
 }
 
 
-interface CstMemberDeclaration : CstDeclaration {
+interface CstAccessibleDeclaration : CstDeclaration {
+	val visibility: CstVisibility
+}
+
+interface CstMemberDeclaration : CstAccessibleDeclaration {
 	val modality: CstModality
 }
