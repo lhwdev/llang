@@ -4,12 +4,12 @@ import com.lhwdev.llang.cst.core.CstComment
 import com.lhwdev.llang.cst.core.CstLineBreak
 import com.lhwdev.llang.cst.core.CstWhitespace
 import com.lhwdev.llang.cst.core.CstWs
-import com.lhwdev.llang.parser.*
+import com.lhwdev.llang.parser.CstParseContext
+import com.lhwdev.llang.parser.node
+import com.lhwdev.llang.parser.nullableNode
+import com.lhwdev.llang.parser.nullableStructuredNode
 import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.*
-
-
-val cstWs = CstNodeFactory { cstWs() }
 
 
 fun CstParseContext.cstWs(): CstWs = node(CstWs) {

@@ -4,7 +4,7 @@ MOSTLY EQUAL TO KOTLIN YEAH
 
 ## Difference
 
-- `var` = mutable, `val` = immutable
+- `var` = mutable, `val` = read-only, `const` = immutable
 - no `null`, `Option` instead
 - keyword `type` (replacement for `typealias` but superior..?)
 - associated type, on top of generics like T.Error

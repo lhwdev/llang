@@ -9,4 +9,5 @@ import com.lhwdev.llang.token.Token
  */
 open class CstLeafNode(val token: Token) : CstNode {
 	class Comma(token: Token) : CstLeafNode(token)
+	class Dot(token: Token) : CstLeafNode(token)
 }
