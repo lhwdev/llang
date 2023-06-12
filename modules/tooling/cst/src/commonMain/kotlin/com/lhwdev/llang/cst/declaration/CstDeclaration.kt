@@ -1,19 +1,19 @@
 package com.lhwdev.llang.cst.declaration
 
 import com.lhwdev.llang.cst.core.CstIdentifier
+import com.lhwdev.llang.cst.core.CstModifiers
 import com.lhwdev.llang.cst.statement.CstStatement
 
 
 interface CstDeclaration : CstStatement {
-	val name: CstIdentifier
+	val modifiers: CstModifiers
 	
+	val name: CstIdentifier
 }
 
 
-interface CstAccessibleDeclaration : CstDeclaration {
-	val visibility: CstVisibility
-}
+interface CstAccessibleDeclaration : CstDeclaration
 
-interface CstMemberDeclaration : CstAccessibleDeclaration {
-	val modality: CstModality
-}
+interface CstMemberDeclaration : CstAccessibleDeclaration
+
+interface CstLocalDeclaration : CstDeclaration
