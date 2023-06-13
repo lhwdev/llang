@@ -1,6 +1,7 @@
 package com.lhwdev.llang.cst.declaration
 
 import com.lhwdev.llang.cst.CstNode
+import com.lhwdev.llang.cst.CstNodeInfo
 import com.lhwdev.llang.cst.core.CstIdentifier
 import com.lhwdev.llang.cst.core.CstLeafNode
 import com.lhwdev.llang.cst.core.CstModifiers
@@ -8,22 +9,29 @@ import com.lhwdev.llang.cst.expression.CstExpression
 import com.lhwdev.llang.cst.type.CstType
 import com.lhwdev.llang.cst.util.CstOptional
 import com.lhwdev.llang.token.Token
+import com.lhwdev.llang.token.TokenImpl
 
 
 /**
  * `val` / `var` / `const`
  */
-class CstVariableKind(token: Token) : CstLeafNode(token)
+class CstVariableKind(token: Token) : CstLeafNode(token) {
+	companion object Info : CstNodeInfo<CstVariableKind> {
+		override fun dummyNode() = CstVariableKind(TokenImpl.dummyIllegal())
+	}
+}
 
 
 sealed class CstVariable(
-	override val modifiers: CstModifiers, // context/(expect/actual)
+	override val modifiers: CstModifiers,
 	val kind: CstVariableKind, // const/val/var
 	override val name: CstIdentifier,
 	val type: CstOptional<CstType>,
 	val accessor: Accessor,
 ) : CstDeclaration {
 	sealed class Accessor : CstNode
+	
+	object NoAccessor : Accessor()
 	
 	class Delegation(val to: CstExpression) : Accessor()
 	
@@ -41,7 +49,17 @@ class CstStandaloneVariable(
 	name: CstIdentifier,
 	type: CstOptional<CstType>,
 	accessor: Accessor,
-) : CstVariable(modifiers, kind, name, type, accessor), CstAccessibleDeclaration
+) : CstVariable(modifiers, kind, name, type, accessor), CstStandaloneDeclaration {
+	companion object Info : CstNodeInfo<CstStandaloneVariable> {
+		override fun dummyNode() = CstStandaloneVariable(
+			modifiers = CstModifiers.dummyNode(),
+			kind = CstVariableKind.dummyNode(),
+			name = CstIdentifier.dummyNode(),
+			type = CstOptional.dummyNode(),
+			accessor = NoAccessor,
+		)
+	}
+}
 
 class CstLocalVariable(
 	modifiers: CstModifiers,

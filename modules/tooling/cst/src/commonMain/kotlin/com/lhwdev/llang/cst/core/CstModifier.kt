@@ -5,12 +5,11 @@ import com.lhwdev.llang.cst.CstNodeInfo
 import com.lhwdev.llang.cst.util.CstList
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenImpl
-import com.lhwdev.llang.token.TokenKinds
 
 
 class CstModifier(token: Token) : CstLeafNode(token) {
 	companion object Info : CstNodeInfo<CstModifier> {
-		override fun dummyNode() = CstModifier(TokenImpl.dummy(TokenKinds.Illegal, ""))
+		override fun dummyNode() = CstModifier(TokenImpl.dummyIllegal())
 	}
 }
 

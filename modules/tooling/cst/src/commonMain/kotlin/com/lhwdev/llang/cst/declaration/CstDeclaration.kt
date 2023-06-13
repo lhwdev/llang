@@ -14,6 +14,8 @@ interface CstDeclaration : CstStatement {
 
 interface CstAccessibleDeclaration : CstDeclaration
 
+interface CstStandaloneDeclaration : CstAccessibleDeclaration
+
 interface CstMemberDeclaration : CstAccessibleDeclaration
 
 interface CstLocalDeclaration : CstDeclaration
