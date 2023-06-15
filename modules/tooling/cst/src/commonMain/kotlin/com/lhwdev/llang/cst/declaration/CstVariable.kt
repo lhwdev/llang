@@ -73,17 +73,21 @@ class CstStandaloneVariable(
 }
 
 class CstLocalVariable(
+	annotations: CstAnnotations,
+	context: CstContextDeclaration,
 	modifiers: CstModifiers,
 	kind: CstVariableKind,
 	name: CstIdentifier,
 	type: CstOptional<CstType>,
 	accessor: Accessor,
-) : CstVariable(modifiers, kind, name, type, accessor), CstLocalDeclaration
+) : CstVariable(annotations, context, modifiers, kind, name, type, accessor), CstLocalDeclaration
 
 class CstMemberVariable(
 	modifiers: CstModifiers,
+	annotations: CstAnnotations,
+	context: CstContextDeclaration,
 	kind: CstVariableKind,
 	name: CstIdentifier,
 	type: CstOptional<CstType>,
 	accessor: Accessor,
-) : CstVariable(modifiers, kind, name, type, accessor), CstMemberDeclaration
+) : CstVariable(annotations, context, modifiers, kind, name, type, accessor), CstMemberDeclaration
