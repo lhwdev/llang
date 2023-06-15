@@ -11,6 +11,8 @@ interface CstDeclarationLike : CstNode
 
 
 interface CstDeclaration : CstDeclarationLike, CstStatement {
+	val annotations: CstAnnotations
+	
 	var prefixWss: CstWss
 	
 	val modifiers: CstModifiers

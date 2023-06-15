@@ -23,6 +23,8 @@ class CstVariableKind(token: Token) : CstLeafNode(token) {
 
 
 sealed class CstVariable(
+	override val annotations: CstAnnotations,
+	val context: CstContextDeclaration,
 	override val modifiers: CstModifiers,
 	val kind: CstVariableKind, // const/val/var
 	override val name: CstIdentifier,
@@ -49,14 +51,18 @@ sealed class CstVariable(
 
 class CstStandaloneVariable(
 	annotations: CstAnnotations,
+	context: CstContextDeclaration,
 	modifiers: CstModifiers,
 	kind: CstVariableKind,
 	name: CstIdentifier,
 	type: CstOptional<CstType>,
 	accessor: Accessor,
-) : CstVariable(modifiers, kind, name, type, accessor), CstStandaloneDeclaration {
+) : CstVariable(annotations, context, modifiers, kind, name, type, accessor),
+	CstStandaloneDeclaration {
 	companion object Info : CstNodeInfo<CstStandaloneVariable> {
 		override fun dummyNode() = CstStandaloneVariable(
+			annotations = CstAnnotations.dummyNode(),
+			context = CstContextDeclaration.dummyNode(),
 			modifiers = CstModifiers.dummyNode(),
 			kind = CstVariableKind.dummyNode(),
 			name = CstIdentifier.dummyNode(),
