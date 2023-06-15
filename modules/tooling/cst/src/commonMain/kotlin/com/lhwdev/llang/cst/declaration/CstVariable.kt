@@ -29,7 +29,11 @@ sealed class CstVariable(
 	val type: CstOptional<CstType>,
 	val accessor: Accessor,
 ) : CstDeclaration {
-	sealed class Accessor : CstNode
+	sealed class Accessor : CstNode {
+		companion object Info : CstNodeInfo<Accessor> {
+			override fun dummyNode() = NoAccessor
+		}
+	}
 	
 	object NoAccessor : Accessor()
 	
@@ -44,6 +48,7 @@ sealed class CstVariable(
 
 
 class CstStandaloneVariable(
+	annotations: CstAnnotations,
 	modifiers: CstModifiers,
 	kind: CstVariableKind,
 	name: CstIdentifier,

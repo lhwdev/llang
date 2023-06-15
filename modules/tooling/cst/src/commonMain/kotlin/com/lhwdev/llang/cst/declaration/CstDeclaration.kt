@@ -1,12 +1,16 @@
 package com.lhwdev.llang.cst.declaration
 
+import com.lhwdev.llang.cst.CstNode
 import com.lhwdev.llang.cst.core.CstIdentifier
 import com.lhwdev.llang.cst.core.CstModifiers
 import com.lhwdev.llang.cst.core.CstWss
 import com.lhwdev.llang.cst.statement.CstStatement
 
 
-interface CstDeclaration : CstStatement {
+interface CstDeclarationLike : CstNode
+
+
+interface CstDeclaration : CstDeclarationLike, CstStatement {
 	var prefixWss: CstWss
 	
 	val modifiers: CstModifiers

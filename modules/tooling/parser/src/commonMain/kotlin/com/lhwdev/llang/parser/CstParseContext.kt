@@ -41,6 +41,16 @@ interface CstParseContext : CstLocalContextSource, ParseContext {
 	val currentNodeGroupId: Long
 		get() = 0
 	
+	/**
+	 * Disables inserting implicit node for current node group..
+	 */
+	fun disableAdjacentImplicitNode()
+	
+	/**
+	 * If there is one or more child nodes in this node, implicit node such as CstWss is parsed
+	 * while [beginNode] is being called, to ensure proper spacing between nodes.
+	 * If you don't want this behavior, call [disableAdjacentImplicitNode].
+	 */
 	@InternalApi
 	fun <Node : CstNode> beginNode(kind: NodeKind): Node?
 	

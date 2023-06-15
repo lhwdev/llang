@@ -14,11 +14,13 @@ fun CodeSource.requireNotEmpty() {
 	parseRequire(currentSpan.isNotEmpty()) { "empty span" }
 }
 
-inline fun CodeSource.token(block: CodeSource.() -> TokenKind): Token {
+inline fun CodeSource.token(block: CodeSource.() -> TokenKind): Token = try {
 	requireEmpty()
 	
 	val kind = block()
-	return buildToken(kind)
+	buildToken(kind)
+} finally {
+	resetToSpanStart()
 }
 
 inline fun CodeSource.token(kind: TokenKind, block: CodeSource.() -> Unit): Token =
@@ -41,11 +43,3 @@ fun CodeSource.parseTokenOrNull(kind: TokenKind, content: String): Token? = toke
 
 fun CodeSource.illegalToken(length: Int = 1): Token =
 	token(kind = TokenKinds.Illegal, length = length)
-
-inline fun CodeSource.tokenOrNull(block: CodeSource.() -> Token): Token? = try {
-	block()
-} catch(throwable: Throwable) {
-	resetToSpanStart()
-	null
-}
-

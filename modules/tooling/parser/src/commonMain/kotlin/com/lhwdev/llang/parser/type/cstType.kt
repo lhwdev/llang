@@ -10,7 +10,6 @@ import com.lhwdev.llang.tokenizer.source.parseTokenOrNull
 
 
 fun CstParseContext.cstDeclarationQuoteType(): CstOptional<CstType> = node {
-	cstWssOrEmpty()
 	code.parseTokenOrNull(TokenKinds.Operation.Other.Colon, ":") ?: return@node CstOptional()
 	cstWssOrEmpty()
 	CstOptional(cstType())

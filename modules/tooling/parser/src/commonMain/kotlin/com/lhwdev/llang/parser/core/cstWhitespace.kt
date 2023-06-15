@@ -5,7 +5,7 @@ import com.lhwdev.llang.parser.CstParseContext
 import com.lhwdev.llang.parser.node
 import com.lhwdev.llang.parser.nullableNode
 import com.lhwdev.llang.parser.nullableStructuredNode
-import com.lhwdev.llang.parser.util.cstListInline
+import com.lhwdev.llang.parser.util.cstWsSeparatedListInline
 import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.*
 
@@ -18,8 +18,19 @@ fun CstParseContext.cstWsOrNull(): CstWs? = nullableNode(CstWs) {
 	cstWhitespaceOrNull() ?: cstLineBreakOrNull() ?: cstCommentOrNull()
 }
 
+fun CstParseContext.cstWss(): CstWss = node(CstWss) {
+	disableAdjacentImplicitNode() // maybe cause infinite recursion; cstWss is used by CstParseContext
+	val nodes = mutableListOf<CstWs>()
+	while(true) {
+		val node = cstWsOrNull() ?: break
+		nodes += node
+	}
+	
+	CstWss(nodes)
+}
+
 fun CstParseContext.cstWssOrEmpty(): CstWss = node(CstWss) {
-	CstWss(cstListInline { cstWsOrNull() })
+	CstWss(cstWsSeparatedListInline { cstWsOrNull() })
 }
 
 

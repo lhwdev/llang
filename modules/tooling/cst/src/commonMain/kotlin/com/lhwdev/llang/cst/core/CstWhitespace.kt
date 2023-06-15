@@ -2,15 +2,14 @@ package com.lhwdev.llang.cst.core
 
 import com.lhwdev.llang.cst.CstNode
 import com.lhwdev.llang.cst.CstNodeInfo
-import com.lhwdev.llang.cst.util.CstList
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenImpl
 import com.lhwdev.llang.token.TokenKinds
 
 
-class CstWss(val nodes: CstList<CstWs>) : CstNode {
+class CstWss(val nodes: List<CstWs>) : CstNode {
 	companion object Info : CstNodeInfo<CstWss> {
-		override fun dummyNode() = CstWss(CstList(emptyList()))
+		override fun dummyNode() = CstWss(emptyList())
 	}
 }
 

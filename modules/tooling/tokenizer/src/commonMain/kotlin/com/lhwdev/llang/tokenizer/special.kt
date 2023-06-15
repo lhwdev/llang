@@ -74,7 +74,7 @@ fun CodeSource.parseSoftKeyword(): Token = token {
 	}
 }
 
-fun CodeSource.parseModifier(): Token = token {
+fun CodeSource.parseModifierOrNull(): Token? = token {
 	when(advanceInWordNotEmpty().toString()) {
 		/// TokenKinds.Modifier
 		"public" -> TokenKinds.Modifier.Public
@@ -110,6 +110,6 @@ fun CodeSource.parseModifier(): Token = token {
 		"vararg" -> TokenKinds.Modifier.Vararg
 		"crossinline" -> TokenKinds.Modifier.Crossinline
 		
-		else -> parseError("Expected special")
+		else -> return null
 	}
 }

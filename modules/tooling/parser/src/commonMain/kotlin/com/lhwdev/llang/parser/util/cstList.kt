@@ -1,18 +1,18 @@
 package com.lhwdev.llang.parser.util
 
 import com.lhwdev.llang.cst.CstNode
-import com.lhwdev.llang.cst.util.CstList
+import com.lhwdev.llang.cst.util.CstWsSeparatedList
 import com.lhwdev.llang.parser.CstParseContext
 import com.lhwdev.llang.parser.node
 
 
-inline fun <reified Item : CstNode> CstParseContext.cstList(
+inline fun <reified Item : CstNode> CstParseContext.cstWsSeparatedList(
 	crossinline block: CstParseContext.() -> Item?,
-): CstList<Item> = node(CstList.info()) { cstListInline(block) }
+): CstWsSeparatedList<Item> = node(CstWsSeparatedList.info()) { cstWsSeparatedListInline(block) }
 
-inline fun <reified Item : CstNode> CstParseContext.cstListInline(
+inline fun <reified Item : CstNode> CstParseContext.cstWsSeparatedListInline(
 	crossinline block: CstParseContext.() -> Item?,
-): CstList<Item> {
+): CstWsSeparatedList<Item> {
 	val list = mutableListOf<Item>()
 	while(true) {
 		val item = block()
@@ -23,5 +23,5 @@ inline fun <reified Item : CstNode> CstParseContext.cstListInline(
 		}
 	}
 	
-	return CstList(list)
+	return CstWsSeparatedList(list)
 }
