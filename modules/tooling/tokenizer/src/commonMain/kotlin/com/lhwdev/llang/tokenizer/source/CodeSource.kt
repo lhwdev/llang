@@ -128,7 +128,9 @@ inline fun CodeSource.advanceWhile(condition: CodeSource.() -> Boolean) {
 	}
 }
 
-fun CodeSource.advanceInWord() {
+fun CodeSource.advanceInWordNotEmpty(): CharSequence {
 	advanceMatch { CharacterKind.isLetter(current) }
 	advanceWhile { CharacterKind.isIdentifier(current) }
+	requireNotEmpty()
+	return currentSpan
 }

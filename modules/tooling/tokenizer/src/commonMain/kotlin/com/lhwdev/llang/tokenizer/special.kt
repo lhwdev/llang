@@ -4,17 +4,22 @@ import com.lhwdev.llang.parsing.util.parseError
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.source.CodeSource
-import com.lhwdev.llang.tokenizer.source.advanceInWord
-import com.lhwdev.llang.tokenizer.source.requireNotEmpty
+import com.lhwdev.llang.tokenizer.source.advanceInWordNotEmpty
 import com.lhwdev.llang.tokenizer.source.token
 
 
-fun CodeSource.parseKeyword() = token {
-	advanceInWord()
-	requireNotEmpty()
-	
+fun CodeSource.parseVariableKind(): Token = token {
+	when(advanceInWordNotEmpty().toString()) {
+		"val" -> TokenKinds.Keyword.Val
+		"const" -> TokenKinds.Keyword.Const
+		"var" -> TokenKinds.Keyword.Var
+		else -> parseError("not variable")
+	}
+}
+
+fun CodeSource.parseKeyword(): Token = token {
 	// handle hard keywords
-	when(currentSpan.toString()) {
+	when(advanceInWordNotEmpty().toString()) {
 		/// TokenKinds.Operation: handled by cstExpression
 		// "is" -> TokenKinds.Operation.Expression.Is
 		// "in" -> TokenKinds.Operation.Expression.In
@@ -31,9 +36,9 @@ fun CodeSource.parseKeyword() = token {
 		"fun" -> TokenKinds.Keyword.Fun
 		"impl" -> TokenKinds.Keyword.Impl
 		"type" -> TokenKinds.Keyword.Type
-		"val" -> TokenKinds.Keyword.Val
-		"const" -> TokenKinds.Keyword.Const
-		"var" -> TokenKinds.Keyword.Var
+		// "val" -> TokenKinds.Keyword.Val // -> parseVariableKind
+		// "const" -> TokenKinds.Keyword.Const
+		// "var" -> TokenKinds.Keyword.Var
 		
 		"true" -> TokenKinds.Keyword.True
 		"false" -> TokenKinds.Keyword.False
@@ -54,10 +59,7 @@ fun CodeSource.parseKeyword() = token {
 }
 
 fun CodeSource.parseSoftKeyword(): Token = token {
-	advanceInWord()
-	requireNotEmpty()
-	
-	when(currentSpan.toString()) {
+	when(advanceInWordNotEmpty().toString()) {
 		/// TokenKinds.SoftKeyword
 		"constructor" -> TokenKinds.SoftKeyword.Constructor
 		"init" -> TokenKinds.SoftKeyword.Constructor
@@ -73,10 +75,7 @@ fun CodeSource.parseSoftKeyword(): Token = token {
 }
 
 fun CodeSource.parseModifier(): Token = token {
-	advanceInWord()
-	requireNotEmpty()
-	
-	when(currentSpan.toString()) {
+	when(advanceInWordNotEmpty().toString()) {
 		/// TokenKinds.Modifier
 		"public" -> TokenKinds.Modifier.Public
 		"internal" -> TokenKinds.Modifier.Internal

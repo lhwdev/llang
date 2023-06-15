@@ -2,7 +2,7 @@ package com.lhwdev.llang.cst.core
 
 import com.lhwdev.llang.cst.CstNode
 import com.lhwdev.llang.cst.CstNodeInfo
-import com.lhwdev.llang.cst.util.CstList
+import com.lhwdev.llang.cst.util.CstSeparatedList
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenImpl
 
@@ -14,8 +14,8 @@ class CstModifier(token: Token) : CstLeafNode(token) {
 }
 
 
-class CstModifiers(val modifiers: CstList<CstModifier>) : CstNode {
+class CstModifiers(val modifiers: CstSeparatedList<CstModifier, CstWss>) : CstNode {
 	companion object Info : CstNodeInfo<CstModifiers> {
-		override fun dummyNode() = CstModifiers(CstList(emptyList()))
+		override fun dummyNode() = CstModifiers(CstSeparatedList(emptyList()))
 	}
 }

@@ -35,6 +35,10 @@ fun CodeSource.parseToken(kind: TokenKind, content: String): Token = token(kind)
 	advanceMatch(content)
 }
 
+fun CodeSource.parseTokenOrNull(kind: TokenKind, content: String): Token? = token(kind) {
+	if(!matchesAdvance(content)) return null
+}
+
 fun CodeSource.illegalToken(length: Int = 1): Token =
 	token(kind = TokenKinds.Illegal, length = length)
 

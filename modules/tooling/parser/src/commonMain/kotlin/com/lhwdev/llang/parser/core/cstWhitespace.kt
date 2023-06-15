@@ -1,13 +1,11 @@
 package com.lhwdev.llang.parser.core
 
-import com.lhwdev.llang.cst.core.CstComment
-import com.lhwdev.llang.cst.core.CstLineBreak
-import com.lhwdev.llang.cst.core.CstWhitespace
-import com.lhwdev.llang.cst.core.CstWs
+import com.lhwdev.llang.cst.core.*
 import com.lhwdev.llang.parser.CstParseContext
 import com.lhwdev.llang.parser.node
 import com.lhwdev.llang.parser.nullableNode
 import com.lhwdev.llang.parser.nullableStructuredNode
+import com.lhwdev.llang.parser.util.cstListInline
 import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.*
 
@@ -18,6 +16,10 @@ fun CstParseContext.cstWs(): CstWs = node(CstWs) {
 
 fun CstParseContext.cstWsOrNull(): CstWs? = nullableNode(CstWs) {
 	cstWhitespaceOrNull() ?: cstLineBreakOrNull() ?: cstCommentOrNull()
+}
+
+fun CstParseContext.cstWssOrEmpty(): CstWss = node(CstWss) {
+	CstWss(cstListInline { cstWsOrNull() })
 }
 
 
