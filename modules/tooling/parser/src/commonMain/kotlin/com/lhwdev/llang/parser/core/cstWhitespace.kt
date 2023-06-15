@@ -1,6 +1,6 @@
 package com.lhwdev.llang.parser.core
 
-import com.lhwdev.llang.cst.core.*
+import com.lhwdev.llang.cst.structure.core.*
 import com.lhwdev.llang.parser.CstParseContext
 import com.lhwdev.llang.parser.node
 import com.lhwdev.llang.parser.nullableNode

@@ -1,9 +1,9 @@
-package com.lhwdev.llang.cst.declaration
+package com.lhwdev.llang.cst.structure.declaration
 
-import com.lhwdev.llang.cst.CstNode
-import com.lhwdev.llang.cst.core.CstIdentifier
-import com.lhwdev.llang.cst.core.CstModifiers
-import com.lhwdev.llang.cst.statement.CstStatement
+import com.lhwdev.llang.cst.structure.CstNode
+import com.lhwdev.llang.cst.structure.core.CstIdentifier
+import com.lhwdev.llang.cst.structure.core.CstModifiers
+import com.lhwdev.llang.cst.structure.statement.CstStatement
 
 
 interface CstDeclarationLike : CstNode

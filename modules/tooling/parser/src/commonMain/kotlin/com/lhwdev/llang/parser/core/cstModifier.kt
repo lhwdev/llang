@@ -1,7 +1,7 @@
 package com.lhwdev.llang.parser.core
 
-import com.lhwdev.llang.cst.core.CstModifier
-import com.lhwdev.llang.cst.core.CstModifiers
+import com.lhwdev.llang.cst.structure.core.CstModifier
+import com.lhwdev.llang.cst.structure.core.CstModifiers
 import com.lhwdev.llang.parser.CstParseContext
 import com.lhwdev.llang.parser.nullableStructuredNode
 import com.lhwdev.llang.parser.structuredNode

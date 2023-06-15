@@ -1,8 +1,8 @@
 package com.lhwdev.llang.parser.declaration
 
-import com.lhwdev.llang.cst.declaration.CstStandaloneVariable
-import com.lhwdev.llang.cst.declaration.CstVariable
-import com.lhwdev.llang.cst.declaration.CstVariableKind
+import com.lhwdev.llang.cst.structure.declaration.CstStandaloneVariable
+import com.lhwdev.llang.cst.structure.declaration.CstVariable
+import com.lhwdev.llang.cst.structure.declaration.CstVariableKind
 import com.lhwdev.llang.parser.CstParseContext
 import com.lhwdev.llang.parser.core.cstIdentifier
 import com.lhwdev.llang.parser.core.cstLeafNodeOrNull

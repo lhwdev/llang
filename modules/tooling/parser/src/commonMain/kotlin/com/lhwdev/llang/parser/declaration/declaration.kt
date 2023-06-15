@@ -1,7 +1,7 @@
 package com.lhwdev.llang.parser.declaration
 
-import com.lhwdev.llang.cst.CstNodeInfo
-import com.lhwdev.llang.cst.declaration.CstDeclaration
+import com.lhwdev.llang.cst.structure.CstNodeInfo
+import com.lhwdev.llang.cst.structure.declaration.CstDeclaration
 import com.lhwdev.llang.parser.CstParseContext
 import com.lhwdev.llang.parser.core.cstWs
 import com.lhwdev.llang.parser.structuredNode

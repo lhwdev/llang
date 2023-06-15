@@ -1,4 +1,4 @@
-package com.lhwdev.llang.cst
+package com.lhwdev.llang.cst.structure
 
 import com.lhwdev.utils.reflect.companionObject
 import kotlin.reflect.KClass

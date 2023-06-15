@@ -1,7 +1,7 @@
-package com.lhwdev.llang.cst.declaration
+package com.lhwdev.llang.cst.structure.declaration
 
-import com.lhwdev.llang.cst.CstNodeInfo
 import com.lhwdev.llang.cst.CstParseContext
+import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.token.TokenKinds
 
 

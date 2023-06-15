@@ -1,7 +1,7 @@
 package com.lhwdev.llang.parser
 
-import com.lhwdev.llang.cst.CstNode
-import com.lhwdev.llang.cst.CstNodeInfo
+import com.lhwdev.llang.cst.structure.CstNode
+import com.lhwdev.llang.cst.structure.CstNodeInfo
 
 @OptIn(CstParseContext.InternalApi::class)
 inline fun <Node : CstNode> CstParseContext.rawNullableNode(

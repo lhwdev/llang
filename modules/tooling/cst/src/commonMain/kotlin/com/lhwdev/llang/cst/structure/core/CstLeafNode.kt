@@ -1,6 +1,6 @@
-package com.lhwdev.llang.cst.core
+package com.lhwdev.llang.cst.structure.core
 
-import com.lhwdev.llang.cst.CstNode
+import com.lhwdev.llang.cst.structure.CstNode
 import com.lhwdev.llang.token.Token
 
 

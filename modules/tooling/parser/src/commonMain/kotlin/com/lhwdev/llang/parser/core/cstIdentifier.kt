@@ -1,6 +1,6 @@
 package com.lhwdev.llang.parser.core
 
-import com.lhwdev.llang.cst.core.CstIdentifier
+import com.lhwdev.llang.cst.structure.core.CstIdentifier
 import com.lhwdev.llang.parser.CstParseContext
 import com.lhwdev.llang.parser.structuredNode
 import com.lhwdev.llang.tokenizer.parseIdentifier

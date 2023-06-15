@@ -1,13 +1,13 @@
-package com.lhwdev.llang.cst.declaration
+package com.lhwdev.llang.cst.structure.declaration
 
-import com.lhwdev.llang.cst.CstNode
-import com.lhwdev.llang.cst.CstNodeInfo
-import com.lhwdev.llang.cst.core.CstIdentifier
-import com.lhwdev.llang.cst.core.CstLeafNode
-import com.lhwdev.llang.cst.core.CstModifiers
-import com.lhwdev.llang.cst.expression.CstExpression
-import com.lhwdev.llang.cst.type.CstType
-import com.lhwdev.llang.cst.util.CstOptional
+import com.lhwdev.llang.cst.structure.CstNode
+import com.lhwdev.llang.cst.structure.CstNodeInfo
+import com.lhwdev.llang.cst.structure.core.CstIdentifier
+import com.lhwdev.llang.cst.structure.core.CstLeafNode
+import com.lhwdev.llang.cst.structure.core.CstModifiers
+import com.lhwdev.llang.cst.structure.expression.CstExpression
+import com.lhwdev.llang.cst.structure.type.CstType
+import com.lhwdev.llang.cst.structure.util.CstOptional
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenImpl
 

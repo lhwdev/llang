@@ -1,7 +1,7 @@
 package com.lhwdev.llang.parser.util
 
-import com.lhwdev.llang.cst.CstNode
-import com.lhwdev.llang.cst.util.CstWsSeparatedList
+import com.lhwdev.llang.cst.structure.CstNode
+import com.lhwdev.llang.cst.structure.util.CstWsSeparatedList
 import com.lhwdev.llang.parser.CstParseContext
 import com.lhwdev.llang.parser.node
 

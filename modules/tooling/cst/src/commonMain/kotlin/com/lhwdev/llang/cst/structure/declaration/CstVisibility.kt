@@ -1,7 +1,7 @@
-package com.lhwdev.llang.cst.declaration
+package com.lhwdev.llang.cst.structure.declaration
 
-import com.lhwdev.llang.cst.CstNodeInfo
-import com.lhwdev.llang.cst.core.CstLeafNode
+import com.lhwdev.llang.cst.structure.CstNodeInfo
+import com.lhwdev.llang.cst.structure.core.CstLeafNode
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenImpl
 import com.lhwdev.llang.token.TokenKinds

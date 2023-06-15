@@ -1,7 +1,7 @@
-package com.lhwdev.llang.cst.util
+package com.lhwdev.llang.cst.structure.util
 
-import com.lhwdev.llang.cst.CstNode
-import com.lhwdev.llang.cst.CstNodeInfo
+import com.lhwdev.llang.cst.structure.CstNode
+import com.lhwdev.llang.cst.structure.CstNodeInfo
 
 
 class CstWsSeparatedList<Item : CstNode>(items: List<Item>) : CstNode, List<Item> by items {

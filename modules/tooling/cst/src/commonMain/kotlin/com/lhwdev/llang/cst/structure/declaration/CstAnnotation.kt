@@ -1,17 +1,16 @@
-package com.lhwdev.llang.cst.declaration
+package com.lhwdev.llang.cst.structure.declaration
 
-import com.lhwdev.llang.cst.CstNode
-import com.lhwdev.llang.cst.CstNodeInfo
-import com.lhwdev.llang.cst.core.CstAccessTarget
-import com.lhwdev.llang.cst.core.CstIdentifier
-import com.lhwdev.llang.cst.expression.CstExpression
-import com.lhwdev.llang.cst.expression.CstTuple
-import com.lhwdev.llang.cst.util.CstWsSeparatedList
+import com.lhwdev.llang.cst.structure.CstNode
+import com.lhwdev.llang.cst.structure.CstNodeInfo
+import com.lhwdev.llang.cst.structure.core.CstAccessTarget
+import com.lhwdev.llang.cst.structure.core.CstIdentifier
+import com.lhwdev.llang.cst.structure.expression.CstExpression
+import com.lhwdev.llang.cst.structure.expression.CstTuple
 
 
-class CstAnnotations(val annotations: CstWsSeparatedList<CstAnnotation>) : CstNode {
+class CstAnnotations(val annotations: List<CstAnnotation>) : CstNode {
 	companion object Info : CstNodeInfo<CstAnnotations> {
-		override fun dummyNode() = CstAnnotations(CstWsSeparatedList(emptyList()))
+		override fun dummyNode() = CstAnnotations(emptyList())
 	}
 }
 
