@@ -31,6 +31,8 @@ private fun CstParseContext.cstDelegationAccessor(): CstVariable.Delegation? {
 
 fun CstParseContext.cstStandaloneVariable(): CstVariable = declaration(CstStandaloneVariable) {
 	CstStandaloneVariable(
+		annotations = cstAnnotations(),
+		context = cstContextDeclaration(),
 		modifiers = cstModifiers(), // public open abstract context(...)
 		kind = cstVariableKind(),
 		name = cstIdentifier(),
