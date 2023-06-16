@@ -34,7 +34,7 @@ inline fun <Node : CstNode, Return> CstParseContext.rawNode(
 
 
 fun <Node : CstNode> CstParseContext.node(factory: CstNodeFactory<Node>): Node = rawNode(
-	CstParseContext.NodeKind.Node,
+	kind = CstParseContext.NodeKind.Node,
 	getInfo = { factory.info },
 	block = { with(factory) { parse() } },
 	onSuccess = { it },
@@ -45,7 +45,7 @@ inline fun <Node : CstNode> CstParseContext.node(
 	info: CstNodeInfo<Node>?,
 	crossinline block: CstParseContext.() -> Node,
 ): Node = rawNode(
-	CstParseContext.NodeKind.Node,
+	kind = CstParseContext.NodeKind.Node,
 	getInfo = { info },
 	block = block,
 	onSuccess = { it },
@@ -55,7 +55,7 @@ inline fun <Node : CstNode> CstParseContext.node(
 inline fun <reified Node : CstNode> CstParseContext.node(
 	crossinline block: CstParseContext.() -> Node,
 ): Node = rawNode(
-	CstParseContext.NodeKind.Node,
+	kind = CstParseContext.NodeKind.Node,
 	getInfo = { nodeInfoOf<Node>() },
 	block = block,
 	onSuccess = { it },
@@ -63,7 +63,7 @@ inline fun <reified Node : CstNode> CstParseContext.node(
 )
 
 fun <Node : CstNode> CstParseContext.structuredNode(factory: CstNodeFactory<Node>): Node = rawNode(
-	CstParseContext.NodeKind.StructuredNode,
+	kind = CstParseContext.NodeKind.StructuredNode,
 	getInfo = { factory.info },
 	block = { with(factory) { parse() } },
 	onSuccess = { it },
@@ -74,7 +74,7 @@ inline fun <Node : CstNode> CstParseContext.structuredNode(
 	info: CstNodeInfo<Node>?,
 	crossinline block: CstParseContext.() -> Node,
 ): Node = rawNode(
-	CstParseContext.NodeKind.StructuredNode,
+	kind = CstParseContext.NodeKind.StructuredNode,
 	getInfo = { info },
 	block = block,
 	onSuccess = { it },
@@ -84,7 +84,7 @@ inline fun <Node : CstNode> CstParseContext.structuredNode(
 inline fun <reified Node : CstNode> CstParseContext.StructuredNode(
 	crossinline block: CstParseContext.() -> Node,
 ): Node = rawNode(
-	CstParseContext.NodeKind.StructuredNode,
+	kind = CstParseContext.NodeKind.StructuredNode,
 	getInfo = { nodeInfoOf<Node>() },
 	block = block,
 	onSuccess = { it },
@@ -92,7 +92,7 @@ inline fun <reified Node : CstNode> CstParseContext.StructuredNode(
 )
 
 fun <Node : CstNode> CstParseContext.discardable(factory: CstNodeFactory<Node>): Node? = rawNode(
-	CstParseContext.NodeKind.Discardable,
+	kind = CstParseContext.NodeKind.Discardable,
 	getInfo = { factory.info },
 	block = { with(factory) { parse() } },
 	onSuccess = { it },
@@ -103,7 +103,7 @@ inline fun <Node : CstNode> CstParseContext.discardable(
 	info: CstNodeInfo<Node>?,
 	crossinline block: CstParseContext.() -> Node,
 ): Node? = rawNode(
-	CstParseContext.NodeKind.Discardable,
+	kind = CstParseContext.NodeKind.Discardable,
 	getInfo = { info },
 	block = block,
 	onSuccess = { it },
@@ -113,7 +113,7 @@ inline fun <Node : CstNode> CstParseContext.discardable(
 inline fun <reified Node : CstNode> CstParseContext.discardable(
 	crossinline block: CstParseContext.() -> Node,
 ): Node? = rawNode(
-	CstParseContext.NodeKind.Discardable,
+	kind = CstParseContext.NodeKind.Discardable,
 	getInfo = { nodeInfoOf<Node>() },
 	block = block,
 	onSuccess = { it },

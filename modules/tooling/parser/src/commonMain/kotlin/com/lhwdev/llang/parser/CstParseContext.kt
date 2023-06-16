@@ -14,7 +14,17 @@ import com.lhwdev.llang.parsing.util.ParseContext
  * existing other [CstParseContext] (for cloning).
  */
 interface CstParseContext : CstLocalContextSource, ParseContext {
-	enum class NodeKind { Node, StructuredNode, Discardable }
+	enum class NodeKind {
+		/**
+		 * Nodes with [NodeKind] other than [LeafNode] should not use [code] directly, though not
+		 * validated (TODO: validate).
+		 */
+		LeafNode,
+		
+		Node,
+		StructuredNode,
+		Discardable
+	}
 	
 	@RequiresOptIn
 	annotation class InternalApi

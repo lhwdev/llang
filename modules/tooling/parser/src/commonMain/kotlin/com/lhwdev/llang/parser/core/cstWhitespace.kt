@@ -1,10 +1,7 @@
 package com.lhwdev.llang.parser.core
 
 import com.lhwdev.llang.cst.structure.core.*
-import com.lhwdev.llang.parser.CstParseContext
-import com.lhwdev.llang.parser.node
-import com.lhwdev.llang.parser.nullableNode
-import com.lhwdev.llang.parser.nullableStructuredNode
+import com.lhwdev.llang.parser.*
 import com.lhwdev.llang.parser.util.cstWsSeparatedListInline
 import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.*
@@ -35,16 +32,19 @@ fun CstParseContext.cstWssOrEmpty(): CstWss = node(CstWss) {
 
 
 fun CstParseContext.cstWhitespaceOrNull(): CstWhitespace? =
-	nullableStructuredNode(CstWhitespace) { code.parseWhitespace()?.let { CstWhitespace(it) } }
+	nullableLeafNode(CstWhitespace) { code.parseWhitespace()?.let { CstWhitespace(it) } }
 
 
 fun CstParseContext.cstLineBreakOrNull(): CstLineBreak? =
-	nullableStructuredNode(CstLineBreak) { code.parseLineBreak()?.let { CstLineBreak(it) } }
+	nullableLeafNode(CstLineBreak) { code.parseLineBreak()?.let { CstLineBreak(it) } }
 
 
 fun CstParseContext.cstCommentOrNull(): CstComment? = nullableNode(CstComment) {
-	val begin = code.parseCommentBeginOrNull()
-	begin?.let { parseCstComment(CstComment.Begin(it)) }
+	val begin = nullableLeafNode(CstComment.Begin) {
+		code.parseCommentBeginOrNull()
+			?.let { CstComment.Begin(it) }
+	}
+	begin?.let { parseCstComment(it) }
 }
 
 private fun CstParseContext.parseCstComment(begin: CstComment.Begin): CstComment {
@@ -52,23 +52,30 @@ private fun CstParseContext.parseCstComment(begin: CstComment.Begin): CstComment
 	
 	when(val kind = (begin.token.kind as TokenKinds.Comment.CommentBegin).kind) {
 		TokenKinds.Comment.Eol -> {
-			nodes += CstComment.Content(code.parseInEolComment())
+			nodes += leafNode(CstComment.Content) { CstComment.Content(code.parseInEolComment()) }
 		}
 		
 		is TokenKinds.Comment.BlockKind -> {
 			while(true) {
-				val token = code.parseInBlockComment(kind)
-				when(token.kind as TokenKinds.Comment) {
-					is TokenKinds.Comment.CommentBegin ->
-						nodes += node(CstComment) { parseCstComment(CstComment.Begin(token)) }
+				val leaf = leafNode(CstComment.Leaf) {
+					val token = code.parseInBlockComment(kind)
+					when(token.kind as TokenKinds.Comment) {
+						is TokenKinds.Comment.CommentBegin -> CstComment.Begin(token)
+						is TokenKinds.Comment.CommentEnd -> CstComment.End(token)
+						is TokenKinds.Comment.Content -> CstComment.Content(token)
+					}
+				}
+				when(leaf) {
+					is CstComment.Begin ->
+						nodes += node(CstComment) { parseCstComment(leaf) }
 					
-					is TokenKinds.Comment.CommentEnd -> {
-						nodes += CstComment.End(token)
+					is CstComment.End -> {
+						nodes += leaf
 						break
 					}
 					
-					is TokenKinds.Comment.Content ->
-						nodes += CstComment.Content(token)
+					is CstComment.Content ->
+						nodes += leaf
 				}
 			}
 		}

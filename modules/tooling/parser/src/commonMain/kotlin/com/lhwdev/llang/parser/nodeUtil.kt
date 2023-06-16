@@ -2,6 +2,7 @@ package com.lhwdev.llang.parser
 
 import com.lhwdev.llang.cst.structure.CstNode
 import com.lhwdev.llang.cst.structure.CstNodeInfo
+import com.lhwdev.llang.cst.structure.core.CstLeafNode
 
 @OptIn(CstParseContext.InternalApi::class)
 inline fun <Node : CstNode> CstParseContext.rawNullableNode(
@@ -36,3 +37,8 @@ inline fun <Node : CstNode> CstParseContext.nullableStructuredNode(
 	info: CstNodeInfo<Node>?,
 	crossinline block: CstParseContext.() -> Node?,
 ): Node? = rawNullableNode(CstParseContext.NodeKind.StructuredNode, info, block)
+
+inline fun <Node : CstLeafNode> CstParseContext.nullableLeafNode(
+	info: CstNodeInfo<Node>,
+	crossinline block: CstParseContext.() -> Node?,
+): Node? = rawNullableNode(CstParseContext.NodeKind.LeafNode, info, block)
