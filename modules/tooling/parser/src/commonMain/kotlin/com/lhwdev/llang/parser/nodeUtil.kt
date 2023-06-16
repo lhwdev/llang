@@ -39,6 +39,6 @@ inline fun <Node : CstNode> CstParseContext.nullableStructuredNode(
 ): Node? = rawNullableNode(CstParseContext.NodeKind.StructuredNode, info, block)
 
 inline fun <Node : CstLeafNode> CstParseContext.nullableLeafNode(
-	info: CstNodeInfo<Node>,
+	info: CstNodeInfo<Node>?,
 	crossinline block: CstParseContext.() -> Node?,
 ): Node? = rawNullableNode(CstParseContext.NodeKind.LeafNode, info, block)

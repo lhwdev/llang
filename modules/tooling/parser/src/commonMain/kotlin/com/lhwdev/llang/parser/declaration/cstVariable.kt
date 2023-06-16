@@ -7,15 +7,15 @@ import com.lhwdev.llang.parser.CstParseContext
 import com.lhwdev.llang.parser.core.cstIdentifier
 import com.lhwdev.llang.parser.core.cstLeafNodeOrNull
 import com.lhwdev.llang.parser.core.cstModifiers
+import com.lhwdev.llang.parser.leafNode
 import com.lhwdev.llang.parser.node
-import com.lhwdev.llang.parser.structuredNode
 import com.lhwdev.llang.parser.type.cstDeclarationQuoteType
 import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.parseVariableKind
 
 
 private fun CstParseContext.cstVariableKind(): CstVariableKind =
-	structuredNode(CstVariableKind) { CstVariableKind(code.parseVariableKind()) }
+	leafNode(CstVariableKind) { CstVariableKind(code.parseVariableKind()) }
 
 private fun CstParseContext.cstVariableAccessor(): CstVariable.Accessor =
 	node(CstVariable.Accessor) {
