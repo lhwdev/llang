@@ -143,10 +143,6 @@ object TokenKinds {
 	sealed class Operation(debugName: String) : LlTokenKind(debugName) {
 		class Arithmetic(debugName: String) : Operation(debugName) {
 			companion object All : TokenKindSetBuilder("arithmetics") {
-				val UnaryPlus = +Arithmetic("+(unary)")
-				val UnaryMinus = +Arithmetic("-(unary)")
-				
-				
 				val Plus = +Arithmetic("+")
 				val Minus = +Arithmetic("-")
 				
