@@ -12,5 +12,5 @@ fun CstParseContext.cstTuple(): CstTuple = structuredNode(CstTuple) {
 		itemBlock = { cstExpression() },
 		separatorBlock = { cstLeafCommaOrNull() }
 	)
-	CstTuple(elements)
+	CstTuple(elements.items())
 }

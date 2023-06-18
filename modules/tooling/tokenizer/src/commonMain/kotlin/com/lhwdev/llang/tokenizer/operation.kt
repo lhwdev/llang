@@ -5,7 +5,7 @@ import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.source.*
 
 
-private fun CodeSource.parseUnaryOperation(): Token {
+fun CodeSource.parseUnaryOperation(): Token {
 	val next = peek()
 	return when(current) {
 		'!' -> token(TokenKinds.Operation.Logic.Not)
@@ -17,7 +17,7 @@ private fun CodeSource.parseUnaryOperation(): Token {
 	}
 }
 
-private fun CodeSource.parseBinaryOperation(): Token {
+fun CodeSource.parseBinaryOperation(): Token {
 	val next = peek()
 	
 	if(CharacterKind.isLetter(current)) token {

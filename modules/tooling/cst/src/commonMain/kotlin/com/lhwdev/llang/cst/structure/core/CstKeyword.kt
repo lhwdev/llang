@@ -4,7 +4,7 @@ import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.token.Token
 
 
-class CstKeyword(token: Token) : CstLeafNode(token) {
+class CstKeyword(token: Token) : CstLeafNodeImpl(token) {
 	companion object Info : CstNodeInfo<CstKeyword> {
 		/**
 		 * This prevents nodes containing [CstKeyword] as an element to be created as a dummy

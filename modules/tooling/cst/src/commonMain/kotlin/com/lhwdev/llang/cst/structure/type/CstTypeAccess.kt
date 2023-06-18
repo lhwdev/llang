@@ -1,11 +1,12 @@
-package com.lhwdev.llang.cst.structure.core
+package com.lhwdev.llang.cst.structure.type
 
 import com.lhwdev.llang.cst.structure.CstNode
 import com.lhwdev.llang.cst.structure.CstNodeInfo
+import com.lhwdev.llang.cst.structure.core.CstIdentifier
 import com.lhwdev.llang.token.TokenImpl
 
 
-sealed interface CstAccessTarget : CstNode
+sealed interface CstTypeAccessTarget : CstNode
 
 
 /**
@@ -15,12 +16,12 @@ sealed interface CstAccessTarget : CstNode
  * - `com.lhwdev.Hello` is parsed as `CstAccess(CstAccess(CstIdentifier("com"), CstIdentifier("lhwdev")), CstIdentifier("Hello"))`
  * - type `MyClass<Type>.Inner` is parsed as `CstAccess(CstTypeCall(CstIdentifier("MyClass"), type), CstIdentifier("Inner"))`
  */
-class CstAccess(
-	val parent: CstAccessTarget,
+class CstTypeAccess(
+	val parent: CstTypeAccessTarget,
 	val item: CstIdentifier,
-) : CstNode, CstAccessTarget {
-	companion object Info : CstNodeInfo<CstAccess> {
-		override fun dummyNode() = CstAccess(
+) : CstNode, CstTypeAccessTarget {
+	companion object Info : CstNodeInfo<CstTypeAccess> {
+		override fun dummyNode() = CstTypeAccess(
 			CstIdentifier(TokenImpl.dummyIllegal()),
 			CstIdentifier(TokenImpl.dummyIllegal())
 		)

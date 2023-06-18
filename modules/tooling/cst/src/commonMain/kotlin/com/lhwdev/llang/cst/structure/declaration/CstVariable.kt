@@ -3,7 +3,7 @@ package com.lhwdev.llang.cst.structure.declaration
 import com.lhwdev.llang.cst.structure.CstNode
 import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.cst.structure.core.CstIdentifier
-import com.lhwdev.llang.cst.structure.core.CstLeafNode
+import com.lhwdev.llang.cst.structure.core.CstLeafNodeImpl
 import com.lhwdev.llang.cst.structure.core.CstModifiers
 import com.lhwdev.llang.cst.structure.expression.CstExpression
 import com.lhwdev.llang.cst.structure.type.CstType
@@ -15,7 +15,7 @@ import com.lhwdev.llang.token.TokenImpl
 /**
  * `val` / `var` / `const`
  */
-class CstVariableKind(token: Token) : CstLeafNode(token) {
+class CstVariableKind(token: Token) : CstLeafNodeImpl(token) {
 	companion object Info : CstNodeInfo<CstVariableKind> {
 		override fun dummyNode() = CstVariableKind(TokenImpl.dummyIllegal())
 	}

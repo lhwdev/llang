@@ -22,7 +22,17 @@ interface CstParseContext : CstLocalContextSource, ParseContext {
 		LeafNode,
 		
 		Node,
+		
+		/**
+		 * This can only be used when kind and order of direct child nodes of the node is identical,
+		 * which is, inside [structuredNode], you should not use any branching such as `if` `when`
+		 * `for` etc.
+		 *
+		 * Using [StructuredNode] as much as available will enable parser internals to cache nodes.
+		 * Caching nodes is a vital component of incremental parsing.
+		 */
 		StructuredNode,
+		
 		Discardable
 	}
 	

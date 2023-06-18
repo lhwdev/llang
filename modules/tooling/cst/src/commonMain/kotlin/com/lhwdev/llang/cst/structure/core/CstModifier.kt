@@ -6,7 +6,7 @@ import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenImpl
 
 
-class CstModifier(token: Token) : CstLeafNode(token) {
+class CstModifier(token: Token) : CstLeafNodeImpl(token) {
 	companion object Info : CstNodeInfo<CstModifier> {
 		override fun dummyNode() = CstModifier(TokenImpl.dummyIllegal())
 	}

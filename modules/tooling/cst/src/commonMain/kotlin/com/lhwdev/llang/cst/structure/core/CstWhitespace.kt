@@ -23,14 +23,14 @@ interface CstWs : CstNode {
 }
 
 
-class CstWhitespace(token: Token) : CstWs, CstLeafNode(token) {
+class CstWhitespace(token: Token) : CstWs, CstLeafNodeImpl(token) {
 	companion object Info : CstNodeInfo<CstWhitespace> {
 		override fun dummyNode(): CstWhitespace =
 			CstWhitespace(TokenImpl.dummy(TokenKinds.Whitespace, " "))
 	}
 }
 
-class CstLineBreak(token: Token) : CstWs, CstLeafNode(token) {
+class CstLineBreak(token: Token) : CstWs, CstLeafNodeImpl(token) {
 	companion object Info : CstNodeInfo<CstLineBreak> {
 		override fun dummyNode(): CstLineBreak =
 			CstLineBreak(TokenImpl.dummy(TokenKinds.LineBreak, "\n"))
@@ -48,7 +48,7 @@ class CstComment(val nodes: List<CstWs>) : CstWs {
 			CstComment(emptyList())
 	}
 	
-	sealed class Leaf(token: Token) : CstLeafNode(token) {
+	sealed class Leaf(token: Token) : CstLeafNodeImpl(token) {
 		companion object Info : CstNodeInfo<Leaf> {
 			override fun dummyNode() = null
 		}
