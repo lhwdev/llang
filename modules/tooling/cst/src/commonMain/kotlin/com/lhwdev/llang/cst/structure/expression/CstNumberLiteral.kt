@@ -1,8 +1,7 @@
-package com.lhwdev.llang.parser.expression
+package com.lhwdev.llang.cst.structure.expression
 
 import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.cst.structure.core.CstLeafNode
-import com.lhwdev.llang.cst.structure.expression.CstExpression
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenImpl
 

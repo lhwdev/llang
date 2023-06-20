@@ -3,7 +3,7 @@ package com.lhwdev.llang.parser.statement
 import com.lhwdev.llang.parser.CstParseContext
 
 
-fun CstParseContext.cstStatementContainer() {
+fun CstParseContext.cstStatements() {
 	// checking if end of statement
 	// rules:
 	// 1. If unclosed group remains, follow following lines.

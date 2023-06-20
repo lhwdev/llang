@@ -16,6 +16,13 @@ class CstSurround<Node : CstNode>(val kind: Kind, val content: Node) : CstNode {
 			rightContent = ")",
 		)
 		
+		val SquareBracket = Kind(
+			left = TokenKinds.Operator.Group.LeftSquareBracket,
+			leftContent = "[",
+			right = TokenKinds.Operator.Group.RightSquareBracket,
+			rightContent = "]",
+		)
+		
 		@Suppress("UNCHECKED_CAST")
 		fun <Node : CstNode> info() = this as CstNodeInfo<CstSurround<Node>>
 		

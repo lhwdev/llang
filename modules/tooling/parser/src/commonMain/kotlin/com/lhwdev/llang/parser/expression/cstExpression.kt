@@ -6,10 +6,7 @@ import com.lhwdev.llang.cst.structure.core.CstIdentifier
 import com.lhwdev.llang.cst.structure.core.CstLeafNode
 import com.lhwdev.llang.cst.structure.core.CstLeafNodeImpl
 import com.lhwdev.llang.cst.structure.core.CstOperator
-import com.lhwdev.llang.cst.structure.expression.CstExpression
-import com.lhwdev.llang.cst.structure.expression.CstMemberAccess
-import com.lhwdev.llang.cst.structure.expression.CstOperation
-import com.lhwdev.llang.cst.structure.expression.CstTuple
+import com.lhwdev.llang.cst.structure.expression.*
 import com.lhwdev.llang.cst.structure.util.CstSurround
 import com.lhwdev.llang.parser.CstParseContext
 import com.lhwdev.llang.parser.leafNode
@@ -233,10 +230,29 @@ private class CstExpressionParser(private val context: CstParseContext) {
 	
 	fun CstParseContext.callOps() = node(info = null) {
 		val function = head.toExpression()
-		val arguments = cstTuple()
-		revalidateBuffer() // cstTuple depends on original [code]; buffer remains stale without [revalidateBuffer]
-		
-		CstFunctionCall(function, arguments)
+		when(buffer.peek().token.kind) {
+			TokenKinds.Operator.Group.LeftParen -> {
+				val arguments = cstTuple(CstSurround.Paren)
+				revalidateBuffer() // cstTuple depends on original [code]; buffer remains stale without [revalidateBuffer]
+				
+				CstFunctionCall.Call(function, arguments)
+			}
+			
+			TokenKinds.Operator.Group.LeftSquareBracket -> {
+				val arguments = cstTuple(CstSurround.Paren)
+				revalidateBuffer()
+				
+				CstFunctionCall.Get(function, arguments)
+			}
+			
+			TokenKinds.Operator.Group.LeftBrace -> {
+				val lambda = cstLambdaExpression()
+				revalidateBuffer()
+				CstFunctionCall.WithLambda(function, lambda)
+			}
+			
+			else -> error("callOps not supported with ${buffer.peek().token}")
+		}
 	}
 	
 	fun CstParseContext.groupOrTupleOps() = structuredNode(CstSurround.info()) {
@@ -310,7 +326,10 @@ private class CstExpressionParser(private val context: CstParseContext) {
 		
 		val peekKind = buffer.pop().token.kind
 		when(peekKind) {
-			TokenKinds.Operator.Group.LeftParen, TokenKinds.Operator.Group.LeftBrace ->
+			TokenKinds.Operator.Group.LeftParen,
+			TokenKinds.Operator.Group.LeftBrace,
+			TokenKinds.Operator.Group.LeftSquareBracket,
+			->
 				return callOps()
 			
 			is TokenKinds.Operator.Access ->
