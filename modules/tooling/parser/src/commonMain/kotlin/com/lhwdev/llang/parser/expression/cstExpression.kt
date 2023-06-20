@@ -292,8 +292,11 @@ private class CstExpressionParser(private val context: CstParseContext) {
 				TokenKinds.Operator.Group.LeftParen ->
 					return groupOrTupleOps()
 				
-				TokenKinds.Operator.Group.LeftBrace ->
-					return TODO("lambda")
+				TokenKinds.Operator.Group.LeftBrace -> {
+					val lambda = cstLambdaExpression()
+					revalidateBuffer()
+					return lambda
+				}
 				
 				TokenKinds.Operator.Arithmetic.Plus,
 				TokenKinds.Operator.Arithmetic.Minus,
@@ -346,6 +349,9 @@ private class CstExpressionParser(private val context: CstParseContext) {
 		
 		if(precedenceA >= precedenceB) {
 			// TODO: consider associativity
+			//       some operations can be associated left-to-right(ex: `3+4+5` -> `(3 + 4) + 5`,
+			//       but some operations can't.
+			//       `Associativity { LeftToRight, RightToLeft, None }`
 			binaryOps()
 			return true
 		}
