@@ -141,9 +141,14 @@ object TokenKinds {
 	
 	
 	sealed class Operation(debugName: String) : LlTokenKind(debugName) {
-		class Arithmetic(debugName: String) : Operation(debugName) {
+		sealed class OperationWithPrecedence(debugName: String, val priority: Int) :
+			Operation(debugName)
+		
+		class Arithmetic(debugName: String, priority: Int) :
+			OperationWithPrecedence(debugName, priority) {
 			companion object All : TokenKindSetBuilder("arithmetics") {
-				val Plus = +Arithmetic("+")
+				val Plus = +Arithmetic("+", priority =)
+				
 				val Minus = +Arithmetic("-")
 				
 				val Times = +Arithmetic("*")
@@ -154,7 +159,8 @@ object TokenKinds {
 			}
 		}
 		
-		class Compare(debugName: String) : Operation(debugName) {
+		class Compare(debugName: String, priority: Int) :
+			OperationWithPrecedence(debugName, priority) {
 			companion object All : TokenKindSetBuilder("compares") {
 				val Equals = +Compare("==")
 				
@@ -174,7 +180,8 @@ object TokenKinds {
 			}
 		}
 		
-		class Logic(debugName: String) : Operation(debugName) {
+		class Logic(debugName: String, priority: Int) :
+			OperationWithPrecedence(debugName, priority) {
 			companion object All : TokenKindSetBuilder("logics") {
 				val And = +Logic("&&")
 				
@@ -184,7 +191,7 @@ object TokenKinds {
 			}
 		}
 		
-		class Expression(debugName: String) : Operation(debugName) {
+		class Expression(debugName: String, priority: Int) : Operation(debugName, priority) {
 			companion object All : TokenKindSetBuilder("expressions") {
 				// Range Operator
 				
@@ -206,6 +213,13 @@ object TokenKinds {
 				val NotIs = +Expression("!is")
 				
 				/**
+				 * Type cast operator.
+				 */
+				val As = +Expression("as")
+				
+				val AsOrNull = +Expression("as?")
+				
+				/**
 				 * Collection inclusion operator.
 				 * `element in collection` => `Boolean` etc.
 				 */
@@ -224,9 +238,9 @@ object TokenKinds {
 			companion object All : TokenKindSetBuilder("assigns") {
 				val Assign = +Assign("=")
 				
-				val PlusAssign = +Assign("+")
+				val PlusAssign = +Assign("+=")
 				
-				val MinusAssign = +Assign("-")
+				val MinusAssign = +Assign("-=")
 			}
 		}
 		
@@ -238,18 +252,22 @@ object TokenKinds {
 				 * - tuple
 				 */
 				val LeftParen = +Group("(")
+				
 				val RightParen = +Group("(")
 				
 				val LeftSquareBracket = +Group("[")
+				
 				val RightSquareBracket = +Group("]")
 				
 				val LeftBrace = +Group("{")
+				
 				val RightBrace = +Group("}")
 				
 				/**
 				 * Only used for type parameters; `<T>`, `<Type : Hello, Hi = 123>`
 				 */
 				val LeftAngleBracket = +Group("<")
+				
 				val RightAngleBracket = +Group(">")
 			}
 		}

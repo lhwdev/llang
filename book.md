@@ -242,20 +242,20 @@ To define how much flexibility we need, we should define operations.
 | operator                  | name                            | kind          | precedence | example                                |
 |---------------------------|---------------------------------|---------------|------------|----------------------------------------|
 | `()`                      | expression.group                | unary, group  | eager      | `4 * (1 + 3)`                          |
-| `(a, b, ...)`             | expression.tuple                | unary, group  | special!!  | `(1, 2, 3)`                            |
+| `(a, b, ...)`             | expression.tuple                | unary, group  | special    | `(1, 2, 3)`                            |
 | `v(a, b, ...)`            | expression.call                 | binary, group | eager      | `println("hello, world!")`             |
 | `v[a, b, ...]`            | expression.getElement           | binary, group | eager      | `println("hello, world!")`             |
 | `.`                       | memberAccess                    | binary        | eager      | `value.member`, `Class.Other`          |
 | `::`                      | metadataAccess                  | binary        | eager      | `Class::Other`                         |
 | `?.`                      | expression.safeMemberAccess     | binary        | eager      | `value?.member`                        |
-| `+`/`-`                   | arithmetic.unaryPlus/unaryMinus | unary.prefix  |            | `-7`, `+3`                             |
-| `!`                       | logic.not                       | unary.prefix  |            | `!isHello`                             |
+| `+`/`-`                   | arithmetic.unaryPlus/unaryMinus | unary.prefix  | eager'     | `-7`, `+3`                             |
+| `!`                       | logic.not                       | unary.prefix  | eager'     | `!isHello`                             |
 | `as`                      | typeOps.cast                    | binary        |            | `parent as Child`                      |
 | `as?`                     | typeOps.safeCast                | binary        |            | `parent as? Child`                     |
 | `*`/`/`                   | arithmetic.multiply/divide      | binary        |            | `3 * 5`                                |
 | `+`/`-`                   | arithmetic.plus/minus           | binary        |            | `3 + 2`                                |
 | `..` etc                  | expression.rangeTo ...          | binary        |            | `1..10`                                |
-| _identifier_              | expression.infixCall            | binary        | special    | `0x10 xor 0x11`                        |
+| _identifier_              | expression.infixCall            | binary        |            | `0x10 xor 0x11`                        |
 | `?:`                      | expression.elvis                | binary        |            | `optional ?: default`                  |
 | `in`/`!in`                | expression.in/notIn             | binary        |            | `"lhwdev" in users`                    |
 | `is`/`!is`                | typeOps.is/notIs                | binary        |            | `animal is Dog`                        |
@@ -263,8 +263,9 @@ To define how much flexibility we need, we should define operations.
 | `==`/`!=`/`===`/`!==`     | logic.equals/identityEquals ... | binary        |            | `you == me`                            |
 | `&&`                      | logic.conjunction               | binary        |            | `you.age >= 19 && you.height >= 180`   |
 | <code>&#124;&#124;</code> | logic.disjunction               | binary        |            | <code>idiot &#124;&#124; genius</code> |
-| `...`                     | functionSpreadArguments         | unary.prefix  | special    | `println(...list)`                     |
-| `=`/`+=` etc.             | assignment ...                  | binary        | special    | `myVar = 3`                            |
+| `...`                     | functionSpreadArguments         | unary.prefix  | lowest     | `println(...list)`                     |
+| `?`                       | propagateError                  | unary.suffix  | lowest     | `println(...list)`                     |
+| `=`/`+=` etc.             | assignment ...                  | binary        | lowest     | `myVar = 3`                            |
 
 Luckily, except for all eager operations, all unary operations has highest/lowest precedence,
 which means we can use the 'local maximum approach' almost as-is.
@@ -353,3 +354,8 @@ Some implications:
 - Parsing local declaration should be easy; all declarations has hard keyword. Although it should be
   handled in tokenizer level. Tokenizer should throw `NotMatchedException.KeywordEncountered` in
   local context to signal this.
+
+Required modifications:
+
+- Finding the end of statement/expression; semicolon is not required for end of statement.
+- Postfix operation needed to implement `?` (PropagateError)

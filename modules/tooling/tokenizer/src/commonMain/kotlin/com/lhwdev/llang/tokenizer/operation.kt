@@ -5,19 +5,11 @@ import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.source.*
 
 
-fun CodeSource.parseUnaryOperation(): Token {
-	val next = peek()
-	return when(current) {
-		'!' -> token(TokenKinds.Operation.Logic.Not)
-		
-		'+' -> token(TokenKinds.Operation.Arithmetic.UnaryPlus)
-		'-' -> token(TokenKinds.Operation.Arithmetic.UnaryMinus)
-		
-		else -> illegalToken()
-	}
-}
-
-fun CodeSource.parseBinaryOperation(): Token {
+/**
+ * Even though this parses in the context of expression, this should recognize all the operators.
+ * (except for eagerly parsed operations which are handled already)
+ */
+fun CodeSource.parseOperationInAnyExpression(): Token {
 	val next = peek()
 	
 	if(CharacterKind.isLetter(current)) token {
@@ -25,6 +17,11 @@ fun CodeSource.parseBinaryOperation(): Token {
 		when(currentSpan) {
 			"in" -> TokenKinds.Operation.Expression.In
 			"is" -> TokenKinds.Operation.Expression.Is
+			"as" -> if(matchesAdvance('?')) {
+				TokenKinds.Operation.Expression.AsOrNull
+			} else {
+				TokenKinds.Operation.Expression.As
+			}
 			
 			// Infix operator is handled by cst level; not token level.
 			else -> TokenKinds.Identifier.Simple
@@ -44,6 +41,7 @@ fun CodeSource.parseBinaryOperation(): Token {
 		
 		'-' -> when(next) {
 			'=' -> token(TokenKinds.Operation.Assign.MinusAssign, length = 2)
+			'>' -> token(TokenKinds.Operation.Other.ArrowRight, length = 2)
 			else -> token(TokenKinds.Operation.Arithmetic.Minus)
 		}
 		
@@ -79,7 +77,7 @@ fun CodeSource.parseBinaryOperation(): Token {
 					// -> just... use... 'nor'... not '!or'...
 					// else -> TokenKinds.Identifier.Simple
 				}
-			} else illegalToken()
+			} else token(TokenKinds.Operation.Logic.Not)
 		}
 		
 		'<' -> when(next) {
@@ -114,6 +112,7 @@ fun CodeSource.parseBinaryOperation(): Token {
 		'.' -> @Suppress("IntroduceWhenSubject") when { // TODO: limit on adjacent tokens
 			next == '.' -> when(peek(2)) {
 				'<' -> token(TokenKinds.Operation.Expression.RangeUntil, length = 3)
+				'.' -> token(TokenKinds.Operation.Other.Etc, length = 3)
 				else -> token(TokenKinds.Operation.Expression.RangeTo, length = 2)
 			}
 			
@@ -122,8 +121,12 @@ fun CodeSource.parseBinaryOperation(): Token {
 		
 		'?' -> when(next) {
 			':' -> token(TokenKinds.Operation.Expression.Elvis, length = 2)
-			else -> illegalToken()
+			else -> token(TokenKinds.Operation.Other.PropagateError)
 		}
+		
+		':' -> token(TokenKinds.Operation.Other.Colon)
+		
+		'#' -> token(TokenKinds.Operation.Other.AnnotationMarker)
 		
 		else -> illegalToken()
 	}

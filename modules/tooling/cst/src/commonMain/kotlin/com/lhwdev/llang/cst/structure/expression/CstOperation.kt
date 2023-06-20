@@ -4,14 +4,26 @@ import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.cst.structure.core.CstOperator
 
 sealed class CstOperation : CstExpression {
-	class Unary(
+	class UnaryPrefix(
 		val operator: CstOperator.Unary,
 		val operand: CstExpression,
 	) : CstOperation() {
-		companion object Info : CstNodeInfo<Unary> {
-			override fun dummyNode() = Unary(
+		companion object Info : CstNodeInfo<UnaryPrefix> {
+			override fun dummyNode() = UnaryPrefix(
 				operator = CstOperator.Unary.dummyNode(),
 				operand = CstExpression.dummyNode(),
+			)
+		}
+	}
+	
+	class UnaryPostfix(
+		val operand: CstExpression,
+		val operator: CstOperator.Unary,
+	) : CstOperation() {
+		companion object Info : CstNodeInfo<UnaryPostfix> {
+			override fun dummyNode() = UnaryPostfix(
+				operand = CstExpression.dummyNode(),
+				operator = CstOperator.Unary.dummyNode(),
 			)
 		}
 	}
