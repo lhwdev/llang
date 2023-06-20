@@ -247,13 +247,13 @@ To define how much flexibility we need, we should define operations.
 | `v[a, b, ...]`            | expression.getElement           | binary, group | eager      | `println("hello, world!")`             |
 | `.`                       | memberAccess                    | binary        | eager      | `value.member`, `Class.Other`          |
 | `::`                      | metadataAccess                  | binary        | eager      | `Class::Other`                         |
-| `?.`                      | expression.safeMemberAccess     | binary        | eager      | `value?.member`                        |
-| `+`/`-`                   | arithmetic.unaryPlus/unaryMinus | unary.prefix  | eager'     | `-7`, `+3`                             |
-| `!`                       | logic.not                       | unary.prefix  | eager'     | `!isHello`                             |
-| `as`                      | typeOps.cast                    | binary        |            | `parent as Child`                      |
-| `as?`                     | typeOps.safeCast                | binary        |            | `parent as? Child`                     |
-| `*`/`/`                   | arithmetic.multiply/divide      | binary        |            | `3 * 5`                                |
-| `+`/`-`                   | arithmetic.plus/minus           | binary        |            | `3 + 2`                                |
+| `?`                       | propagateError                  | unary.suffix  | eager'     | `println(...list)`                     |
+| `+`/`-`                   | arithmetic.unaryPlus/unaryMinus | unary.prefix  | eager''    | `-7`, `+3`                             |
+| `!`                       | logic.not                       | unary.prefix  | eager''    | `!isHello`                             |
+| `as`                      | typeOps.cast                    | binary        | 300        | `parent as Child`                      |
+| `as?`                     | typeOps.safeCast                | binary        | 300        | `parent as? Child`                     |
+| `*`/`/`/`%`               | arithmetic.multiply/divide/rem  | binary        | 251        | `3 * 5`                                |
+| `+`/`-`                   | arithmetic.plus/minus           | binary        | 250        | `3 + 2`                                |
 | `..` etc                  | expression.rangeTo ...          | binary        |            | `1..10`                                |
 | _identifier_              | expression.infixCall            | binary        |            | `0x10 xor 0x11`                        |
 | `?:`                      | expression.elvis                | binary        |            | `optional ?: default`                  |
@@ -264,7 +264,6 @@ To define how much flexibility we need, we should define operations.
 | `&&`                      | logic.conjunction               | binary        |            | `you.age >= 19 && you.height >= 180`   |
 | <code>&#124;&#124;</code> | logic.disjunction               | binary        |            | <code>idiot &#124;&#124; genius</code> |
 | `...`                     | functionSpreadArguments         | unary.prefix  | lowest     | `println(...list)`                     |
-| `?`                       | propagateError                  | unary.suffix  | lowest     | `println(...list)`                     |
 | `=`/`+=` etc.             | assignment ...                  | binary        | lowest     | `myVar = 3`                            |
 
 Luckily, except for all eager operations, all unary operations has highest/lowest precedence,

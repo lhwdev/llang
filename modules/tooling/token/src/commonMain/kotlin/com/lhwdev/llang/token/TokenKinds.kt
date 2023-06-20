@@ -140,27 +140,27 @@ object TokenKinds {
 	}
 	
 	
-	sealed class Operation(debugName: String) : LlTokenKind(debugName) {
-		sealed class OperationWithPrecedence(debugName: String, val priority: Int) :
-			Operation(debugName)
+	sealed class Operator(debugName: String) : LlTokenKind(debugName) {
+		sealed class OperatorWithPrecedence(debugName: String, val priority: Int) :
+			Operator(debugName)
 		
 		class Arithmetic(debugName: String, priority: Int) :
-			OperationWithPrecedence(debugName, priority) {
+			OperatorWithPrecedence(debugName, priority) {
 			companion object All : TokenKindSetBuilder("arithmetics") {
-				val Plus = +Arithmetic("+", priority =)
+				val Plus = +Arithmetic("+", priority = 250)
 				
-				val Minus = +Arithmetic("-")
+				val Minus = +Arithmetic("-", priority = 250)
 				
-				val Times = +Arithmetic("*")
+				val Times = +Arithmetic("*", priority = 251)
 				
-				val Divide = +Arithmetic("/")
+				val Divide = +Arithmetic("/", priority = 251)
 				
-				val Remainder = +Arithmetic("%")
+				val Remainder = +Arithmetic("%", priority = 251)
 			}
 		}
 		
 		class Compare(debugName: String, priority: Int) :
-			OperationWithPrecedence(debugName, priority) {
+			OperatorWithPrecedence(debugName, priority) {
 			companion object All : TokenKindSetBuilder("compares") {
 				val Equals = +Compare("==")
 				
@@ -181,7 +181,7 @@ object TokenKinds {
 		}
 		
 		class Logic(debugName: String, priority: Int) :
-			OperationWithPrecedence(debugName, priority) {
+			OperatorWithPrecedence(debugName, priority) {
 			companion object All : TokenKindSetBuilder("logics") {
 				val And = +Logic("&&")
 				
@@ -191,7 +191,7 @@ object TokenKinds {
 			}
 		}
 		
-		class Expression(debugName: String, priority: Int) : Operation(debugName, priority) {
+		class Expression(debugName: String, priority: Int) : Operator(debugName, priority) {
 			companion object All : TokenKindSetBuilder("expressions") {
 				// Range Operator
 				
@@ -215,9 +215,9 @@ object TokenKinds {
 				/**
 				 * Type cast operator.
 				 */
-				val As = +Expression("as")
+				val As = +Expression("as", priority = 300)
 				
-				val AsOrNull = +Expression("as?")
+				val AsOrNull = +Expression("as?", priority = 300)
 				
 				/**
 				 * Collection inclusion operator.
@@ -234,7 +234,7 @@ object TokenKinds {
 			}
 		}
 		
-		class Assign(debugName: String) : Operation(debugName) {
+		class Assign(debugName: String) : Operator(debugName) {
 			companion object All : TokenKindSetBuilder("assigns") {
 				val Assign = +Assign("=")
 				
@@ -244,7 +244,7 @@ object TokenKinds {
 			}
 		}
 		
-		class Group(debugName: String) : Operation(debugName) {
+		class Group(debugName: String) : Operator(debugName) {
 			companion object All : TokenKindSetBuilder("groups") {
 				/**
 				 * Usage:
@@ -272,17 +272,15 @@ object TokenKinds {
 			}
 		}
 		
-		class Access(debugName: String) : Operation(debugName) {
+		class Access(debugName: String) : Operator(debugName) {
 			companion object All : TokenKindSetBuilder("accesses") {
 				val Dot = +Access(".")
-				
-				val SafeDot = +Access("?.")
 				
 				val Metadata = +Access("::")
 			}
 		}
 		
-		class Other(debugName: String) : Operation(debugName) {
+		class Other(debugName: String) : Operator(debugName) {
 			companion object All : TokenKindSetBuilder("others") {
 				val Semicolon = +Other(";")
 				
@@ -405,7 +403,7 @@ object TokenKinds {
 			/**
 			 * `in` of `for(element in collection)`
 			 */
-			val ForIn = +Operation.Other("in")
+			val ForIn = +Operator.Other("in")
 		}
 	}
 	

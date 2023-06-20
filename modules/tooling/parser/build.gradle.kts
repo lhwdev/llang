@@ -11,6 +11,7 @@ commonConfig.kotlin {
 	
 	dependencies {
 		implementation(projects.tooling.module)
+		implementation(projects.tooling.structureCommon)
 		implementation(projects.tooling.token)
 		implementation(projects.tooling.tokenizer)
 		implementation(projects.tooling.parserCommon)

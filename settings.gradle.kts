@@ -79,6 +79,7 @@ includesAll(rootPath = "modules") {
 		module("common")
 		module("module")
 		
+		module("structureCommon")
 		module("token")
 		module("cst")
 		module("ast")

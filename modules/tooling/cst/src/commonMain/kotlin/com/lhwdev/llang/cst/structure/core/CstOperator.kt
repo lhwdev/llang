@@ -13,6 +13,7 @@ sealed class CstOperator(token: Token) : CstLeafNodeImpl(token) {
 	}
 	
 	class Binary(token: Token) : CstOperator(token) {
+		
 		companion object Info : CstNodeInfo<Binary> {
 			override fun dummyNode() = Binary(TokenImpl.dummyIllegal())
 		}

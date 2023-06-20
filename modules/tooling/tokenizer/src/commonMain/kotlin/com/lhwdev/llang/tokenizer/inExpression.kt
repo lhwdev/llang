@@ -11,6 +11,6 @@ fun CodeSource.parseExpressionToken(): Token {
 		CharacterKind.isLetter(c) -> parseIdentifier()
 		CharacterKind.isDigit(c) -> parseNumber()
 		// TODO: other cases?
-		else -> parseUnaryOperation()
+		else -> parseOperationInAnyExpression()
 	}
 }

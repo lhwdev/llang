@@ -19,9 +19,9 @@ fun CstParseContext.cstLeafNodeOrNull(tokenKind: TokenKind, content: String): Cs
 	}
 
 fun CstParseContext.cstLeafCommaOrNull(): CstLeafNode.Comma? = nullableLeafNode(null) {
-	code.parseTokenOrNull(TokenKinds.Operation.Other.Comma, ",")?.let { CstLeafNode.Comma(it) }
+	code.parseTokenOrNull(TokenKinds.Operator.Other.Comma, ",")?.let { CstLeafNode.Comma(it) }
 }
 
 fun CstParseContext.cstLeafDot(): CstLeafNode.Dot = leafNode(null) {
-	CstLeafNode.Dot(code.parseToken(TokenKinds.Operation.Access.Dot, "."))
+	CstLeafNode.Dot(code.parseToken(TokenKinds.Operator.Access.Dot, "."))
 }
