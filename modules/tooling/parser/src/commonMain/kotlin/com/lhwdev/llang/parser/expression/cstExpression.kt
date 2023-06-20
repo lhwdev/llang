@@ -20,6 +20,7 @@ import com.lhwdev.llang.tokenizer.parseExpressionToken
 import com.lhwdev.llang.tokenizer.source.eof
 
 
+
 private sealed interface CstTempNode : CstNode {
 	interface TempToExpression : CstTempNode {
 		context(CstParseContext)
@@ -125,6 +126,11 @@ private class CstExpressionParser(private val context: CstParseContext) {
 		}
 	}
 	
+	fun CstParseContext.expression(): CstExpression = node(CstExpression) {
+		detachedChildrenNode()
+		child { runMain() }
+	}
+	
 	private fun revalidateBuffer() {
 		buffer.close()
 		buffer = NodeBuffer(context)
@@ -225,13 +231,13 @@ private class CstExpressionParser(private val context: CstParseContext) {
 		parseRequire(open.token.kind == TokenKinds.Operator.Group.LeftParen) { "no left paren" }
 		
 		val content = node(info = null) {
-			val content = node(CstExpression) { child { runMain() } }
+			val content = expression()
 			val next = buffer.pop()
 			when(next.token.kind) {
 				TokenKinds.Operator.Other.Comma -> {
 					val contents = mutableListOf(content)
 					while(true) {
-						val otherContent = node(CstExpression) { child { runMain() } }
+						val otherContent = expression()
 						contents += otherContent
 						
 						val comma = leaf()
@@ -374,6 +380,5 @@ private fun CstNode.toUnaryOperator(): CstOperator.Unary = if(this is CstTempNod
 }
 
 
-fun CstParseContext.cstExpression(): CstExpression = node(CstExpression) {
-	with(CstExpressionParser(this)) { runMain() }
-}
+fun CstParseContext.cstExpression(): CstExpression =
+	with(CstExpressionParser(this)) { expression() }

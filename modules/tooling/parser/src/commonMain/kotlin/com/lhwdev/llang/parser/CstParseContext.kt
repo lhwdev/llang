@@ -12,8 +12,15 @@ import com.lhwdev.llang.parsing.util.ParseContext
 /**
  * [CstParseContext] can be originated from raw code source, serialized CST structure, or
  * existing other [CstParseContext] (for cloning).
+ *
+ * [CstParseContext] enables DSL-based elegant code parsing. In most cases, your code structure
+ * matches 1:1 to actual Cst structure and raw cst node tree.
+ *
+ * [CstParseContext] is write-only for nodes, read-only for code/tokens for performance.
+ *
+ * TODO: possible parallel parsing? *put codes in ThreadPool, run them, profit!*
  */
-interface CstParseContext : CstLocalContextSource, ParseContext {
+interface CstParseContext : ParseContext {
 	enum class NodeKind {
 		/**
 		 * Nodes with [NodeKind] other than [LeafNode] should not use [code] directly, though not
@@ -42,13 +49,6 @@ interface CstParseContext : CstLocalContextSource, ParseContext {
 	
 	/// Token
 	val code: CstCodeSource
-	
-	
-	// Local Context
-	
-	fun <T> pushNodeLocalContext(key: CstLocalContextKey<T>, value: T)
-	
-	override fun <T> getLocalContext(key: CstLocalContextKey<T>): T
 	
 	
 	/// Node
@@ -96,4 +96,15 @@ interface CstParseContext : CstLocalContextSource, ParseContext {
 	 * Use cases: keyword(`class`, `fun`, `val` ...), some operators
 	 */
 	fun preventDiscard()
+	
+	/**
+	 * Informs that children nodes are 'detached'.
+	 * Generally raw node tree is determined by the order of invocation of `node {}`. However,
+	 * calling this in structured manner is sometimes impossible. So, this informs that the raw tree
+	 * of all direct children node of current node should be evaluated manually.
+	 *
+	 * This should be called as soon as you call [beginNode] (generally, called first inside
+	 * `node {}`.)
+	 */
+	fun detachedChildrenNode()
 }
