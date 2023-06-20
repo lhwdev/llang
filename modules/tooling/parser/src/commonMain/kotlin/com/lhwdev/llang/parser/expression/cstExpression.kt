@@ -72,41 +72,6 @@ private sealed interface CstTempNode : CstNode {
 			else -> parseError("Unexpected token $token")
 		}
 	}
-	
-	class Binary(
-		val lhs: TempToExpression,
-		val operator: Leaf,
-		val rhs: TempToExpression,
-	) : CstTempNode, TempToExpression {
-		context(CstParseContext)
-		override fun tempToExpression() = structuredNode(CstOperation.Binary) {
-			CstOperation.Binary(
-				lhs.tempToExpression(),
-				operator.tempToBinaryOperator(),
-				rhs.tempToExpression(),
-			)
-		}
-	}
-	
-	class UnaryPrefix(
-		val operator: Leaf,
-		val operand: TempToExpression,
-	) : CstTempNode, TempToExpression {
-		context(CstParseContext)
-		override fun tempToExpression() = structuredNode(CstOperation.UnaryPrefix) {
-			CstOperation.UnaryPrefix(operator.tempToUnaryOperator(), operand.tempToExpression())
-		}
-	}
-	
-	class UnaryPostfix(
-		val operand: Leaf,
-		val operator: TempToExpression,
-	) : CstTempNode, TempToExpression {
-		context(CstParseContext)
-		override fun tempToExpression() = structuredNode(CstOperation.UnaryPostfix) {
-			CstOperation.UnaryPostfix(operator.tempToExpression(), operand.tempToUnaryOperator())
-		}
-	}
 }
 
 private class NodeBuffer(context: CstParseContext) {
@@ -260,13 +225,13 @@ private class CstExpressionParser(private val context: CstParseContext) {
 		parseRequire(open.token.kind == TokenKinds.Operator.Group.LeftParen) { "no left paren" }
 		
 		val content = node(info = null) {
-			val content = child { runMain() }
+			val content = node(CstExpression) { child { runMain() } }
 			val next = buffer.pop()
 			when(next.token.kind) {
 				TokenKinds.Operator.Other.Comma -> {
 					val contents = mutableListOf(content)
 					while(true) {
-						val otherContent = child { runMain() }
+						val otherContent = node(CstExpression) { child { runMain() } }
 						contents += otherContent
 						
 						val comma = leaf()
@@ -375,6 +340,7 @@ private class CstExpressionParser(private val context: CstParseContext) {
 			return true
 		}
 		
+		push()
 		return true
 	}
 	
