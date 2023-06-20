@@ -1,24 +1,19 @@
 package com.lhwdev.llang.parser.util
 
 import com.lhwdev.llang.cst.structure.CstNode
+import com.lhwdev.llang.cst.structure.util.CstSurround
 import com.lhwdev.llang.parser.CstParseContext
-import com.lhwdev.llang.token.TokenKind
-import com.lhwdev.llang.token.TokenKinds
-
-
-class Surround(val left: TokenKind, val right: TokenKind) {
-	companion object {
-		val Paren = Surround(
-			left = TokenKinds.Operator.Group.LeftParen,
-			right = TokenKinds.Operator.Group.RightParen,
-		)
-	}
-}
+import com.lhwdev.llang.parser.core.cstLeafNode
+import com.lhwdev.llang.parser.structuredNode
 
 
 inline fun <Node : CstNode> CstParseContext.cstSurround(
-	surround: Surround,
-	block: CstParseContext.() -> Node,
-): Node {
-
+	kind: CstSurround.Kind,
+	crossinline block: CstParseContext.() -> Node,
+): CstSurround<Node> = structuredNode(CstSurround.info()) {
+	cstLeafNode(kind.left, kind.leftContent)
+	val content = block()
+	cstLeafNode(kind.right, kind.rightContent)
+	
+	CstSurround(kind, content)
 }

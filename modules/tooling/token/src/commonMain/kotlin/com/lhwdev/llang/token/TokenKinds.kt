@@ -141,7 +141,7 @@ object TokenKinds {
 	
 	
 	sealed class Operator(debugName: String) : LlTokenKind(debugName) {
-		sealed class OperatorWithPrecedence(debugName: String, val priority: Int) :
+		sealed class OperatorWithPrecedence(debugName: String, val precedence: Int) :
 			Operator(debugName)
 		
 		class Arithmetic(debugName: String, priority: Int) :
@@ -244,31 +244,31 @@ object TokenKinds {
 			}
 		}
 		
-		class Group(debugName: String) : Operator(debugName) {
+		class Group(debugName: String, val open: Boolean) : Operator(debugName) {
 			companion object All : TokenKindSetBuilder("groups") {
 				/**
 				 * Usage:
 				 * - group expression
 				 * - tuple
 				 */
-				val LeftParen = +Group("(")
+				val LeftParen = +Group("(", open = true)
 				
-				val RightParen = +Group("(")
+				val RightParen = +Group(")", open = false)
 				
-				val LeftSquareBracket = +Group("[")
+				val LeftSquareBracket = +Group("[", open = true)
 				
-				val RightSquareBracket = +Group("]")
+				val RightSquareBracket = +Group("]", open = false)
 				
-				val LeftBrace = +Group("{")
+				val LeftBrace = +Group("{", open = true)
 				
-				val RightBrace = +Group("}")
+				val RightBrace = +Group("}", open = false)
 				
 				/**
 				 * Only used for type parameters; `<T>`, `<Type : Hello, Hi = 123>`
 				 */
-				val LeftAngleBracket = +Group("<")
+				val LeftAngleBracket = +Group("<", open = true)
 				
-				val RightAngleBracket = +Group(">")
+				val RightAngleBracket = +Group(">", open = false)
 			}
 		}
 		

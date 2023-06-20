@@ -9,6 +9,8 @@ import com.lhwdev.llang.cst.structure.core.CstOperator
 import com.lhwdev.llang.cst.structure.expression.CstExpression
 import com.lhwdev.llang.cst.structure.expression.CstMemberAccess
 import com.lhwdev.llang.cst.structure.expression.CstOperation
+import com.lhwdev.llang.cst.structure.expression.CstTuple
+import com.lhwdev.llang.cst.structure.util.CstSurround
 import com.lhwdev.llang.parser.CstParseContext
 import com.lhwdev.llang.parser.leafNode
 import com.lhwdev.llang.parser.node
@@ -18,6 +20,7 @@ import com.lhwdev.llang.parsing.util.parseRequire
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.parseExpressionToken
+import com.lhwdev.llang.tokenizer.source.eof
 
 
 private sealed interface CstTempNode : CstNode {
@@ -109,7 +112,7 @@ private sealed interface CstTempNode : CstNode {
 	}
 }
 
-private class NodeBuffer(private val context: CstParseContext) {
+private class NodeBuffer(context: CstParseContext) {
 	private val code = context.code.cloneForRead()
 	private var peekBuffer = null as CstTempNode.Leaf?
 	
@@ -118,6 +121,16 @@ private class NodeBuffer(private val context: CstParseContext) {
 	
 	fun peek(): CstTempNode.Leaf =
 		peekBuffer ?: CstTempNode.Leaf(code.parseExpressionToken()).also { peekBuffer = it }
+	
+	fun endOfInput(): Boolean {
+		if(code.eof) return true
+		
+		val next = peek().token.kind
+		return when {
+			next is TokenKinds.Operator.Group && !next.open -> true
+			else -> false
+		}
+	}
 	
 	fun close() {
 		code.close()
@@ -132,10 +145,33 @@ private class NodeBuffer(private val context: CstParseContext) {
  *
  * ENSURE ALL ORDER OF CALL TO `code.acceptToken` IS CONSISTENT
  */
-private class CstExpressionParser(context: CstParseContext) {
-	val buffer = NodeBuffer(context)
-	val stack = ArrayDeque<CstNode>()
+private class CstExpressionParser(private val context: CstParseContext) {
+	var buffer = NodeBuffer(context)
+	var stack = ArrayDeque<CstNode>()
 	var head: CstNode = buffer.pop()
+	
+	private inline fun <R> child(block: CstExpressionParser.() -> R): R {
+		val previousStack = stack
+		val previousHead = head
+		return try {
+			stack = ArrayDeque()
+			head = buffer.pop()
+			block()
+		} finally {
+			stack = previousStack
+			head = previousHead
+		}
+	}
+	
+	private fun revalidateBuffer() {
+		buffer.close()
+		buffer = NodeBuffer(context)
+	}
+	
+	private fun CstParseContext.leaf(token: Token = buffer.pop().token): CstLeafNode =
+		leafNode(CstLeafNode) {
+			CstLeafNodeImpl(code.acceptToken(token))
+		}
 	
 	fun push() {
 		stack.addLast(head)
@@ -197,8 +233,53 @@ private class CstExpressionParser(context: CstParseContext) {
 	
 	fun CstParseContext.callOps() = node(info = null) {
 		val function = head.toExpression()
-		val tuple = cstTuple()
+		val arguments = cstTuple()
+		revalidateBuffer() // cstTuple depends on original [code]; buffer remains stale without [revalidateBuffer]
+		
+		CstFunctionCall(function, arguments)
 	}
+	
+	fun CstParseContext.groupOrTupleOps() = structuredNode(CstSurround.info()) {
+		val open = leaf()
+		parseRequire(open.token.kind == TokenKinds.Operator.Group.LeftParen) { "no left paren" }
+		
+		val content = node(info = null) {
+			val content = child { runMain() }
+			val next = buffer.pop()
+			when(next.token.kind) {
+				TokenKinds.Operator.Other.Comma -> {
+					val contents = mutableListOf(content)
+					while(true) {
+						val otherContent = child { runMain() }
+						contents += otherContent
+						
+						val comma = leaf()
+						when(comma.token.kind) {
+							TokenKinds.Operator.Other.Comma -> {
+								// trailing comma available
+								if(buffer.peek().token.kind == TokenKinds.Operator.Group.RightParen) {
+									leaf()
+									break
+								}
+							}
+							
+							TokenKinds.Operator.Group.RightParen -> break
+						}
+					}
+					
+					CstTuple(contents)
+				}
+				
+				TokenKinds.Operator.Group.RightParen -> {
+					leaf(next.token)
+					content
+				}
+				
+				else -> parseError("Unknown end of child expression parsing")
+			}
+		}
+		CstSurround(kind = CstSurround.Paren, content)
+	}.content
 	
 	fun CstParseContext.expandHeadEagerForExpression(): CstExpression =
 		expandHeadEager() ?: head.toExpression()
@@ -242,9 +323,41 @@ private class CstExpressionParser(context: CstParseContext) {
 	}
 	
 	fun CstParseContext.main(): Boolean {
-		expandHeadEager()
+		if(buffer.endOfInput()) {
+			return if(stack.isEmpty()) {
+				false
+			} else {
+				binaryOps()
+				true
+			}
+		}
+		
+		val expression = expandHeadEager()
+		if(expression != null) return true
+		
+		val binaryOperatorA = stack.last()
+		val binaryOperatorB = buffer.peek()
+		
+		fun precedence(node: CstTempNode.Leaf): Int =
+			(node.token.kind as TokenKinds.Operator.OperatorWithPrecedence).precedence
+		
+		val precedenceA = precedence(binaryOperatorA as CstTempNode.Leaf)
+		val precedenceB = precedence(binaryOperatorB)
+		
+		if(precedenceA >= precedenceB) {
+			// TODO: consider associativity
+			binaryOps()
+			return true
+		}
 		
 		return true
+	}
+	
+	fun CstParseContext.runMain(): CstExpression {
+		while(true) {
+			if(!main()) break
+		}
+		return head.toExpression()
 	}
 }
 
@@ -271,12 +384,5 @@ private fun CstNode.toUnaryOperator(): CstOperator.Unary = if(this is CstTempNod
 
 
 fun CstParseContext.cstExpression(): CstExpression = node(CstExpression) {
-	val parser = CstExpressionParser(this)
-	
-	with(parser) {
-		while(true) {
-			if(!main()) break
-		}
-	}
-	parser.head.toExpression()
+	with(CstExpressionParser(this)) { runMain() }
 }
