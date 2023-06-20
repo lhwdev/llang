@@ -9,9 +9,10 @@ interface Diagnostic {
 }
 
 
-fun diagnostic(name: String, level: DiagnosticLevel, message: String): Diagnostic = object : Diagnostic {
-	override val name: String = name
-	
-	context(DiagnosticContext)
-	override fun getMessage(): String = message
-}
+fun diagnostic(name: String, level: DiagnosticLevel, message: String): Diagnostic =
+	object : Diagnostic {
+		override val name: String = name
+		
+		context(DiagnosticContext)
+		override fun getMessage(): String = message
+	}

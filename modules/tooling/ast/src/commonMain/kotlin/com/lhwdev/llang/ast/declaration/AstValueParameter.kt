@@ -22,7 +22,8 @@ interface AstValueParameter : AstDeclaration {
 		override val type: AstType
 	}
 	
-	interface SimpleInferred : Simple { // used as FullyInferable<SimpleLambda> -> nothing / only name / name + type
+	interface SimpleInferred :
+		Simple { // used as FullyInferable<SimpleLambda> -> nothing / only name / name + type
 		@AstInferable
 		override val type: AstType?
 	}

@@ -247,9 +247,9 @@ To define how much flexibility we need, we should define operations.
 | `v[a, b, ...]`            | expression.getElement           | binary, group | eager      | `println("hello, world!")`             |
 | `.`                       | memberAccess                    | binary        | eager      | `value.member`, `Class.Other`          |
 | `::`                      | metadataAccess                  | binary        | eager      | `Class::Other`                         |
-| `?`                       | propagateError                  | unary.suffix  | eager'     | `println(...list)`                     |
-| `+`/`-`                   | arithmetic.unaryPlus/unaryMinus | unary.prefix  | eager''    | `-7`, `+3`                             |
-| `!`                       | logic.not                       | unary.prefix  | eager''    | `!isHello`                             |
+| `+`/`-`                   | arithmetic.unaryPlus/unaryMinus | unary.prefix  | eager'     | `-7`, `+3`                             |
+| `!`                       | logic.not                       | unary.prefix  | eager'     | `!isHello`                             |
+| `?`                       | propagateError                  | unary.suffix  | eager''    | `println(...list)`                     |
 | `as`                      | typeOps.cast                    | binary        | 300        | `parent as Child`                      |
 | `as?`                     | typeOps.safeCast                | binary        | 300        | `parent as? Child`                     |
 | `*`/`/`/`%`               | arithmetic.multiply/divide/rem  | binary        | 251        | `3 * 5`                                |

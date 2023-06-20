@@ -61,7 +61,7 @@ class IncludesAllDsl(
 fun includesAll(rootPath: String, block: IncludesAllDsl.() -> Unit) {
 	val base = IncludesAllBase(
 		settings = settings,
-		rootPath = listOf(rootPath)
+		rootPath = listOf(rootPath),
 	)
 	IncludesAllDsl(base, emptyList()).block()
 }

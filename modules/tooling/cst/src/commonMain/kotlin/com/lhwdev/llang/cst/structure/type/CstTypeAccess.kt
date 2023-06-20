@@ -23,7 +23,7 @@ class CstTypeAccess(
 	companion object Info : CstNodeInfo<CstTypeAccess> {
 		override fun dummyNode() = CstTypeAccess(
 			CstIdentifier(TokenImpl.dummyIllegal()),
-			CstIdentifier(TokenImpl.dummyIllegal())
+			CstIdentifier(TokenImpl.dummyIllegal()),
 		)
 		
 	}

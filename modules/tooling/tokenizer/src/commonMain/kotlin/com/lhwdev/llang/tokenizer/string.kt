@@ -35,7 +35,7 @@ fun CodeSource.parseInStringLiteral(quote: TokenKinds.StringLiteral.Quote): Toke
 	'\\' -> when(peek()) {
 		'\\', '$', 'n', 'r', 't', 'b', '\'', '"' -> token(
 			TokenKinds.StringLiteral.EscapedLiteral,
-			2
+			2,
 		)
 		
 		'u' -> token(TokenKinds.StringLiteral.EscapedLiteral, 6)

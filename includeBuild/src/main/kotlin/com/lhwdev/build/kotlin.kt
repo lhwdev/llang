@@ -12,7 +12,8 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinWithJavaTarget
 
 
-abstract class KotlinScope(internal val commonConfig: CommonConfig) : KotlinTopLevelExtensionConfig {
+abstract class KotlinScope(internal val commonConfig: CommonConfig) :
+	KotlinTopLevelExtensionConfig {
 	internal abstract val kotlin: KotlinProjectExtension
 	
 	internal open fun setup() {
@@ -61,20 +62,27 @@ abstract class KotlinScope(internal val commonConfig: CommonConfig) : KotlinTopL
 	}
 }
 
-open class KotlinMultiplatformScope(commonConfig: CommonConfig, override val kotlin: KotlinMultiplatformExtension) :
+open class KotlinMultiplatformScope(
+	commonConfig: CommonConfig,
+	override val kotlin: KotlinMultiplatformExtension,
+) :
 	KotlinScope(commonConfig) {
 	
-	val common: KotlinCommonItem = KotlinCommonItem(sourceSet = KotlinTargetSourceSet(kotlin.sourceSets, "common"))
+	val common: KotlinCommonItem =
+		KotlinCommonItem(sourceSet = KotlinTargetSourceSet(kotlin.sourceSets, "common"))
 	
 	
-	fun intermediate(name: String, setupBlock: KotlinIntermediateItem.() -> Unit = {}): KotlinIntermediateItem {
+	fun intermediate(
+		name: String,
+		setupBlock: KotlinIntermediateItem.() -> Unit = {},
+	): KotlinIntermediateItem {
 		val item = KotlinIntermediateItem(
 			name = name,
 			sourceSet = KotlinTargetSourceSet(
 				main = kotlin.sourceSets.create(sourceSetNameFor(name, type = "main")),
-				test = null
+				test = null,
 				// test = kotlin.sourceSets.create(sourceSetNameFor(name, type = "test"))
-			)
+			),
 		)
 		
 		item.setupBlock()
@@ -86,7 +94,7 @@ open class KotlinMultiplatformScope(commonConfig: CommonConfig, override val kot
 		val target = kotlin.jvm(name)
 		val item = KotlinJvmItem(
 			target = target,
-			sourceSet = KotlinTargetSourceSet(kotlin.sourceSets, name = name)
+			sourceSet = KotlinTargetSourceSet(kotlin.sourceSets, name = name),
 		)
 		
 		item.setupBlock()
@@ -117,7 +125,7 @@ abstract class KotlinPlatformScope(commonConfig: CommonConfig) : KotlinScope(com
 
 abstract class KotlinJvmKindScope<Target : KotlinTarget>(
 	commonConfig: CommonConfig,
-	kotlin: KotlinSingleTargetExtension<Target>
+	kotlin: KotlinSingleTargetExtension<Target>,
 ) :
 	KotlinPlatformScope(commonConfig) {
 	
@@ -125,7 +133,7 @@ abstract class KotlinJvmKindScope<Target : KotlinTarget>(
 	
 	val jvm: KotlinJvmItem = KotlinJvmItem(
 		target = kotlin.target,
-		sourceSet = KotlinTargetSourceSet(kotlin.sourceSets, name = null)
+		sourceSet = KotlinTargetSourceSet(kotlin.sourceSets, name = null),
 	)
 	
 	override val platformItem: KotlinPlatformItem
@@ -144,14 +152,14 @@ abstract class KotlinJvmKindScope<Target : KotlinTarget>(
 
 open class KotlinJvmScope(
 	commonConfig: CommonConfig,
-	final override val kotlin: KotlinJvmProjectExtension
+	final override val kotlin: KotlinJvmProjectExtension,
 ) : KotlinJvmKindScope<KotlinWithJavaTarget<*, *>>(commonConfig, kotlin)
 
 
 class KotlinTargetSourceSet(val main: KotlinSourceSet, val test: KotlinSourceSet?) {
 	constructor(sourceSets: NamedDomainObjectContainer<KotlinSourceSet>, name: String?) : this(
 		main = sourceSets[sourceSetNameFor(name, "main")],
-		test = sourceSets[sourceSetNameFor(name, "test")]
+		test = sourceSets[sourceSetNameFor(name, "test")],
 	)
 }
 
@@ -187,7 +195,8 @@ abstract class AbstractKotlinItem : KotlinItem {
 	}
 }
 
-abstract class KotlinTargetItem(internal val sourceSet: KotlinTargetSourceSet) : AbstractKotlinItem() {
+abstract class KotlinTargetItem(internal val sourceSet: KotlinTargetSourceSet) :
+	AbstractKotlinItem() {
 	override val targetSourceSet: KotlinTargetSourceSet get() = sourceSet
 }
 
@@ -196,18 +205,19 @@ class KotlinCommonItem(sourceSet: KotlinTargetSourceSet) : KotlinTargetItem(sour
 	override val dependencySourceSet: KotlinTargetSourceSet get() = sourceSet
 }
 
-abstract class KotlinPlatformItem(sourceSet: KotlinTargetSourceSet) : KotlinTargetItem(sourceSet = sourceSet),
+abstract class KotlinPlatformItem(sourceSet: KotlinTargetSourceSet) :
+	KotlinTargetItem(sourceSet = sourceSet),
 	KotlinDependantItem
 
 class KotlinJvmItem(
 	val target: KotlinTarget,
-	sourceSet: KotlinTargetSourceSet
+	sourceSet: KotlinTargetSourceSet,
 ) : KotlinPlatformItem(sourceSet = sourceSet)
 
 
 class KotlinIntermediateItem(
 	private val name: String,
-	internal val sourceSet: KotlinTargetSourceSet
+	internal val sourceSet: KotlinTargetSourceSet,
 ) : AbstractKotlinItem(), KotlinDependencyItem, KotlinDependantItem {
 	override val targetSourceSet: KotlinTargetSourceSet get() = sourceSet
 	override val dependencySourceSet: KotlinTargetSourceSet get() = sourceSet

@@ -1,11 +1,13 @@
 package com.lhwdev.llang.parser.expression
 
 import com.lhwdev.llang.cst.structure.CstNode
+import com.lhwdev.llang.cst.structure.asInline
 import com.lhwdev.llang.cst.structure.core.CstIdentifier
 import com.lhwdev.llang.cst.structure.core.CstLeafNode
+import com.lhwdev.llang.cst.structure.core.CstLeafNodeImpl
 import com.lhwdev.llang.cst.structure.core.CstOperator
-import com.lhwdev.llang.cst.structure.expression.CstAccessExpression
 import com.lhwdev.llang.cst.structure.expression.CstExpression
+import com.lhwdev.llang.cst.structure.expression.CstMemberAccess
 import com.lhwdev.llang.cst.structure.expression.CstOperation
 import com.lhwdev.llang.parser.CstParseContext
 import com.lhwdev.llang.parser.leafNode
@@ -16,26 +18,106 @@ import com.lhwdev.llang.parsing.util.parseRequire
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.parseExpressionToken
-import com.lhwdev.llang.tokenizer.source.CodeSource
 
 
-/**
- * Special node that is not accepted yet into main [CstParseContext.code].
- * [token] should be accepted to be sound.
- *
- * @see com.lhwdev.llang.parser.CstCodeSource.acceptToken
- */
-private class CstUnclassifiedLeafNode(val token: Token) : CstNode
+private sealed interface CstTempNode : CstNode {
+	interface TempToExpression : CstTempNode {
+		context(CstParseContext)
+		fun tempToExpression(): CstExpression
+	}
+	
+	/**
+	 * Special node that is not accepted yet into main [CstParseContext.code].
+	 * [token] should be accepted to be sound.
+	 *
+	 * @see com.lhwdev.llang.parser.CstCodeSource.acceptToken
+	 */
+	class Leaf(val token: Token) : CstTempNode, TempToExpression {
+		/**
+		 * All `tempTo???` functions will 'mount' virtual [CstTempNode]s into CstNodeTree.
+		 */
+		context(CstParseContext)
+		override fun tempToExpression() = when(token.kind) {
+			is TokenKinds.Identifier -> structuredNode(CstGetValue) {
+				CstGetValue(
+					leafNode(CstIdentifier) { CstIdentifier(code.acceptToken(token)) },
+				)
+			}
+			
+			is TokenKinds.NumberLiteral -> leafNode(CstNumberLiteral) {
+				CstNumberLiteral(code.acceptToken(token))
+			}
+			
+			is TokenKinds.Operator -> parseError("Unexpected operator ${token.kind}")
+			else -> parseError("Unexpected token $token")
+		}
+		
+		context(CstParseContext)
+		fun tempToBinaryOperator() = when(token.kind) {
+			is TokenKinds.Identifier,
+			is TokenKinds.Operator,
+			-> structuredNode(CstOperator.Binary) {
+				CstOperator.Binary(token)
+			}
+			
+			else -> parseError("Unexpected token $token")
+		}
+		
+		context(CstParseContext)
+		fun tempToUnaryOperator() = when(token.kind) {
+			is TokenKinds.Operator -> structuredNode(CstOperator.Unary) {
+				CstOperator.Unary(token)
+			}
+			
+			else -> parseError("Unexpected token $token")
+		}
+	}
+	
+	class Binary(
+		val lhs: TempToExpression,
+		val operator: Leaf,
+		val rhs: TempToExpression,
+	) : CstTempNode, TempToExpression {
+		context(CstParseContext)
+		override fun tempToExpression() = structuredNode(CstOperation.Binary) {
+			CstOperation.Binary(
+				lhs.tempToExpression(),
+				operator.tempToBinaryOperator(),
+				rhs.tempToExpression(),
+			)
+		}
+	}
+	
+	class UnaryPrefix(
+		val operator: Leaf,
+		val operand: TempToExpression,
+	) : CstTempNode, TempToExpression {
+		context(CstParseContext)
+		override fun tempToExpression() = structuredNode(CstOperation.UnaryPrefix) {
+			CstOperation.UnaryPrefix(operator.tempToUnaryOperator(), operand.tempToExpression())
+		}
+	}
+	
+	class UnaryPostfix(
+		val operand: Leaf,
+		val operator: TempToExpression,
+	) : CstTempNode, TempToExpression {
+		context(CstParseContext)
+		override fun tempToExpression() = structuredNode(CstOperation.UnaryPostfix) {
+			CstOperation.UnaryPostfix(operator.tempToExpression(), operand.tempToUnaryOperator())
+		}
+	}
+}
 
 private class NodeBuffer(private val context: CstParseContext) {
 	private val code = context.code.cloneForRead()
-	private var peekBuffer = null as CstUnclassifiedLeafNode?
+	private var peekBuffer = null as CstTempNode.Leaf?
 	
-	fun pop(): CstUnclassifiedLeafNode =
-		peekBuffer.also { peekBuffer = null } ?: code.cstLeafExpression()
+	fun pop(): CstTempNode.Leaf =
+		peekBuffer.also { peekBuffer = null } ?: CstTempNode.Leaf(code.parseExpressionToken())
 	
-	fun peek(): CstUnclassifiedLeafNode =
-		peekBuffer ?: code.cstLeafExpression().also { peekBuffer = it }
+	fun peek(): CstTempNode.Leaf =
+		peekBuffer ?: CstTempNode.Leaf(code.parseExpressionToken()).also { peekBuffer = it }
 	
 	fun close() {
 		code.close()
@@ -47,6 +129,8 @@ private class NodeBuffer(private val context: CstParseContext) {
  * - end of statement; LineBreak-separated statements
  * - precedence(is already considered)
  * - determining 'is this expression vs binaryOps vs unaryOps' is easier than you thought
+ *
+ * ENSURE ALL ORDER OF CALL TO `code.acceptToken` IS CONSISTENT
  */
 private class CstExpressionParser(context: CstParseContext) {
 	val buffer = NodeBuffer(context)
@@ -59,64 +143,68 @@ private class CstExpressionParser(context: CstParseContext) {
 		head = buffer.pop()
 	}
 	
-	fun CstParseContext.unaryPrefixOps(): CstExpression {
-		val operator = head
-		val operand = expandHeadEagerForExpression(buffer.pop())
+	fun CstParseContext.unaryPrefixOps() = structuredNode(CstOperation.UnaryPrefix) {
+		val operator = head.toUnaryOperator()
+		head = buffer.pop()
+		val operand = expandHeadEagerForExpression()
 		
-		return structuredNode(CstOperation.UnaryPrefix) {
-			CstOperation.UnaryPrefix(
-				operator = operator.toUnaryOperator(),
-				operand = operand,
-			)
-		}.also { head = it }
-	}
+		CstOperation.UnaryPrefix(
+			operator = operator,
+			operand = operand,
+		)
+	}.also { head = it }
 	
-	fun CstParseContext.unaryPostfixOps(): CstExpression {
-		val operand = expandHeadEagerForExpression(head)
-		val operator = buffer.pop()
+	fun CstParseContext.unaryPostfixOps() = structuredNode(CstOperation.UnaryPostfix) {
+		val operand = expandHeadEagerForExpression()
+		val operator = buffer.pop().toUnaryOperator()
 		
-		return structuredNode(CstOperation.UnaryPostfix) {
-			CstOperation.UnaryPostfix(
-				operand = operand,
-				operator = operator.toUnaryOperator(),
-			)
-		}.also { head = it }
-	}
+		CstOperation.UnaryPostfix(
+			operand = operand,
+			operator = operator,
+		)
+	}.also { head = it }
 	
-	fun CstParseContext.binaryOps(): CstExpression {
+	fun CstParseContext.binaryOps() = structuredNode(CstOperation.Binary) {
 		val operator = stack.removeLast()
 		val lhs = stack.removeLast()
 		val rhs = head
-		return structuredNode(CstOperation.Binary) {
-			CstOperation.Binary(
-				lhs = lhs.toExpression(),
-				operator = operator.toBinaryOperator(),
-				rhs = rhs.toExpression(),
-			)
-		}.also { head = it }
-	}
+		
+		CstOperation.Binary(
+			lhs = lhs.toExpression(),
+			operator = operator.toBinaryOperator(),
+			rhs = rhs.toExpression(),
+		)
+	}.also { head = it }
 	
-	fun CstParseContext.accessOps(): CstExpression {
-		val parent = head
-		val accessor = buffer.pop()
-		val item = expandHeadEagerForExpression(buffer.pop())
+	fun CstParseContext.accessOps() = node(info = null) {
+		val parent = head.toExpression()
+		val accessor = leafNode(CstLeafNode) {
+			CstLeafNodeImpl(code.acceptToken(buffer.pop().token))
+		}
+		head = buffer.pop()
+		val item = expandHeadEagerForExpression()
 		parseRequire(accessor.token.kind == TokenKinds.Operator.Access.Dot) {
 			"TODO: implement accessor for :: Metadata and ?. SafeDot"
 		}
-		return structuredNode(CstAccessExpression) {
-			CstAccessExpression(
-				parent = head.toExpression(),
+		
+		structuredNode(CstMemberAccess.asInline()) {
+			CstMemberAccess(
+				parent = parent,
 				item = item,
 			)
-		}.also { head = it }
+		}
+	}.also { head = it }
+	
+	fun CstParseContext.callOps() = node(info = null) {
+		val function = head.toExpression()
+		val tuple = cstTuple()
 	}
 	
-	fun CstParseContext.expandHeadEagerForExpression(h: CstNode): CstExpression =
-		expandHeadEager(h) ?: head.toExpression()
+	fun CstParseContext.expandHeadEagerForExpression(): CstExpression =
+		expandHeadEager() ?: head.toExpression()
 	
-	fun CstParseContext.expandHeadEager(h: CstNode): CstExpression? {
-		head = h
-		
+	fun CstParseContext.expandHeadEager(): CstExpression? {
+		val h = head
 		if(h is CstLeafNode) {
 			val kind = h.token.kind
 			when(kind) {
@@ -126,77 +214,59 @@ private class CstExpressionParser(context: CstParseContext) {
 				TokenKinds.Operator.Group.LeftBrace ->
 					return TODO("lambda")
 				
-				TokenKinds.Operator.Arithmetic.Plus, TokenKinds.Operator.Arithmetic.Minus ->
+				TokenKinds.Operator.Arithmetic.Plus,
+				TokenKinds.Operator.Arithmetic.Minus,
+				TokenKinds.Operator.Logic.Not,
+				->
 					return unaryPrefixOps()
+				
+				else -> {}
 			}
 		}
 		
 		val peekKind = buffer.pop().token.kind
-		return when(peekKind) {
+		when(peekKind) {
 			TokenKinds.Operator.Group.LeftParen, TokenKinds.Operator.Group.LeftBrace ->
-				callOps()
+				return callOps()
 			
 			is TokenKinds.Operator.Access ->
-				accessOps()
+				return accessOps()
 			
-			else -> null
+			TokenKinds.Operator.Other.PropagateError ->
+				return unaryPostfixOps()
+			
+			else -> {}
 		}
+		
+		return null
 	}
 	
 	fun CstParseContext.main(): Boolean {
+		expandHeadEager()
+		
 		return true
 	}
 }
 
-
-private fun CodeSource.cstLeafExpression(): CstUnclassifiedLeafNode =
-	CstUnclassifiedLeafNode(parseExpressionToken())
-
 context(CstParseContext)
-private fun CstNode.toExpression(): CstExpression = when(this) {
-	is CstExpression -> this
-	is CstUnclassifiedLeafNode -> when(token.kind) {
-		is TokenKinds.Identifier -> structuredNode(CstGetValue) {
-			CstGetValue(
-				leafNode(CstIdentifier) { CstIdentifier(code.acceptToken(token)) }
-			)
-		}
-		
-		is TokenKinds.NumberLiteral -> leafNode(CstNumberLiteral) {
-			CstNumberLiteral(code.acceptToken(token))
-		}
-		
-		is TokenKinds.Operator -> parseError("Unexpected operator ${token.kind}")
-		else -> parseError("Unexpected token $token")
-	}
-	
-	else -> parseError("Unexpected node $this")
+private fun CstNode.toExpression(): CstExpression = if(this is CstTempNode.TempToExpression) {
+	tempToExpression()
+} else {
+	parseError("Unexpected node $this")
 }
 
 context(CstParseContext)
-private fun CstNode.toBinaryOperator(): CstOperator.Binary = when(this) {
-	is CstUnclassifiedLeafNode -> when(token.kind) {
-		is TokenKinds.Operator -> leafNode(CstOperator.Binary) {
-			CstOperator.Binary(code.acceptToken(token))
-		}
-		
-		else -> parseError("Unexpected token $token")
-	}
-	
-	else -> parseError("Unexpected node $this")
+private fun CstNode.toBinaryOperator(): CstOperator.Binary = if(this is CstTempNode.Leaf) {
+	tempToBinaryOperator()
+} else {
+	parseError("Unexpected node $this")
 }
 
 context(CstParseContext)
-private fun CstNode.toUnaryOperator(): CstOperator.Unary = when(this) {
-	is CstUnclassifiedLeafNode -> when(token.kind) {
-		is TokenKinds.Operator -> leafNode(CstOperator.Unary) {
-			CstOperator.Unary(code.acceptToken(token))
-		}
-		
-		else -> parseError("Unexpected token $token")
-	}
-	
-	else -> parseError("Unexpected node $this")
+private fun CstNode.toUnaryOperator(): CstOperator.Unary = if(this is CstTempNode.Leaf) {
+	tempToUnaryOperator()
+} else {
+	parseError("Unexpected node $this")
 }
 
 

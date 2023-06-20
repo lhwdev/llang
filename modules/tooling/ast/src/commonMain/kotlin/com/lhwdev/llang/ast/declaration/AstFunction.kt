@@ -25,7 +25,8 @@ sealed interface AstSimpleFunction : AstFunction
 
 
 // top-level, local, member, constructor (not lambda)
-interface AstDeclaredFunction : AstInferableFunction, AstCodeDeclarationWithVisibility, AstNamed, AstAnnotatable {
+interface AstDeclaredFunction : AstInferableFunction, AstCodeDeclarationWithVisibility, AstNamed,
+	AstAnnotatable {
 	override val annotations: List<AstAnnotation>
 	
 	override val visibility: Visibility
@@ -110,7 +111,8 @@ interface AstMemberFunction : AstDeclaredFunction, AstMemberDeclaration {
 
 /// actual end function
 
-interface AstTopLevelFunction : AstDeclaredSimpleFunction, AstStandaloneFunction, AstTopLevelDeclaration {
+interface AstTopLevelFunction : AstDeclaredSimpleFunction, AstStandaloneFunction,
+	AstTopLevelDeclaration {
 	override val annotations: List<AstAnnotation>
 	override val contextReceivers: List<AstValueParameter.ContextReceiver>
 	

@@ -8,9 +8,10 @@ import com.lhwdev.llang.parser.util.cstSeparatedList
 
 
 fun CstParseContext.cstTuple(): CstTuple = structuredNode(CstTuple) {
+	
 	val elements = cstSeparatedList(
 		itemBlock = { cstExpression() },
-		separatorBlock = { cstLeafCommaOrNull() }
+		separatorBlock = { cstLeafCommaOrNull() },
 	)
 	CstTuple(elements.items())
 }

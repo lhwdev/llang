@@ -31,6 +31,13 @@ interface CstNodeInfo<Node : CstNode> {
 	fun dummyNode(): Node?
 }
 
+sealed interface CstSpecialNodeInfo<Node : CstNode> : CstNodeInfo<Node> {
+	interface Inline<Node : CstNode> : CstSpecialNodeInfo<Node>
+}
+
+fun <Node : CstNode> CstNodeInfo<Node>.asInline(): CstNodeInfo<Node> =
+	object : CstSpecialNodeInfo.Inline<Node>, CstNodeInfo<Node> by this {}
+
 
 @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
 inline fun <Node : CstNode> KClass<Node>.nodeInfoOf(): CstNodeInfo<Node>? =

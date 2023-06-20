@@ -13,9 +13,13 @@ insert_final_newline = true
 indent_style = tab
 indent_size = 4
 
-[{*.md, *.yml, *.yaml, *.toml}]
+[{*.md,*.yml,*.yaml,*.toml}]
 indent_style = space
 indent_size = 2
 
 [*.bat]
 end_of_line = crlf
+
+[{*.kt,*.kts}]
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true

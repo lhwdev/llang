@@ -4,12 +4,12 @@ import com.lhwdev.llang.cst.structure.CstNode
 import com.lhwdev.llang.cst.structure.CstNodeInfo
 
 
-class CstAccessExpression(
+class CstMemberAccess(
 	val parent: CstExpression,
 	val item: CstNode, // CstIdentifier or CstLiteral.Integer(tuple)
 ) : CstExpression {
-	companion object Info : CstNodeInfo<CstAccessExpression> {
+	companion object Info : CstNodeInfo<CstMemberAccess> {
 		override fun dummyNode() =
-			CstAccessExpression(CstExpression.dummyNode(), CstNode.dummyNode())
+			CstMemberAccess(CstExpression.dummyNode(), CstNode.dummyNode())
 	}
 }

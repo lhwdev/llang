@@ -7,7 +7,8 @@ package com.lhwdev.llang.ast.declaration
 sealed interface Inferable<out T> : PartiallyInferable<T> {
 	class Explicit<T>(val value: T) : PartiallyInferable<T>, Inferable<T>
 	class Partial<T>(val value: T) : PartiallyInferable<T>
-	object Implicit : com.lhwdev.llang.ast.declaration.Implicit<Nothing>, PartiallyInferable<Nothing>,
+	object Implicit : com.lhwdev.llang.ast.declaration.Implicit<Nothing>,
+		PartiallyInferable<Nothing>,
 		Inferable<Nothing>
 }
 
