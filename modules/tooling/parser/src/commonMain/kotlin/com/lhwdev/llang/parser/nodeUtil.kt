@@ -42,3 +42,35 @@ inline fun <Node : CstLeafNode> CstParseContext.nullableLeafNode(
 	info: CstNodeInfo<Node>?,
 	crossinline block: CstParseContext.() -> Node?,
 ): Node? = rawNullableNode(CstParseContext.NodeKind.LeafNode, info, block)
+
+
+// `code.acceptToken` is a good fit for this!
+inline fun <Node : CstNode> rawRestartableNode(
+	target: (block: CstParseContext.() -> Node) -> Node,
+	crossinline block: CstParseContext.() -> Node,
+): Node {
+	lateinit var newBlock: CstParseContext.() -> Node
+	newBlock = {
+		try {
+			block()
+		} finally {
+			provideRestartBlock(newBlock)
+		}
+	}
+	return target(newBlock)
+}
+
+inline fun <Node : CstNode> CstParseContext.restartableStructuredNode(
+	info: CstNodeInfo<Node>?,
+	crossinline block: CstParseContext.() -> Node,
+): Node = rawRestartableNode({ structuredNode(info, it) }, block)
+
+inline fun <Node : CstNode> CstParseContext.restartableNode(
+	info: CstNodeInfo<Node>?,
+	crossinline block: CstParseContext.() -> Node,
+): Node = rawRestartableNode({ node(info, it) }, block)
+
+inline fun <Node : CstLeafNode> CstParseContext.restartableLeafNode(
+	info: CstNodeInfo<Node>?,
+	crossinline block: CstParseContext.() -> Node,
+): Node = rawRestartableNode({ leafNode(info, it) }, block)

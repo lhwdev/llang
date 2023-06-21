@@ -83,6 +83,24 @@ interface CstParseContext : ParseContext {
 	fun <Node : CstNode> endNode(node: Node): Node
 	
 	/**
+	 * Downside of using code source directly is that it will not allow for incremental parsing.
+	 * Incremental parsing is implemented by detecting whether a node associated for specific span
+	 * is affected by the change. If the span didn't change, parsing that node is skipped.
+	 * Data mostly flow from top to bottom, and the major way to flow data 'up' is to use
+	 * [discardable]. So that all the branches are marked by system.
+	 * Using [code] directly in a node with children makes this design obsolete. So
+	 *
+	 * However, it may
+	 * become required for a node to be parsed, ie, `CstExpression`.
+	 */
+	fun allowUsingCodeSource()
+	
+	/**
+	 * In most cases, [CstParseContext] can smartly skip unnecessary nodes, so that
+	 */
+	fun provideRestartBlock(block: CstParseContext.() -> CstNode)
+	
+	/**
 	 * Returns node if graceful error handling is available and applicable for [Node].
 	 * `null` otherwise.
 	 */
@@ -98,13 +116,17 @@ interface CstParseContext : ParseContext {
 	fun preventDiscard()
 	
 	/**
-	 * Informs that children nodes are 'detached'.
+	 * Informs that child nodes are 'detached'.
 	 * Generally raw node tree is determined by the order of invocation of `node {}`. However,
 	 * calling this in structured manner is sometimes impossible. So, this informs that the raw tree
 	 * of all direct children node of current node should be evaluated manually.
 	 *
 	 * This should be called as soon as you call [beginNode] (generally, called first inside
 	 * `node {}`.)
+	 *
+	 * All child nodes which may contain detached node as child should call [markContainsDetached].
 	 */
-	fun detachedChildrenNode()
+	fun markChildNodesDetached()
+	
+	fun markContainsDetached()
 }
