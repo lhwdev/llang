@@ -45,6 +45,8 @@ private class NodeBuffer(context: CstParseContext) {
 	}
 }
 
+private val DUMMY_STACK = ArrayDeque<CstNode>()
+
 /**
  * Considerations:
  * - end of statement; LineBreak-separated statements
@@ -55,8 +57,8 @@ private class NodeBuffer(context: CstParseContext) {
  */
 private class CstExpressionParser(private val context: CstParseContext) {
 	var buffer = NodeBuffer(context)
-	var stack = ArrayDeque<CstNode>()
-	var head: CstNode = buffer.pop()
+	var stack = DUMMY_STACK
+	var head: CstNode = CstNode.dummyNode()
 	
 	private inline fun <R> child(block: CstExpressionParser.() -> R): R {
 		val previousStack = stack
@@ -72,7 +74,7 @@ private class CstExpressionParser(private val context: CstParseContext) {
 	}
 	
 	fun CstParseContext.expression(): CstExpression = node(CstExpression) {
-		markChildNodesDetached()
+		markContainsDetached()
 		allowUsingCodeSource()
 		child { runMain() }
 	}
@@ -109,7 +111,7 @@ private class CstExpressionParser(private val context: CstParseContext) {
 		val operator = buffer.pop()
 		
 		return restartableStructuredNode(CstOperation.UnaryPostfix) {
-			markContainsDetached()
+			markNestedContainsDetached()
 			
 			CstOperation.UnaryPostfix(
 				operand = operand.toExpression(),
@@ -124,7 +126,7 @@ private class CstExpressionParser(private val context: CstParseContext) {
 		val rhs = head
 		
 		return restartableStructuredNode(CstOperation.Binary) {
-			markContainsDetached()
+			markNestedContainsDetached()
 			
 			CstOperation.Binary(
 				lhs = lhs.toExpression(),
@@ -223,7 +225,7 @@ private class CstExpressionParser(private val context: CstParseContext) {
 	}.content
 	
 	fun CstParseContext.expandHeadEagerForExpression() = node(CstExpression) {
-		markChildNodesDetached()
+		markContainsDetached()
 		
 		while(true) {
 			if(expandHeadEager() == null) break
@@ -341,7 +343,7 @@ context(CstParseContext)
 private fun CstNode.toBinaryOperator(): CstOperator.Binary = when(this) {
 	// is CstOperator.Binary ->
 	is AnyLeafNode -> when(token.kind) {
-		is TokenKinds.Identifier,
+		is TokenKinds.Identifier, // infix
 		is TokenKinds.Operator,
 		-> restartableStructuredNode(CstOperator.Binary) {
 			CstOperator.Binary(code.acceptToken(token))
@@ -368,4 +370,8 @@ private fun CstNode.toUnaryOperator(): CstOperator.Unary = when(this) {
 
 
 fun CstParseContext.cstExpression(): CstExpression =
-	with(CstExpressionParser(this)) { expression() }
+	with(CstExpressionParser(this)) {
+		val expr = expression()
+		buffer.close()
+		expr
+	}

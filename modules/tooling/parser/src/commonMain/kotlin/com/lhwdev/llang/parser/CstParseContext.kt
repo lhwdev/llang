@@ -124,9 +124,9 @@ interface CstParseContext : ParseContext {
 	 * This should be called as soon as you call [beginNode] (generally, called first inside
 	 * `node {}`.)
 	 *
-	 * All child nodes which may contain detached node as child should call [markContainsDetached].
+	 * All child nodes which may contain detached node as child should call [markNestedContainsDetached].
 	 */
-	fun markChildNodesDetached()
-	
 	fun markContainsDetached()
+	
+	fun markNestedContainsDetached()
 }
