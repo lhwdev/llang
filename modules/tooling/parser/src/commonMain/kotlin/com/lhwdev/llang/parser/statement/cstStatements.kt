@@ -1,9 +1,10 @@
 package com.lhwdev.llang.parser.statement
 
+import com.lhwdev.llang.cst.structure.CstNode
 import com.lhwdev.llang.parser.CstParseContext
 
 
-fun CstParseContext.cstStatements() {
+inline fun <Node : CstNode> CstParseContext.cstStatements(block: CstParseContext.() -> Node): Node {
 	// checking if end of statement
 	// rules:
 	// 1. If unclosed group remains, follow following lines.
@@ -14,4 +15,5 @@ fun CstParseContext.cstStatements() {
 	//
 	// Problems: this is like a monkey-patch
 	
+	TODO()
 }

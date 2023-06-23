@@ -39,13 +39,25 @@ sealed class CstVariable(
 	
 	object NoAccessor : Accessor()
 	
-	class Delegation(val to: CstExpression) : Accessor()
+	class Delegation(val to: CstExpression) : Accessor() {
+		companion object Info : CstNodeInfo<Delegation> {
+			override fun dummyNode() = Delegation(CstExpression.dummyNode())
+		}
+	}
 	
 	class Normal(
 		val initializer: CstOptional<CstExpression>,
 		val getter: CstOptional<CstGetter>,
 		val setter: CstOptional<CstSetter>,
-	) : Accessor()
+	) : Accessor() {
+		companion object Info : CstNodeInfo<Normal> {
+			override fun dummyNode() = Normal(
+				initializer = CstOptional.dummyNode(),
+				getter = CstOptional.dummyNode(),
+				setter = CstOptional.dummyNode(),
+			)
+		}
+	}
 }
 
 
