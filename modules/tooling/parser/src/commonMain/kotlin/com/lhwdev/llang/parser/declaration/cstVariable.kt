@@ -1,6 +1,9 @@
 package com.lhwdev.llang.parser.declaration
 
-import com.lhwdev.llang.cst.structure.declaration.*
+import com.lhwdev.llang.cst.structure.declaration.CstDeclarations
+import com.lhwdev.llang.cst.structure.declaration.CstStandaloneVariable
+import com.lhwdev.llang.cst.structure.declaration.CstVariable
+import com.lhwdev.llang.cst.structure.declaration.CstVariableKind
 import com.lhwdev.llang.cst.structure.expression.CstExpression
 import com.lhwdev.llang.parser.*
 import com.lhwdev.llang.parser.core.cstIdentifier
@@ -9,7 +12,7 @@ import com.lhwdev.llang.parser.core.cstLeafNodeOrNull
 import com.lhwdev.llang.parser.core.cstModifiers
 import com.lhwdev.llang.parser.expression.cstExpression
 import com.lhwdev.llang.parser.statement.cstStatements
-import com.lhwdev.llang.parser.type.cstDeclarationQuoteType
+import com.lhwdev.llang.parser.type.cstDeclarationQuoteTypeOrNone
 import com.lhwdev.llang.parser.util.cstOptional
 import com.lhwdev.llang.parser.util.items
 import com.lhwdev.llang.token.TokenKinds
@@ -48,11 +51,11 @@ private fun CstParseContext.cstNormalAccessor(): CstVariable.Normal = cstStateme
 fun CstParseContext.cstStandaloneVariable(): CstVariable = structuredNode(CstStandaloneVariable) {
 	CstStandaloneVariable(
 		annotations = cstAnnotations(),
-		context = cstOptionalContextDeclaration(),
+		context = cstContextDeclarationOrNone(),
 		modifiers = cstModifiers(), // public open abstract context(...)
 		kind = cstVariableKind(),
 		name = cstIdentifier(),
-		type = cstDeclarationQuoteType(),
+		type = cstDeclarationQuoteTypeOrNone(),
 		accessor = cstVariableAccessor(),
 	)
 }
