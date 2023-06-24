@@ -24,7 +24,7 @@ class CstVariableKind(token: Token) : CstLeafNodeImpl(token) {
 
 sealed class CstVariable(
 	override val annotations: CstAnnotations,
-	val context: CstContextDeclaration,
+	val context: CstOptional<CstContextDeclaration>,
 	override val modifiers: CstModifiers,
 	val kind: CstVariableKind, // const/val/var
 	override val name: CstIdentifier,
@@ -47,14 +47,12 @@ sealed class CstVariable(
 	
 	class Normal(
 		val initializer: CstOptional<CstExpression>,
-		val getter: CstOptional<CstGetter>,
-		val setter: CstOptional<CstSetter>,
+		val accessors: CstDeclarations<CstAccessorFunction>,
 	) : Accessor() {
 		companion object Info : CstNodeInfo<Normal> {
 			override fun dummyNode() = Normal(
 				initializer = CstOptional.dummyNode(),
-				getter = CstOptional.dummyNode(),
-				setter = CstOptional.dummyNode(),
+				accessors = CstDeclarations(emptyList()),
 			)
 		}
 	}
@@ -63,7 +61,7 @@ sealed class CstVariable(
 
 class CstStandaloneVariable(
 	annotations: CstAnnotations,
-	context: CstContextDeclaration,
+	context: CstOptional<CstContextDeclaration>,
 	modifiers: CstModifiers,
 	kind: CstVariableKind,
 	name: CstIdentifier,
@@ -74,7 +72,7 @@ class CstStandaloneVariable(
 	companion object Info : CstNodeInfo<CstStandaloneVariable> {
 		override fun dummyNode() = CstStandaloneVariable(
 			annotations = CstAnnotations.dummyNode(),
-			context = CstContextDeclaration.dummyNode(),
+			context = CstOptional.dummyNode(),
 			modifiers = CstModifiers.dummyNode(),
 			kind = CstVariableKind.dummyNode(),
 			name = CstIdentifier.dummyNode(),
@@ -86,7 +84,7 @@ class CstStandaloneVariable(
 
 class CstLocalVariable(
 	annotations: CstAnnotations,
-	context: CstContextDeclaration,
+	context: CstOptional<CstContextDeclaration>,
 	modifiers: CstModifiers,
 	kind: CstVariableKind,
 	name: CstIdentifier,
@@ -97,7 +95,7 @@ class CstLocalVariable(
 class CstMemberVariable(
 	modifiers: CstModifiers,
 	annotations: CstAnnotations,
-	context: CstContextDeclaration,
+	context: CstOptional<CstContextDeclaration>,
 	kind: CstVariableKind,
 	name: CstIdentifier,
 	type: CstOptional<CstType>,

@@ -9,8 +9,8 @@ import com.lhwdev.llang.cst.structure.core.CstOperator
 import com.lhwdev.llang.cst.structure.expression.*
 import com.lhwdev.llang.cst.structure.util.CstSurround
 import com.lhwdev.llang.parser.*
-import com.lhwdev.llang.parsing.util.parseError
-import com.lhwdev.llang.parsing.util.parseRequire
+import com.lhwdev.llang.parsing.parseError
+import com.lhwdev.llang.parsing.parseRequire
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.parseExpressionToken

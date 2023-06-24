@@ -2,11 +2,11 @@ package com.lhwdev.llang.parser
 
 import com.lhwdev.llang.cst.structure.CstNode
 import com.lhwdev.llang.cst.structure.CstNodeInfo
-import com.lhwdev.llang.parsing.util.ParseContext
+import com.lhwdev.llang.parsing.ParseContext
 
 
-// Possible context kind: declaration / statements / expression
-// Possible location: global, class, function, valInit
+@DslMarker
+annotation class CstParseContextMarker
 
 
 /**
@@ -20,6 +20,7 @@ import com.lhwdev.llang.parsing.util.ParseContext
  *
  * TODO: possible parallel parsing? *put codes in ThreadPool, run them, profit!*
  */
+@CstParseContextMarker
 interface CstParseContext : ParseContext {
 	enum class NodeKind {
 		/**
@@ -83,6 +84,15 @@ interface CstParseContext : ParseContext {
 	fun <Node : CstNode> endNode(node: Node): Node
 	
 	/**
+	 * Returns node if graceful error handling is available and applicable for [Node].
+	 * `null` otherwise.
+	 */
+	@InternalApi
+	fun <Node : CstNode> endNodeWithError(throwable: Throwable?, info: CstNodeInfo<Node>?): Node?
+	
+	val lastEndError: Throwable?
+	
+	/**
 	 * Downside of using code source directly is that it will not allow for incremental parsing.
 	 * Incremental parsing is implemented by detecting whether a node associated for specific span
 	 * is affected by the change. If the span didn't change, parsing that node is skipped.
@@ -99,13 +109,6 @@ interface CstParseContext : ParseContext {
 	 * In most cases, [CstParseContext] can smartly skip unnecessary nodes, so that
 	 */
 	fun provideRestartBlock(block: CstParseContext.() -> CstNode)
-	
-	/**
-	 * Returns node if graceful error handling is available and applicable for [Node].
-	 * `null` otherwise.
-	 */
-	@InternalApi
-	fun <Node : CstNode> endNodeWithError(throwable: Throwable?, info: CstNodeInfo<Node>?): Node?
 	
 	/**
 	 * Signal to current discardable node that do not discard itself. Great way to optimize
@@ -130,3 +133,6 @@ interface CstParseContext : ParseContext {
 	
 	fun markNestedContainsDetached()
 }
+
+
+open class CstParseContextWrapper(base: CstParseContext) : CstParseContext by base

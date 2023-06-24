@@ -2,7 +2,6 @@ package com.lhwdev.llang.parser.declaration
 
 import com.lhwdev.llang.cst.structure.declaration.*
 import com.lhwdev.llang.cst.structure.expression.CstExpression
-import com.lhwdev.llang.cst.structure.util.CstOptional
 import com.lhwdev.llang.parser.*
 import com.lhwdev.llang.parser.core.cstIdentifier
 import com.lhwdev.llang.parser.core.cstLeafNode
@@ -12,6 +11,7 @@ import com.lhwdev.llang.parser.expression.cstExpression
 import com.lhwdev.llang.parser.statement.cstStatements
 import com.lhwdev.llang.parser.type.cstDeclarationQuoteType
 import com.lhwdev.llang.parser.util.cstOptional
+import com.lhwdev.llang.parser.util.items
 import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.parseVariableKind
 
@@ -31,25 +31,24 @@ private fun CstParseContext.cstDelegationAccessor(): CstVariable.Delegation? =
 		CstVariable.Delegation(cstExpression())
 	}
 
+
 private fun CstParseContext.cstNormalAccessor(): CstVariable.Normal = cstStatements {
-	val initializer = cstOptional(CstExpression) {
-		cstLeafNode(TokenKinds.Operator.Assign.Assign, "=")
-		cstExpression()
+	val initializer = item {
+		cstOptional(CstExpression) {
+			cstLeafNode(TokenKinds.Operator.Assign.Assign, "=")
+			cstExpression()
+		}
 	}
 	
-	var getter: CstOptional<CstGetter> = CstOptional.None
-	var setter: CstOptional<CstSetter> = CstOptional.None
+	val accessors = items { cstAccessorFunction() }
 	
-	
-	
-	CstVariable.Normal(initializer, getter, setter)
+	CstVariable.Normal(initializer, CstDeclarations(accessors))
 }
 
-
-fun CstParseContext.cstStandaloneVariable(): CstVariable = declaration(CstStandaloneVariable) {
+fun CstParseContext.cstStandaloneVariable(): CstVariable = structuredNode(CstStandaloneVariable) {
 	CstStandaloneVariable(
 		annotations = cstAnnotations(),
-		context = cstContextDeclaration(),
+		context = cstOptionalContextDeclaration(),
 		modifiers = cstModifiers(), // public open abstract context(...)
 		kind = cstVariableKind(),
 		name = cstIdentifier(),

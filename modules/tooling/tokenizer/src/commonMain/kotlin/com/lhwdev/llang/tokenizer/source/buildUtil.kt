@@ -1,6 +1,6 @@
 package com.lhwdev.llang.tokenizer.source
 
-import com.lhwdev.llang.parsing.util.parseRequire
+import com.lhwdev.llang.parsing.parseRequire
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenKind
 import com.lhwdev.llang.token.TokenKinds

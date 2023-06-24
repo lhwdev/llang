@@ -1,6 +1,8 @@
-package com.lhwdev.llang.parsing.util
+package com.lhwdev.llang.parsing
 
 import com.lhwdev.llang.diagnostic.DiagnosticCollector
+import com.lhwdev.llang.parsing.util.DiscardException
+import com.lhwdev.llang.parsing.util.ParseException
 
 interface ParseContext : DiagnosticCollector {
 	fun discard(exception: DiscardException = DiscardException): Nothing
