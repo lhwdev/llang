@@ -23,14 +23,22 @@ class CstVariableKind(token: Token) : CstLeafNodeImpl(token) {
 
 
 sealed class CstVariable(
-	override val annotations: CstAnnotations,
+	final override val annotations: CstAnnotations,
+	
 	val context: CstOptional<CstContextDeclaration>,
-	override val modifiers: CstModifiers,
+	
+	final override val modifiers: CstModifiers,
+	
 	val kind: CstVariableKind, // const/val/var
-	override val name: CstIdentifier,
+	
+	val extensionReceiverParameter: CstOptional<CstExtensionReceiverParameter>,
+	
+	final override val name: CstIdentifier,
+	
 	val type: CstOptional<CstType>,
+	
 	val accessor: Accessor,
-) : CstDeclaration {
+) : CstNamedDeclaration {
 	sealed class Accessor : CstNode {
 		companion object Info : CstNodeInfo<Accessor> {
 			override fun dummyNode() = NoAccessor
@@ -64,10 +72,20 @@ class CstStandaloneVariable(
 	context: CstOptional<CstContextDeclaration>,
 	modifiers: CstModifiers,
 	kind: CstVariableKind,
+	extensionReceiverParameter: CstOptional<CstExtensionReceiverParameter>,
 	name: CstIdentifier,
 	type: CstOptional<CstType>,
 	accessor: Accessor,
-) : CstVariable(annotations, context, modifiers, kind, name, type, accessor),
+) : CstVariable(
+	annotations,
+	context,
+	modifiers,
+	kind,
+	extensionReceiverParameter,
+	name,
+	type,
+	accessor,
+),
 	CstStandaloneDeclaration {
 	companion object Info : CstNodeInfo<CstStandaloneVariable> {
 		override fun dummyNode() = CstStandaloneVariable(
@@ -75,6 +93,7 @@ class CstStandaloneVariable(
 			context = CstOptional.dummyNode(),
 			modifiers = CstModifiers.dummyNode(),
 			kind = CstVariableKind.dummyNode(),
+			extensionReceiverParameter = CstOptional.dummyNode(),
 			name = CstIdentifier.dummyNode(),
 			type = CstOptional.dummyNode(),
 			accessor = NoAccessor,
@@ -87,17 +106,37 @@ class CstLocalVariable(
 	context: CstOptional<CstContextDeclaration>,
 	modifiers: CstModifiers,
 	kind: CstVariableKind,
+	extensionReceiverParameter: CstOptional<CstExtensionReceiverParameter>,
 	name: CstIdentifier,
 	type: CstOptional<CstType>,
 	accessor: Accessor,
-) : CstVariable(annotations, context, modifiers, kind, name, type, accessor), CstLocalDeclaration
+) : CstVariable(
+	annotations,
+	context,
+	modifiers,
+	kind,
+	extensionReceiverParameter,
+	name,
+	type,
+	accessor,
+), CstLocalDeclaration
 
 class CstMemberVariable(
 	modifiers: CstModifiers,
 	annotations: CstAnnotations,
 	context: CstOptional<CstContextDeclaration>,
 	kind: CstVariableKind,
+	extensionReceiverParameter: CstOptional<CstExtensionReceiverParameter>,
 	name: CstIdentifier,
 	type: CstOptional<CstType>,
 	accessor: Accessor,
-) : CstVariable(annotations, context, modifiers, kind, name, type, accessor), CstMemberDeclaration
+) : CstVariable(
+	annotations,
+	context,
+	modifiers,
+	kind,
+	extensionReceiverParameter,
+	name,
+	type,
+	accessor,
+), CstMemberDeclaration

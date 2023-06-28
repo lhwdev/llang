@@ -15,7 +15,7 @@ class CstAnnotations(val annotations: List<CstAnnotation>) : CstNode {
 }
 
 
-sealed class CstAnnotation : CstDeclarationLike {
+sealed class CstAnnotation : CstDeclaration {
 	/**
 	 * Like `[hello]`
 	 */

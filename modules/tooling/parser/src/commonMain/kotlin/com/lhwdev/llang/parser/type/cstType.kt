@@ -14,3 +14,5 @@ fun CstParseContext.cstDeclarationQuoteTypeOrNone(): CstOptional<CstType> = node
 	cstWssOrEmpty()
 	CstOptional(cstType())
 }
+
+fun CstParseContext.cstType(): CstType = TODO()

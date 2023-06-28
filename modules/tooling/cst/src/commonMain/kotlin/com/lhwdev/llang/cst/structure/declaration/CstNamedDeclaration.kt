@@ -6,10 +6,10 @@ import com.lhwdev.llang.cst.structure.core.CstModifiers
 import com.lhwdev.llang.cst.structure.statement.CstStatement
 
 
-interface CstDeclarationLike : CstNode
+interface CstDeclaration : CstNode
 
 
-interface CstDeclaration : CstDeclarationLike, CstStatement {
+interface CstNamedDeclaration : CstDeclaration, CstStatement {
 	val annotations: CstAnnotations
 	
 	val modifiers: CstModifiers
@@ -18,10 +18,10 @@ interface CstDeclaration : CstDeclarationLike, CstStatement {
 }
 
 
-interface CstAccessibleDeclaration : CstDeclaration
+interface CstAccessibleDeclaration : CstNamedDeclaration
 
 interface CstStandaloneDeclaration : CstAccessibleDeclaration
 
 interface CstMemberDeclaration : CstAccessibleDeclaration
 
-interface CstLocalDeclaration : CstDeclaration
+interface CstLocalDeclaration : CstNamedDeclaration

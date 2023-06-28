@@ -8,8 +8,8 @@ import com.lhwdev.llang.cst.structure.expression.CstExpression
 import com.lhwdev.llang.parser.*
 import com.lhwdev.llang.parser.core.cstIdentifier
 import com.lhwdev.llang.parser.core.cstLeafNode
-import com.lhwdev.llang.parser.core.cstLeafNodeOrNull
 import com.lhwdev.llang.parser.core.cstModifiers
+import com.lhwdev.llang.parser.core.cstSoftKeywordOrNull
 import com.lhwdev.llang.parser.expression.cstExpression
 import com.lhwdev.llang.parser.statement.cstStatements
 import com.lhwdev.llang.parser.type.cstDeclarationQuoteTypeOrNone
@@ -19,17 +19,20 @@ import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.parseVariableKind
 
 
-private fun CstParseContext.cstVariableKind(): CstVariableKind =
-	leafNode(CstVariableKind) { CstVariableKind(code.parseVariableKind()) }
+private fun CstParseContext.cstVariableKind(): CstVariableKind = leafNode(CstVariableKind) {
+	CstVariableKind(code.parseVariableKind())
+}.also {
+	preventDiscard()
+}
 
 private fun CstParseContext.cstVariableAccessor(): CstVariable.Accessor =
 	node(CstVariable.Accessor) {
-		cstDelegationAccessor() ?: CstVariable.NoAccessor
+		cstDelegationAccessor() ?: discardable { cstNormalAccessor() } ?: CstVariable.NoAccessor
 	}
 
 private fun CstParseContext.cstDelegationAccessor(): CstVariable.Delegation? =
 	nullableStructuredNode(CstVariable.Delegation) {
-		cstLeafNodeOrNull(TokenKinds.SoftKeyword.By, "by") ?: return@nullableStructuredNode null
+		cstSoftKeywordOrNull(TokenKinds.SoftKeyword.By, "by") ?: return@nullableStructuredNode null
 		
 		CstVariable.Delegation(cstExpression())
 	}
@@ -52,7 +55,7 @@ fun CstParseContext.cstStandaloneVariable(): CstVariable = structuredNode(CstSta
 	CstStandaloneVariable(
 		annotations = cstAnnotations(),
 		context = cstContextDeclarationOrNone(),
-		modifiers = cstModifiers(), // public open abstract context(...)
+		modifiers = cstModifiers(), // public open abstract ...
 		kind = cstVariableKind(),
 		name = cstIdentifier(),
 		type = cstDeclarationQuoteTypeOrNone(),
