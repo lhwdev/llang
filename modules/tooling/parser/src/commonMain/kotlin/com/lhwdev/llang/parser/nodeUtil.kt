@@ -10,21 +10,21 @@ inline fun <Node : CstNode> CstParseContext.rawNullableNode(
 	info: CstNodeInfo<Node>?,
 	crossinline block: CstParseContext.() -> Node?,
 ): Node? {
-	beginNode<Node>(kind)?.let { return it }
-	val nodeGroupId = currentNodeGroupId
+	val context = beginChildNode(kind) ?: return skipChildNode()
+	val nodeGroupId = context.currentNodeGroupId
 	return try {
 		val node = try {
-			block()
+			context.block()
 		} finally {
-			beforeEndNodeDebugHint(nodeGroupId)
+			context.beforeEndNodeDebugHint(nodeGroupId)
 		}
 		if(node != null) {
-			endNode(node)
+			endChildNode(context, node)
 		} else {
-			endNodeWithError(throwable = null, info = null)
+			endChildNodeWithError(context, throwable = null, info = null)
 		}
 	} catch(throwable: Throwable) {
-		endNodeWithError(throwable, info) ?: throw throwable
+		endChildNodeWithError(context, throwable, info) ?: throw throwable
 	}
 }
 

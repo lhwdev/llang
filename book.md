@@ -1,8 +1,15 @@
 # Llang Compiler Book
 
 > **Note**: this is nothing but a method for me to explain myself how this whole ast structure,
-> tokenizer, parser and
-> compiler works. Nothing educational.
+> tokenizer, parser and compiler works. Nothing educational.
+
+## Cst vs Ast vs Fir
+
+**Cst**: lexical representation of code, mostly as-is. Note that tokens that may be used to
+determine the structure but that are no longer needed only exists in raw cst tree.
+
+**Ast**: more abstract, lexical representation of code. Some type-safety (inside tooling code) is
+achieved here. In Cst, we used opaque type of `Token`, `CstModifiers`, etc. Now it provides
 
 ## Tokens and Tokenizer
 

@@ -13,17 +13,17 @@ inline fun <Node : CstNode, Return> CstParseContext.rawNode(
 	onSuccess: (node: Node) -> Return, // workaround for forbidden `Node : CstNode, Node : Return`.
 	onError: (throwable: Throwable) -> Return,
 ): Return {
-	beginNode<Node>(kind)?.let { return onSuccess(it) }
+	val context = beginChildNode(kind) ?: return onSuccess(skipChildNode())
 	val nodeGroupId = currentNodeGroupId
 	return try {
 		val node = try {
-			block()
+			context.block()
 		} finally {
-			beforeEndNodeDebugHint(nodeGroupId)
+			context.beforeEndNodeDebugHint(nodeGroupId)
 		}
-		onSuccess(endNode(node))
+		onSuccess(endChildNode(context, node))
 	} catch(throwable: Throwable) {
-		val dummy = endNodeWithError(throwable, getInfo())
+		val dummy = endChildNodeWithError(context, throwable, getInfo())
 		if(dummy != null) {
 			onSuccess(dummy)
 		} else {

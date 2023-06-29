@@ -16,7 +16,11 @@ annotation class CstParseContextMarker
  * [CstParseContext] enables DSL-based elegant code parsing. In most cases, your code structure
  * matches 1:1 to actual Cst structure and raw cst node tree.
  *
- * [CstParseContext] is write-only for nodes, read-only for code/tokens for performance.
+ * [CstParseContext] is write-only for nodes, read-only for code/tokens for performance in most
+ * cases. Note that [CstParseContext] itself can become to be seem immutable. (of course, internal
+ * CstRTree is mutated) For performance, [beginChildNode] return itself in most cases, but it can
+ * return new instance of [CstParseContext] to implement immutable behavior. This is possible when
+ * [code] is only accessed in leaf nodes. ([code] in leaf node has temporal mutability)
  *
  * TODO: possible parallel parsing? *put codes in ThreadPool, run them, profit!*
  */
@@ -63,50 +67,51 @@ interface CstParseContext : ParseContext {
 		get() = 0
 	
 	/**
-	 * Disables inserting implicit node for current node group..
+	 * Disables inserting implicit node for current node group.
 	 */
 	fun disableAdjacentImplicitNode()
 	
 	/**
 	 * If there is one or more child nodes in this node, implicit node such as CstWss is parsed
-	 * while [beginNode] is being called, to ensure proper spacing between nodes.
+	 * while [beginChildNode] is being called, to ensure proper spacing between nodes.
 	 * If you don't want this behavior, call [disableAdjacentImplicitNode].
 	 */
 	@InternalApi
-	fun <Node : CstNode> beginNode(kind: NodeKind): Node?
+	fun beginChildNode(kind: NodeKind): CstParseContext?
 	
 	@InternalApi
 	fun beforeEndNodeDebugHint(nodeGroupId: Long) {
 	}
 	
+	@InternalApi
+	fun <Node : CstNode> endChildNode(childContext: CstParseContext, node: Node): Node
+	
+	// @InternalApi
+	// fun <Node : CstNode> deferChildParsing(block: CstParseContext.() -> Node): () -> Node
 	
 	@InternalApi
-	fun <Node : CstNode> endNode(node: Node): Node
+	fun <Node : CstNode> skipChildNode(): Node
 	
 	/**
 	 * Returns node if graceful error handling is available and applicable for [Node].
 	 * `null` otherwise.
 	 */
 	@InternalApi
-	fun <Node : CstNode> endNodeWithError(throwable: Throwable?, info: CstNodeInfo<Node>?): Node?
+	fun <Node : CstNode> endChildNodeWithError(
+		childContext: CstParseContext,
+		throwable: Throwable?,
+		info: CstNodeInfo<Node>?,
+	): Node?
 	
 	val lastEndError: Throwable?
 	
-	/**
-	 * Downside of using code source directly is that it will not allow for incremental parsing.
-	 * Incremental parsing is implemented by detecting whether a node associated for specific span
-	 * is affected by the change. If the span didn't change, parsing that node is skipped.
-	 * Data mostly flow from top to bottom, and the major way to flow data 'up' is to use
-	 * [discardable]. So that all the branches are marked by system.
-	 * Using [code] directly in a node with children makes this design obsolete. So
-	 *
-	 * However, it may
-	 * become required for a node to be parsed, ie, `CstExpression`.
-	 */
 	fun allowUsingCodeSource()
 	
 	/**
-	 * In most cases, [CstParseContext] can smartly skip unnecessary nodes, so that
+	 * In most cases, [CstParseContext] can smartly skip unnecessary nodes, so that executing all
+	 * parsing code top-down would pose nearly zero overhead. But, in some nodes such as
+	 * `CstExpression`, execution order(dsl) does not match the structure. So reaching out to deeper
+	 * nodes without calling parent parser is required. This block provide that feature.
 	 */
 	fun provideRestartBlock(block: CstParseContext.() -> CstNode)
 	
@@ -124,7 +129,7 @@ interface CstParseContext : ParseContext {
 	 * calling this in structured manner is sometimes impossible. So, this informs that the raw tree
 	 * of all direct children node of current node should be evaluated manually.
 	 *
-	 * This should be called as soon as you call [beginNode] (generally, called first inside
+	 * This should be called as soon as you call [beginChildNode] (generally, called first inside
 	 * `node {}`.)
 	 *
 	 * All child nodes which may contain detached node as child should call [markNestedContainsDetached].
@@ -133,6 +138,3 @@ interface CstParseContext : ParseContext {
 	
 	fun markNestedContainsDetached()
 }
-
-
-open class CstParseContextWrapper(base: CstParseContext) : CstParseContext by base
