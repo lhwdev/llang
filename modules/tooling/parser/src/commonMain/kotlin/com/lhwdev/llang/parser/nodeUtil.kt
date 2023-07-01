@@ -4,48 +4,65 @@ import com.lhwdev.llang.cst.structure.CstNode
 import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.cst.structure.core.CstLeafNode
 
-@OptIn(CstParseContext.InternalApi::class)
-inline fun <Node : CstNode> CstParseContext.rawNullableNode(
-	kind: CstParseContext.NodeKind,
-	info: CstNodeInfo<Node>?,
-	crossinline block: CstParseContext.() -> Node?,
-): Node? {
-	val context = beginChildNode(kind) ?: return skipChildNode()
-	val nodeGroupId = context.currentNodeGroupId
-	return try {
-		val node = try {
-			context.block()
-		} finally {
-			context.beforeEndNodeDebugHint(nodeGroupId)
-		}
-		if(node != null) {
-			endChildNode(context, node)
-		} else {
-			endChildNodeWithError(context, throwable = null, info = null)
-		}
-	} catch(throwable: Throwable) {
-		endChildNodeWithError(context, throwable, info) ?: throw throwable
-	}
-}
+
+inline fun <Node : CstNode> CstParseContext.discardable(
+	info: CstNodeInfo<Node>?, // 어라 생각해보니 info 안쓰는데 몰라 일단 둬 beginChildNode에 드갈수도
+	crossinline block: CstParseContext.() -> Node,
+): Node? = rawNullableNode(
+	kind = CstParseContext.NodeKind.Discardable,
+	block = block,
+	onError = @OptIn(CstParseContext.InternalApi::class) { context, _ ->
+		endChildNodeWithError(context, throwable = null, info = null)
+	},
+)
+
+inline fun <reified Node : CstNode> CstParseContext.discardable(
+	crossinline block: CstParseContext.() -> Node,
+): Node? = rawNullableNode(
+	kind = CstParseContext.NodeKind.Discardable,
+	block = block,
+	onError = @OptIn(CstParseContext.InternalApi::class) { context, _ ->
+		endChildNodeWithError(context, throwable = null, info = null)
+	},
+)
 
 inline fun <Node : CstNode> CstParseContext.nullableNode(
 	info: CstNodeInfo<Node>?,
 	crossinline block: CstParseContext.() -> Node?,
-): Node? = rawNullableNode(CstParseContext.NodeKind.Node, info, block)
+): Node? = rawNullableNode(
+	kind = CstParseContext.NodeKind.Node,
+	block = block,
+	onError = @OptIn(CstParseContext.InternalApi::class) { context, throwable ->
+		endChildNodeWithError(context, throwable, info) ?: throw throwable
+	},
+)
 
 inline fun <Node : CstNode> CstParseContext.nullableStructuredNode(
 	info: CstNodeInfo<Node>?,
 	crossinline block: CstParseContext.() -> Node?,
-): Node? = rawNullableNode(CstParseContext.NodeKind.StructuredNode, info, block)
+): Node? = rawNullableNode(
+	kind = CstParseContext.NodeKind.StructuredNode,
+	block = block,
+	onError = @OptIn(CstParseContext.InternalApi::class) { context, throwable ->
+		endChildNodeWithError(context, throwable, info) ?: throw throwable
+	},
+)
 
 inline fun <Node : CstLeafNode> CstParseContext.nullableLeafNode(
 	info: CstNodeInfo<Node>?,
 	crossinline block: CstParseContext.() -> Node?,
-): Node? = rawNullableNode(CstParseContext.NodeKind.LeafNode, info, block)
+): Node? = rawNullableNode(
+	kind = CstParseContext.NodeKind.LeafNode,
+	block = block,
+	onError = @OptIn(CstParseContext.InternalApi::class) { context, throwable ->
+		endChildNodeWithError(context, throwable, info) ?: throw throwable
+	},
+)
 
 
 // `code.acceptToken` is a good fit for this!
-inline fun <Node : CstNode> rawRestartableNode(
+@PublishedApi
+internal inline fun <Node : CstNode> rawRestartableNode(
 	target: (block: CstParseContext.() -> Node) -> Node,
 	crossinline block: CstParseContext.() -> Node,
 ): Node {

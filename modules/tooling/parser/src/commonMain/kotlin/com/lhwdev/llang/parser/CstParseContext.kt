@@ -21,6 +21,13 @@ annotation class CstParseContextMarker
  * CstRTree is mutated) For performance, [beginChildNode] return itself in most cases, but it can
  * return new instance of [CstParseContext] to implement immutable behavior. This is possible when
  * [code] is only accessed in leaf nodes. ([code] in leaf node has temporal mutability)
+ * This may enable parallel parsing in one file. Maybe..? Per-declaration?
+ *
+ * Note that this is very similar to `Composer` of Jetpack Compose. However I could not use
+ * Compose Runtime for this parser project as it lacks:
+ * - Exception handling. Compose Runtime insists on being 'general purpose tree management ...', but
+ *   it seems to me that it leads toward Compose UI.
+ * -
  *
  * TODO: possible parallel parsing? *put codes in ThreadPool, run them, profit!*
  */
@@ -40,12 +47,19 @@ interface CstParseContext : ParseContext {
 		 * which is, inside [structuredNode], you should not use any branching such as `if` `when`
 		 * `for` etc.
 		 *
-		 * Using [StructuredNode] as much as available will enable parser internals to cache nodes.
+		 * Using [structuredNode] as much as available will enable parser internals to cache nodes.
 		 * Caching nodes is a vital component of incremental parsing.
 		 */
 		StructuredNode,
 		
-		Discardable
+		Discardable,
+		
+		/**
+		 * Provides auxiliary data. Some special data such as LocalContext can be used here.
+		 * Data node can call several times to [provideData], then should include a single child
+		 * node.
+		 */
+		Data,
 	}
 	
 	@RequiresOptIn
@@ -137,4 +151,23 @@ interface CstParseContext : ParseContext {
 	fun markContainsDetached()
 	
 	fun markNestedContainsDetached()
+	
+	
+	sealed interface ProvidedData {
+		class ContextLocal<T>(val key: Key<T>, val value: T) : ProvidedData {
+			class Key<T>(private val debugName: String? = null, val defaultValue: () -> T) {
+				infix fun provides(value: T): ContextLocal<T> = ContextLocal(this, value)
+				
+				override fun toString() = debugName ?: super.toString()
+			}
+		}
+	}
+	
+	fun provideData(data: ProvidedData)
 }
+
+
+typealias CstParseContextLocal<T> = CstParseContext.ProvidedData.ContextLocal<T>
+
+
+object CstParseContextLocals

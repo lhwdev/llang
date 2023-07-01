@@ -6,10 +6,15 @@
 ## Cst vs Ast vs Fir
 
 **Cst**: lexical representation of code, mostly as-is. Note that tokens that may be used to
-determine the structure but that are no longer needed only exists in raw cst tree.
+determine the structure but that are no longer needed only exists in raw cst tree. Can easily
+represent error tree.
 
 **Ast**: more abstract, lexical representation of code. Some type-safety (inside tooling code) is
-achieved here. In Cst, we used opaque type of `Token`, `CstModifiers`, etc. Now it provides
+achieved here. Note that, in Cst we used opaque types of `Token`, `CstModifiers`, etc. which were
+flexible enough to represent errors. Ast cannot represent errors by default, unless supported.
+
+**Fir**: semantically fully-resolved tree. Contains 'invisible' elements such as inferred type or
+colors. Fir cannot represent error tree.
 
 ## Tokens and Tokenizer
 

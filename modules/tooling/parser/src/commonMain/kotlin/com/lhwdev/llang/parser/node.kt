@@ -6,14 +6,12 @@ import com.lhwdev.llang.cst.structure.nodeInfoOf
 
 
 @OptIn(CstParseContext.InternalApi::class)
-inline fun <Node : CstNode, Return> CstParseContext.rawNode(
+inline fun <Node : CstNode> CstParseContext.rawNode(
 	kind: CstParseContext.NodeKind,
 	getInfo: () -> CstNodeInfo<Node>?,
 	block: CstParseContext.() -> Node,
-	onSuccess: (node: Node) -> Return, // workaround for forbidden `Node : CstNode, Node : Return`.
-	onError: (throwable: Throwable) -> Return,
-): Return {
-	val context = beginChildNode(kind) ?: return onSuccess(skipChildNode())
+): Node {
+	val context = beginChildNode(kind) ?: return skipChildNode()
 	val nodeGroupId = currentNodeGroupId
 	return try {
 		val node = try {
@@ -21,25 +19,37 @@ inline fun <Node : CstNode, Return> CstParseContext.rawNode(
 		} finally {
 			context.beforeEndNodeDebugHint(nodeGroupId)
 		}
-		onSuccess(endChildNode(context, node))
+		endChildNode(context, node)
 	} catch(throwable: Throwable) {
-		val dummy = endChildNodeWithError(context, throwable, getInfo())
-		if(dummy != null) {
-			onSuccess(dummy)
-		} else {
-			onError(throwable)
-		}
+		endChildNodeWithError(context, throwable, getInfo()) ?: throw throwable
 	}
 }
 
+@OptIn(CstParseContext.InternalApi::class)
+inline fun <Node : CstNode> CstParseContext.rawNullableNode(
+	kind: CstParseContext.NodeKind,
+	crossinline block: CstParseContext.() -> Node?,
+	onError: (context: CstParseContext, throwable: Throwable) -> Node?,
+): Node? {
+	val context = beginChildNode(kind) ?: return skipChildNode()
+	val nodeGroupId = context.currentNodeGroupId
+	return try {
+		val node = try {
+			context.block()
+		} finally {
+			context.beforeEndNodeDebugHint(nodeGroupId)
+		}
+		if(node != null) {
+			endChildNode(context, node)
+		} else {
+			endChildNodeWithError(context, throwable = null, info = null)
+		}
+	} catch(throwable: Throwable) {
+		onError(context, throwable)
+	}
+	
+}
 
-fun <Node : CstNode> CstParseContext.node(factory: CstNodeFactory<Node>): Node = rawNode(
-	kind = CstParseContext.NodeKind.Node,
-	getInfo = { factory.info },
-	block = { with(factory) { parse() } },
-	onSuccess = { it },
-	onError = { throw it },
-)
 
 inline fun <Node : CstNode> CstParseContext.node(
 	info: CstNodeInfo<Node>?,
@@ -48,8 +58,6 @@ inline fun <Node : CstNode> CstParseContext.node(
 	kind = CstParseContext.NodeKind.Node,
 	getInfo = { info },
 	block = block,
-	onSuccess = { it },
-	onError = { throw it },
 )
 
 inline fun <reified Node : CstNode> CstParseContext.node(
@@ -58,16 +66,6 @@ inline fun <reified Node : CstNode> CstParseContext.node(
 	kind = CstParseContext.NodeKind.Node,
 	getInfo = { nodeInfoOf<Node>() },
 	block = block,
-	onSuccess = { it },
-	onError = { throw it },
-)
-
-fun <Node : CstNode> CstParseContext.structuredNode(factory: CstNodeFactory<Node>): Node = rawNode(
-	kind = CstParseContext.NodeKind.StructuredNode,
-	getInfo = { factory.info },
-	block = { with(factory) { parse() } },
-	onSuccess = { it },
-	onError = { throw it },
 )
 
 inline fun <Node : CstNode> CstParseContext.structuredNode(
@@ -77,45 +75,12 @@ inline fun <Node : CstNode> CstParseContext.structuredNode(
 	kind = CstParseContext.NodeKind.StructuredNode,
 	getInfo = { info },
 	block = block,
-	onSuccess = { it },
-	onError = { throw it },
 )
 
-inline fun <reified Node : CstNode> CstParseContext.StructuredNode(
+inline fun <reified Node : CstNode> CstParseContext.structuredNode(
 	crossinline block: CstParseContext.() -> Node,
 ): Node = rawNode(
 	kind = CstParseContext.NodeKind.StructuredNode,
 	getInfo = { nodeInfoOf<Node>() },
 	block = block,
-	onSuccess = { it },
-	onError = { throw it },
-)
-
-fun <Node : CstNode> CstParseContext.discardable(factory: CstNodeFactory<Node>): Node? = rawNode(
-	kind = CstParseContext.NodeKind.Discardable,
-	getInfo = { factory.info },
-	block = { with(factory) { parse() } },
-	onSuccess = { it },
-	onError = { null },
-)
-
-inline fun <Node : CstNode> CstParseContext.discardable(
-	info: CstNodeInfo<Node>?,
-	crossinline block: CstParseContext.() -> Node,
-): Node? = rawNode(
-	kind = CstParseContext.NodeKind.Discardable,
-	getInfo = { info },
-	block = block,
-	onSuccess = { it },
-	onError = { null },
-)
-
-inline fun <reified Node : CstNode> CstParseContext.discardable(
-	crossinline block: CstParseContext.() -> Node,
-): Node? = rawNode(
-	kind = CstParseContext.NodeKind.Discardable,
-	getInfo = { nodeInfoOf<Node>() },
-	block = block,
-	onSuccess = { it },
-	onError = { null },
 )
