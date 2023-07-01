@@ -225,7 +225,7 @@ private class CstExpressionParser(private val context: CstParseContext) {
 	}.content
 	
 	fun CstParseContext.expandHeadEagerForExpression() = node(CstExpression) {
-		markContainsDetached()
+		markNestedContainsDetached()
 		
 		while(true) {
 			if(expandHeadEager() == null) break
