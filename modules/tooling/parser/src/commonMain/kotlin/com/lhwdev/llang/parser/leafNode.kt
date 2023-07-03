@@ -11,6 +11,4 @@ inline fun <Node : CstLeafNode> CstParseContext.leafNode(
 	kind = CstParseContext.NodeKind.LeafNode,
 	getInfo = { info },
 	block = block,
-	onSuccess = { it },
-	onError = { throw it },
 )

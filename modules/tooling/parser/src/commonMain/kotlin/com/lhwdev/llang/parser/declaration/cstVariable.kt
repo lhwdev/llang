@@ -6,10 +6,7 @@ import com.lhwdev.llang.cst.structure.declaration.CstVariable
 import com.lhwdev.llang.cst.structure.declaration.CstVariableKind
 import com.lhwdev.llang.cst.structure.expression.CstExpression
 import com.lhwdev.llang.parser.*
-import com.lhwdev.llang.parser.core.cstIdentifier
-import com.lhwdev.llang.parser.core.cstLeafNode
-import com.lhwdev.llang.parser.core.cstModifiers
-import com.lhwdev.llang.parser.core.cstSoftKeywordOrNull
+import com.lhwdev.llang.parser.core.*
 import com.lhwdev.llang.parser.expression.cstExpression
 import com.lhwdev.llang.parser.statement.cstStatements
 import com.lhwdev.llang.parser.type.cstDeclarationQuoteTypeOrNone
@@ -19,10 +16,8 @@ import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.parseVariableKind
 
 
-private fun CstParseContext.cstVariableKind(): CstVariableKind = leafNode(CstVariableKind) {
+private fun CstParseContext.cstVariableKind(): CstVariableKind = keywordLeafNode(CstVariableKind) {
 	CstVariableKind(code.parseVariableKind())
-}.also {
-	preventDiscard()
 }
 
 private fun CstParseContext.cstVariableAccessor(): CstVariable.Accessor =
@@ -57,6 +52,7 @@ fun CstParseContext.cstStandaloneVariable(): CstVariable = structuredNode(CstSta
 		context = cstContextDeclarationOrNone(),
 		modifiers = cstModifiers(), // public open abstract ...
 		kind = cstVariableKind(),
+		extensionReceiverParameter = cstExtensionReceiverParameterOrNone(),
 		name = cstIdentifier(),
 		type = cstDeclarationQuoteTypeOrNone(),
 		accessor = cstVariableAccessor(),

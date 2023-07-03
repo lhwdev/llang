@@ -6,8 +6,8 @@
 ## Cst vs Ast vs Fir
 
 **Cst**: lexical representation of code, mostly as-is. Note that tokens that may be used to
-determine the structure but that are no longer needed only exists in raw cst tree. Can easily
-represent error tree.
+determine the structure but that are no longer needed only exists in CstRTree (cst raw tree). Can
+easily represent error tree.
 
 **Ast**: more abstract, lexical representation of code. Some type-safety (inside tooling code) is
 achieved here. Note that, in Cst we used opaque types of `Token`, `CstModifiers`, etc. which were
@@ -19,6 +19,7 @@ colors. Fir cannot represent error tree.
 ## Tokens and Tokenizer
 
 > Note that tokenizer phase is integrated into Cst parsing phase.
+> All tokenization phase described here are obsolete.
 
 Tokens are like 'words' in English. They are flat(not nested/structured).
 It says how to split raw code into meaningful components.

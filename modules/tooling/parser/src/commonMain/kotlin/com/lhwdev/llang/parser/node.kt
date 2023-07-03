@@ -12,7 +12,7 @@ inline fun <Node : CstNode> CstParseContext.rawNode(
 	block: CstParseContext.() -> Node,
 ): Node {
 	val context = beginChildNode(kind) ?: return skipChildNode()
-	val nodeGroupId = currentNodeGroupId
+	val nodeGroupId = context.currentNodeGroupId
 	return try {
 		val node = try {
 			context.block()
@@ -82,5 +82,13 @@ inline fun <reified Node : CstNode> CstParseContext.structuredNode(
 ): Node = rawNode(
 	kind = CstParseContext.NodeKind.StructuredNode,
 	getInfo = { nodeInfoOf<Node>() },
+	block = block,
+)
+
+inline fun <Node : CstNode> CstParseContext.rawDataNode(
+	crossinline block: CstParseContext.() -> Node,
+): Node = rawNode(
+	kind = CstParseContext.NodeKind.Data,
+	getInfo = { null },
 	block = block,
 )

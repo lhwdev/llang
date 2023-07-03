@@ -67,6 +67,11 @@ interface CstParseContext : ParseContext {
 	
 	
 	/// Token
+	
+	/**
+	 * Can only be used inside [leafNode] by default.
+	 * If needed inside other nodes, call [allowUsingCodeSource].
+	 */
 	val code: CstCodeSource
 	
 	
@@ -129,13 +134,28 @@ interface CstParseContext : ParseContext {
 	 */
 	fun provideRestartBlock(block: CstParseContext.() -> CstNode)
 	
+	sealed interface NodeHint {
+		/**
+		 * Signals that parent node can never be parsed without current node.
+		 *
+		 * Useful for hinting discardable parent node from keyword.
+		 */
+		object Vital : NodeHint
+		
+		/**
+		 * Signal to parent discardable node that, if parsing current node succeeds, parent node
+		 * should not be discarded. If parent node is [discard]ed, it is replaced with dummy node,
+		 * faking callers of discardable node that parsing was successful.
+		 *
+		 * Used in keyword to improve performance and to prevent weird parsing in IDE.
+		 */
+		object PreventDiscard : NodeHint
+	}
+	
 	/**
-	 * Signal to current discardable node that do not discard itself. Great way to optimize
-	 * performance. No-op when current node is not discardable node.
-	 *
-	 * Use cases: keyword(`class`, `fun`, `val` ...), some operators
+	 * Hints following [beginChildNode] call that this [hint] should be applied to that child node.
 	 */
-	fun preventDiscard()
+	fun provideNodeHintBeforeBegin(hint: NodeHint)
 	
 	/**
 	 * Informs that child nodes are 'detached'.

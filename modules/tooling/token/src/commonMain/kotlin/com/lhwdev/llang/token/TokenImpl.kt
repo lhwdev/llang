@@ -5,6 +5,8 @@ class TokenImpl(override var kind: TokenKind, override val code: String) : Token
 	companion object {
 		fun dummy(kind: TokenKind, code: String): Token = TokenImpl(kind, code)
 		
+		fun synthetic(kind: TokenKind, code: String): Token = TokenImpl(kind, code)
+		
 		fun dummyIllegal(): Token = dummy(TokenKinds.Illegal, "(illegal)")
 	}
 	
