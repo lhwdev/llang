@@ -5,11 +5,10 @@ import com.lhwdev.llang.cst.structure.core.CstModifiers
 import com.lhwdev.llang.cst.structure.declaration.*
 import com.lhwdev.llang.cst.structure.util.CstOptional
 import com.lhwdev.llang.parser.*
-import com.lhwdev.llang.parser.core.cstIdentifier
-import com.lhwdev.llang.parser.core.cstKeyword
-import com.lhwdev.llang.parser.core.cstModifiers
-import com.lhwdev.llang.parser.core.keywordLeafNode
+import com.lhwdev.llang.parser.core.*
 import com.lhwdev.llang.parser.type.cstDeclarationQuoteTypeOrNone
+import com.lhwdev.llang.parser.type.cstType
+import com.lhwdev.llang.parser.util.cstCommaSeparatedList
 import com.lhwdev.llang.token.TokenImpl
 import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.source.advanceInWordNotEmpty
@@ -19,12 +18,10 @@ import com.lhwdev.llang.tokenizer.source.token
 
 fun CstParseContext.cstObjectFunction() = structuredNode(CstMemberFunction) {
 	CstMemberFunction(
-		kind = CstFunction.Kind.ObjectMember,
 		annotations = cstAnnotations(),
 		context = cstContextDeclarationOrNone(),
-		modifiers = cstModifiers().also {
-			cstFunKeyword()
-		},
+		modifiers = cstModifiers(),
+		kind = cstFunKeyword(CstFunction.Kind.ObjectMember),
 		extensionReceiverParameter = cstExtensionReceiverParameterOrNone(),
 		name = cstIdentifier(),
 		typeParameters = cstTypeParametersOrNone(),
@@ -37,12 +34,10 @@ fun CstParseContext.cstObjectFunction() = structuredNode(CstMemberFunction) {
 
 fun CstParseContext.cstMemberFunction() = structuredNode(CstMemberFunction) {
 	CstMemberFunction(
-		kind = CstFunction.Kind.ClassMember,
 		annotations = cstAnnotations(),
 		context = cstContextDeclarationOrNone(),
-		modifiers = cstModifiers().also {
-			cstFunKeyword()
-		},
+		modifiers = cstModifiers(),
+		kind = cstFunKeyword(CstFunction.Kind.ClassMember),
 		extensionReceiverParameter = cstExtensionReceiverParameterOrNone(),
 		name = cstIdentifier(),
 		typeParameters = cstTypeParametersOrNone(),
@@ -55,12 +50,10 @@ fun CstParseContext.cstMemberFunction() = structuredNode(CstMemberFunction) {
 
 fun CstParseContext.cstLocalFunction() = structuredNode(CstLocalFunction) {
 	CstLocalFunction(
-		kind = CstFunction.Kind.Local,
 		annotations = cstAnnotations(),
 		context = cstContextDeclarationOrNone(),
-		modifiers = cstModifiers().also {
-			cstFunKeyword()
-		},
+		modifiers = cstModifiers(),
+		kind = cstFunKeyword(CstFunction.Kind.Local),
 		extensionReceiverParameter = cstExtensionReceiverParameterOrNone(),
 		name = cstIdentifier(),
 		typeParameters = cstTypeParametersOrNone(),
@@ -73,10 +66,10 @@ fun CstParseContext.cstLocalFunction() = structuredNode(CstLocalFunction) {
 
 fun CstParseContext.cstConstructorFunction() = structuredNode(CstConstructorFunction) {
 	CstConstructorFunction(
-		kind = CstFunction.Kind.Constructor,
 		annotations = cstAnnotations(),
 		context = cstContextDeclarationOrNone(),
 		modifiers = cstModifiers(),
+		kind = CstFunction.Kind.Constructor,
 		extensionReceiverParameter = cstExtensionReceiverParameterOrNone(),
 		name = keywordLeafNode(CstIdentifier) {
 			CstIdentifier(code.parseToken(TokenKinds.SoftKeyword.Constructor, "constructor"))
@@ -92,10 +85,10 @@ fun CstParseContext.cstConstructorFunction() = structuredNode(CstConstructorFunc
 fun CstParseContext.cstPrimaryConstructorFunction() = node(CstConstructorFunction) {
 	discardable {
 		CstConstructorFunction(
-			kind = CstFunction.Kind.Constructor,
 			annotations = CstAnnotations(emptyList()),
 			context = CstOptional.None,
 			modifiers = CstModifiers(emptyList()),
+			kind = CstFunction.Kind.Constructor,
 			extensionReceiverParameter = cstExtensionReceiverParameterOrNone(),
 			name = CstIdentifier(TokenImpl.synthetic(TokenKinds.SoftKeyword.Constructor, "")),
 			typeParameters = CstOptional.None,
@@ -105,10 +98,10 @@ fun CstParseContext.cstPrimaryConstructorFunction() = node(CstConstructorFunctio
 			body = CstOptional.None,
 		)
 	} ?: CstConstructorFunction(
-		kind = CstFunction.Kind.Constructor,
 		annotations = cstAnnotations(),
 		context = cstContextDeclarationOrNone(),
 		modifiers = cstModifiers(),
+		kind = CstFunction.Kind.Constructor,
 		extensionReceiverParameter = cstExtensionReceiverParameterOrNone(),
 		name = leafNode(CstIdentifier) {
 			CstIdentifier(code.parseToken(TokenKinds.SoftKeyword.Constructor, "constructor"))
@@ -124,12 +117,10 @@ fun CstParseContext.cstPrimaryConstructorFunction() = node(CstConstructorFunctio
 
 fun CstParseContext.cstAccessorFunction() = structuredNode(CstAccessorFunction) {
 	CstAccessorFunction(
-		kind = CstFunction.Kind.Accessor,
 		annotations = cstAnnotations(),
 		context = cstContextDeclarationOrNone(),
-		modifiers = cstModifiers().also {
-			cstFunKeyword()
-		},
+		modifiers = cstModifiers(),
+		kind = cstFunKeyword(CstFunction.Kind.Accessor),
 		extensionReceiverParameter = cstExtensionReceiverParameterOrNone(),
 		name = leafNode(CstIdentifier) {
 			val token = code.token {
@@ -152,10 +143,28 @@ fun CstParseContext.cstAccessorFunction() = structuredNode(CstAccessorFunction) 
 
 /// Function Components
 
-private fun CstParseContext.cstFunKeyword() {
+private fun CstParseContext.cstFunKeyword(kind: CstFunction.Kind): CstFunction.Kind {
 	cstKeyword(TokenKinds.Keyword.Fun, "fun")
+	return kind
 }
 
-private fun CstParseContext.cstTypeParameterConstraintsOrNone(): CstOptional<CstTypeParameterConstraints> {
-	TODO("Not yet implemented")
-}
+private fun CstParseContext.cstTypeParameterConstraintsOrNone(): CstOptional<CstTypeParameterConstraints> =
+	nullableStructuredNode(CstTypeParameterConstraints) {
+		cstSoftKeywordOrNull(TokenKinds.SoftKeyword.Where, "where")
+			?: return@nullableStructuredNode null
+		
+		CstTypeParameterConstraints(
+			constraints = cstCommaSeparatedList(CstTypeParameterConstraint) {
+				cstTypeParameterConstraint()
+			}.items(),
+		)
+	}.let { CstOptional(it) }
+
+private fun CstParseContext.cstTypeParameterConstraint() =
+	structuredNode(CstTypeParameterConstraint) {
+		val target = cstType()
+		cstLeafColonOrNull()!!
+		val constraint = cstType()
+		
+		CstTypeParameterConstraint(target, constraint)
+	}

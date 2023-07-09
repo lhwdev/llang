@@ -26,3 +26,7 @@ fun CstParseContext.cstLeafCommaOrNull(): CstLeafNode.Comma? = nullableLeafNode(
 fun CstParseContext.cstLeafDot(): CstLeafNode.Dot = leafNode(null) {
 	CstLeafNode.Dot(code.parseToken(TokenKinds.Operator.Access.Dot, "."))
 }
+
+fun CstParseContext.cstLeafColonOrNull(): CstLeafNode.Colon? = nullableLeafNode(null) {
+	code.parseTokenOrNull(TokenKinds.Operator.Other.Colon, ":")?.let { CstLeafNode.Colon(it) }
+}

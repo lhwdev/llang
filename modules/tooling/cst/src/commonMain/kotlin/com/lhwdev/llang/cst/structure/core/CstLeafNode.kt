@@ -19,6 +19,7 @@ interface CstLeafNode : CstNode {
 	
 	class Comma(token: Token) : CstLeafNodeImpl(token)
 	class Dot(token: Token) : CstLeafNodeImpl(token)
+	class Colon(token: Token) : CstLeafNodeImpl(token)
 }
 
 open class CstLeafNodeImpl(override val token: Token) : CstLeafNode

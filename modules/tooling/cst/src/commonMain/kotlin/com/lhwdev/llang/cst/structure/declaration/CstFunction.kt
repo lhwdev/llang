@@ -14,13 +14,13 @@ typealias CstConstructorFunction = CstFunction
 typealias CstAccessorFunction = CstFunction
 
 open class CstFunction(
-	val kind: Kind,
-	
 	final override val annotations: CstAnnotations,
 	
 	val context: CstOptional<CstContextDeclaration>,
 	
 	final override val modifiers: CstModifiers,
+	
+	val kind: Kind,
 	
 	val extensionReceiverParameter: CstOptional<CstExtensionReceiverParameter>,
 	

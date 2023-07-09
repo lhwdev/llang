@@ -43,6 +43,12 @@ interface CstParseContext : ParseContext {
 		Node,
 		
 		/**
+		 * Exists only for implementation soundness.
+		 * Implementation should support this [NodeKind].
+		 */
+		VirtualStructuredNode,
+		
+		/**
 		 * This can only be used when kind and order of direct child nodes of the node is identical,
 		 * which is, inside [structuredNode], you should not use any branching such as `if` `when`
 		 * `for` etc.
