@@ -1,6 +1,7 @@
 package com.lhwdev.llang.cst.structure.core
 
 import com.lhwdev.llang.cst.structure.CstNode
+import com.lhwdev.llang.cst.structure.CstNodeImpl
 import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.cst.structure.core.CstComment.Begin
 import com.lhwdev.llang.cst.structure.core.CstComment.End
@@ -9,7 +10,7 @@ import com.lhwdev.llang.token.TokenImpl
 import com.lhwdev.llang.token.TokenKinds
 
 
-class CstWss(val nodes: List<CstWs>) : CstNode {
+class CstWss(val nodes: List<CstWs>) : CstNode, CstNodeImpl() {
 	companion object Info : CstNodeInfo<CstWss> {
 		override fun dummyNode() = CstWss(emptyList())
 	}
@@ -42,7 +43,7 @@ class CstLineBreak(token: Token) : CstWs, CstLeafNodeImpl(token) {
  * `nodes.first()` should be an instance of [Begin], and if this comment is block comment,
  * `nodes.last()` should be an instance of [End].
  */
-class CstComment(val nodes: List<CstWs>) : CstWs {
+class CstComment(val nodes: List<CstWs>) : CstWs, CstNodeImpl() {
 	companion object Info : CstNodeInfo<CstComment> {
 		override fun dummyNode(): CstComment =
 			CstComment(emptyList())

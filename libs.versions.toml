@@ -1,9 +1,9 @@
 # Versions for the whole project.
 
 [versions]
-kotlin = "1.8.10"
-coroutine = "1.6.4"
-serialization = "1.4.1"
+kotlin = "1.9.10"
+coroutine = "1.7.3"
+serialization = "1.6.0"
 
 
 [plugins]

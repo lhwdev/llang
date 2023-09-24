@@ -1,6 +1,7 @@
 package com.lhwdev.llang.tokenizer.source
 
 import com.lhwdev.llang.parsing.ParseContext
+import com.lhwdev.llang.parsing.discard
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenKind
 import com.lhwdev.llang.tokenizer.CharacterKind
@@ -75,8 +76,7 @@ fun CodeSource.matchesWord(text: String, offset: Int = 0): Boolean {
 
 fun CodeSource.advanceMatch(char: Char) {
 	if(current != char) {
-		// parseError("expected $char, but encountered $current")
-		discard()
+		discard { "expected $char, but encountered $current" }
 	}
 	
 	advance()
@@ -92,8 +92,7 @@ fun CodeSource.matchesAdvance(char: Char): Boolean =
 
 inline fun CodeSource.advanceMatch(block: CodeSource.() -> Boolean) {
 	if(!block()) {
-		// parseError("got $current")
-		discard()
+		discard { "got $current" }
 	}
 	
 	advance()
@@ -101,8 +100,7 @@ inline fun CodeSource.advanceMatch(block: CodeSource.() -> Boolean) {
 
 fun CodeSource.advanceMatch(text: String) {
 	if(!matches(text)) {
-		// parseError("expected $text, but encountered ${next.substring(0, text.length)}")
-		discard()
+		discard { "expected $text, but encountered ${next.substring(0, text.length)}" }
 	}
 	
 	advance(text.length)

@@ -14,5 +14,5 @@ import com.lhwdev.llang.parser.util.CstParsingContainerContext
 fun <Node : CstNode> CstParseContext.cstDeclarations(
 	block: CstParsingContainerContext<CstNode>.() -> Node,
 ): Node {
-
+	TODO()
 }

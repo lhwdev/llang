@@ -1,7 +1,8 @@
 package com.lhwdev.llang.parsing.util
 
 
-open class LightException(message: String?) : RuntimeException(message, null, false, false) {
+open class LightException(message: String?, writeStackTrace: Boolean = false) :
+	RuntimeException(message, null, false, writeStackTrace) {
 	// /**
 	//  * Overridden for performance
 	//  */
@@ -10,8 +11,11 @@ open class LightException(message: String?) : RuntimeException(message, null, fa
 	// }
 }
 
-open class DiscardException(message: String?) : LightException(message) {
-	companion object : DiscardException(message = null)
+open class DiscardException(message: String? = null, writeStackTrace: Boolean = false) :
+	LightException(message, writeStackTrace) {
+	companion object : DiscardException(message = null) {
+		override fun toString(): String = "DiscardException"
+	}
 }
 
 class NotMatchedException(message: String = "not matched") : DiscardException(message) {
@@ -21,6 +25,6 @@ class NotMatchedException(message: String = "not matched") : DiscardException(me
 	}
 }
 
-open class ParseException(message: String?) : LightException(message)
+open class ParseException(message: String?) : LightException(message, writeStackTrace = true)
 
 

@@ -6,5 +6,6 @@ import com.lhwdev.llang.parser.CstParseContext
 
 
 fun CstParseContext.cstTypeParametersOrNone(): CstOptional<CstTypeParameters> {
+	return CstOptional.None
 	TODO("Not yet implemented")
 }

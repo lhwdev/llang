@@ -1,10 +1,12 @@
 package com.lhwdev.llang.cst.structure.expression
 
+import com.lhwdev.llang.cst.structure.CstNodeImpl
+
 
 sealed class CstFunctionCall<Argument : CstExpression>(
 	val function: CstExpression,
 	val argument: Argument,
-) : CstExpression {
+) : CstExpression, CstNodeImpl() {
 	abstract val arguments: CstTuple
 	
 	class Call(function: CstExpression, arguments: CstTuple) :

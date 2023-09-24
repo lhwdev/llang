@@ -263,19 +263,19 @@ To define how much flexibility we need, we should define operations.
 | `+`/`-`                   | arithmetic.unaryPlus/unaryMinus | unary.prefix  | eager'     | `-7`, `+3`                             |
 | `!`                       | logic.not                       | unary.prefix  | eager'     | `!isHello`                             |
 | `?`                       | propagateError                  | unary.suffix  | eager''    | `println(...list)`                     |
-| `as`                      | typeOps.cast                    | binary        | 300        | `parent as Child`                      |
-| `as?`                     | typeOps.safeCast                | binary        | 300        | `parent as? Child`                     |
-| `*`/`/`/`%`               | arithmetic.multiply/divide/rem  | binary        | 251        | `3 * 5`                                |
-| `+`/`-`                   | arithmetic.plus/minus           | binary        | 250        | `3 + 2`                                |
-| `..` etc                  | expression.rangeTo ...          | binary        |            | `1..10`                                |
-| _identifier_              | expression.infixCall            | binary        |            | `0x10 xor 0x11`                        |
-| `?:`                      | expression.elvis                | binary        |            | `optional ?: default`                  |
-| `in`/`!in`                | expression.in/notIn             | binary        |            | `"lhwdev" in users`                    |
-| `is`/`!is`                | typeOps.is/notIs                | binary        |            | `animal is Dog`                        |
-| `<`/`>`/`<=`/`>=`         | logic.lt/gt/ltEq/gtEq           | binary        |            | `age >= 19`                            |
-| `==`/`!=`/`===`/`!==`     | logic.equals/identityEquals ... | binary        |            | `you == me`                            |
-| `&&`                      | logic.conjunction               | binary        |            | `you.age >= 19 && you.height >= 180`   |
-| <code>&#124;&#124;</code> | logic.disjunction               | binary        |            | <code>idiot &#124;&#124; genius</code> |
+| `as`                      | typeOps.cast                    | binary        | 400        | `parent as Child`                      |
+| `as?`                     | typeOps.safeCast                | binary        | 400        | `parent as? Child`                     |
+| `*`/`/`/`%`               | arithmetic.multiply/divide/rem  | binary        | 351        | `3 * 5`                                |
+| `+`/`-`                   | arithmetic.plus/minus           | binary        | 350        | `3 + 2`                                |
+| `..` etc                  | expression.rangeTo ...          | binary        | 280        | `1..10`                                |
+| _identifier_              | expression.infixCall            | binary        | 270        | `0x10 xor 0x11`                        |
+| `?:`                      | expression.elvis                | binary        | 210        | `optional ?: default`                  |
+| `in`/`!in`                | expression.in/notIn             | binary        | 170        | `"lhwdev" in users`                    |
+| `is`/`!is`                | typeOps.is/notIs                | binary        | 170        | `animal is Dog`                        |
+| `<`/`>`/`<=`/`>=`         | logic.lt/gt/ltEq/gtEq           | binary        | 151        | `age >= 19`                            |
+| `==`/`!=`/`===`/`!==`     | logic.equals/identityEquals ... | binary        | 150        | `you == me`                            |
+| `&&`                      | logic.conjunction               | binary        | 121        | `you.age >= 19 && you.height >= 180`   |
+| <code>&#124;&#124;</code> | logic.disjunction               | binary        | 120        | <code>idiot &#124;&#124; genius</code> |
 | `...`                     | functionSpreadArguments         | unary.prefix  | lowest     | `println(...list)`                     |
 | `=`/`+=` etc.             | assignment ...                  | binary        | lowest     | `myVar = 3`                            |
 

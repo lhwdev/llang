@@ -34,13 +34,13 @@ fun CodeSource.parseStringLiteralEnd(): Token = token {
 fun CodeSource.parseInStringLiteral(quote: TokenKinds.StringLiteral.Quote): Token = when(current) {
 	'\\' -> when(peek()) {
 		'\\', '$', 'n', 'r', 't', 'b', '\'', '"' -> token(
-			TokenKinds.StringLiteral.EscapedLiteral,
+			TokenKinds.StringLiteral.EscapedContent,
 			2,
 		)
 		
-		'u' -> token(TokenKinds.StringLiteral.EscapedLiteral, 6)
+		'u' -> token(TokenKinds.StringLiteral.EscapedContent, 6)
 		
-		else -> token(TokenKinds.StringLiteral.EscapedLiteral) {
+		else -> token(TokenKinds.StringLiteral.EscapedContent) {
 			advance(2)
 			pushDiagnostic(TokenizerDiagnostic.IllegalStringEscape("$currentSpan"))
 		}
@@ -67,6 +67,6 @@ fun CodeSource.parseInStringLiteral(quote: TokenKinds.StringLiteral.Quote): Toke
 }
 
 private fun CodeSource.parseLiteralInStringLiteral(): Token =
-	token(TokenKinds.StringLiteral.Literal) {
+	token(TokenKinds.StringLiteral.Content) {
 		advanceWhile { current !in "\\$\"" }
 	}

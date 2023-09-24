@@ -1,6 +1,7 @@
 package com.lhwdev.llang.cst.structure.core
 
 import com.lhwdev.llang.cst.structure.CstNode
+import com.lhwdev.llang.cst.structure.CstNodeImpl
 import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenImpl
@@ -22,4 +23,4 @@ interface CstLeafNode : CstNode {
 	class Colon(token: Token) : CstLeafNodeImpl(token)
 }
 
-open class CstLeafNodeImpl(override val token: Token) : CstLeafNode
+open class CstLeafNodeImpl(override val token: Token) : CstLeafNode, CstNodeImpl()

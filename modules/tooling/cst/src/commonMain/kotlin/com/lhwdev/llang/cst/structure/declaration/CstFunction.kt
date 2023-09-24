@@ -1,5 +1,6 @@
 package com.lhwdev.llang.cst.structure.declaration
 
+import com.lhwdev.llang.cst.structure.CstNodeImpl
 import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.cst.structure.core.CstIdentifier
 import com.lhwdev.llang.cst.structure.core.CstModifiers
@@ -35,7 +36,7 @@ open class CstFunction(
 	val typeParameterConstraints: CstOptional<CstTypeParameterConstraints>,
 	
 	val body: CstOptional<CstBody>,
-) : CstNamedDeclaration {
+) : CstNamedDeclaration, CstNodeImpl() {
 	sealed class Kind {
 		sealed class Standard : Kind()
 		

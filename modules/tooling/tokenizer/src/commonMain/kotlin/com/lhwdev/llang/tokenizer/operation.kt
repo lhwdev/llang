@@ -98,6 +98,13 @@ fun CodeSource.parseOperationInAnyExpression(): Token {
 			else -> token(TokenKinds.Operator.Compare.Gt)
 		}
 		
+		'(' -> token(TokenKinds.Operator.Group.LeftParen)
+		')' -> token(TokenKinds.Operator.Group.RightParen)
+		'[' -> token(TokenKinds.Operator.Group.LeftSquareBracket)
+		']' -> token(TokenKinds.Operator.Group.RightSquareBracket)
+		'{' -> token(TokenKinds.Operator.Group.LeftBrace)
+		'}' -> token(TokenKinds.Operator.Group.RightBrace)
+		
 		'&' -> when(next) {
 			'&' -> token(TokenKinds.Operator.Logic.And, length = 2)
 			else -> illegalToken()
@@ -117,6 +124,8 @@ fun CodeSource.parseOperationInAnyExpression(): Token {
 			
 			else -> token(TokenKinds.Operator.Access.Dot)
 		}
+		
+		',' -> token(TokenKinds.Operator.Other.Comma)
 		
 		'?' -> when(next) {
 			':' -> token(TokenKinds.Operator.Expression.Elvis, length = 2)

@@ -17,8 +17,8 @@ inline fun <Node : CstLeafNode> CstParseContext.keywordLeafNode(
 	info: CstNodeInfo<Node>?,
 	crossinline block: CstParseContext.() -> Node,
 ): Node {
-	provideNodeHintBeforeBegin(CstParseContext.NodeHint.Vital)
-	provideNodeHintBeforeBegin(CstParseContext.NodeHint.PreventDiscard)
+	provideNodeHintToFollowing(CstParseContext.NodeHint.Vital)
+	provideNodeHintToFollowing(CstParseContext.NodeHint.PreventDiscard)
 	return leafNode(info, block)
 }
 

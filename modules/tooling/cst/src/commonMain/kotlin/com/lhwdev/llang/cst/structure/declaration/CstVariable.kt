@@ -1,6 +1,7 @@
 package com.lhwdev.llang.cst.structure.declaration
 
 import com.lhwdev.llang.cst.structure.CstNode
+import com.lhwdev.llang.cst.structure.CstNodeImpl
 import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.cst.structure.core.CstIdentifier
 import com.lhwdev.llang.cst.structure.core.CstLeafNodeImpl
@@ -38,8 +39,8 @@ sealed class CstVariable(
 	val type: CstOptional<CstType>,
 	
 	val accessor: Accessor,
-) : CstNamedDeclaration {
-	sealed class Accessor : CstNode {
+) : CstNamedDeclaration, CstNodeImpl() {
+	sealed class Accessor : CstNode, CstNodeImpl() {
 		companion object Info : CstNodeInfo<Accessor> {
 			override fun dummyNode() = NoAccessor
 		}

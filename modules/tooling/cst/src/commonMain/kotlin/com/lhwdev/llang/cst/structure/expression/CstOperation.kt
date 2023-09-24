@@ -1,9 +1,10 @@
 package com.lhwdev.llang.cst.structure.expression
 
+import com.lhwdev.llang.cst.structure.CstNodeImpl
 import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.cst.structure.core.CstOperator
 
-sealed class CstOperation : CstExpression {
+sealed class CstOperation : CstExpression, CstNodeImpl() {
 	class UnaryPrefix(
 		val operator: CstOperator.Unary,
 		val operand: CstExpression,

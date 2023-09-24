@@ -4,5 +4,4 @@ import com.lhwdev.llang.cst.structure.CstNode
 import com.lhwdev.llang.parser.CstParseContext
 
 
-@Suppress("RedundantNullableReturnType")
-fun CstParseContext.cstImplicitNodeOrNull(): CstNode? = cstWss()
+fun CstParseContext.cstImplicitNodeOrNull(): CstNode? = cstWssOrNull()

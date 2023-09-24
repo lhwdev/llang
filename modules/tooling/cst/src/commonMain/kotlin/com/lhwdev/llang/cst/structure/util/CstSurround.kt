@@ -1,13 +1,14 @@
 package com.lhwdev.llang.cst.structure.util
 
 import com.lhwdev.llang.cst.structure.CstNode
+import com.lhwdev.llang.cst.structure.CstNodeImpl
 import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.token.TokenKind
 import com.lhwdev.llang.token.TokenKinds
 
 
 
-class CstSurround<Node : CstNode>(val kind: Kind, val content: Node) : CstNode {
+class CstSurround<out Node : CstNode>(val kind: Kind, val content: Node) : CstNode, CstNodeImpl() {
 	companion object Info : CstNodeInfo<CstSurround<CstNode>> {
 		val Paren = Kind(
 			left = TokenKinds.Operator.Group.LeftParen,

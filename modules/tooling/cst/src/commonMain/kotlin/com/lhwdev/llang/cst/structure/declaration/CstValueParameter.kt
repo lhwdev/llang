@@ -1,7 +1,9 @@
 package com.lhwdev.llang.cst.structure.declaration
 
+import com.lhwdev.llang.cst.structure.CstNodeImpl
 
-class CstExtensionReceiverParameter : CstDeclaration
+
+class CstExtensionReceiverParameter : CstDeclaration, CstNodeImpl()
 
 
-class CstValueParameters : CstDeclaration
+class CstValueParameters : CstDeclaration, CstNodeImpl()

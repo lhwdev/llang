@@ -12,5 +12,6 @@ fun CstParseContext.cstValueParameters(): CstValueParameters {
 
 
 fun CstParseContext.cstExtensionReceiverParameterOrNone(): CstOptional<CstExtensionReceiverParameter> {
+	return CstOptional.None
 	TODO("Not yet implemented")
 }

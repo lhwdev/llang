@@ -4,6 +4,7 @@ import com.lhwdev.llang.cst.structure.core.CstIdentifier
 import com.lhwdev.llang.cst.structure.core.CstModifiers
 import com.lhwdev.llang.cst.structure.declaration.*
 import com.lhwdev.llang.cst.structure.util.CstOptional
+import com.lhwdev.llang.cst.structure.util.optional
 import com.lhwdev.llang.parser.*
 import com.lhwdev.llang.parser.core.*
 import com.lhwdev.llang.parser.type.cstDeclarationQuoteTypeOrNone
@@ -158,7 +159,7 @@ private fun CstParseContext.cstTypeParameterConstraintsOrNone(): CstOptional<Cst
 				cstTypeParameterConstraint()
 			}.items(),
 		)
-	}.let { CstOptional(it) }
+	}.optional
 
 private fun CstParseContext.cstTypeParameterConstraint() =
 	structuredNode(CstTypeParameterConstraint) {

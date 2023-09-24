@@ -33,14 +33,14 @@ annotation class CstParseContextMarker
  */
 @CstParseContextMarker
 interface CstParseContext : ParseContext {
-	enum class NodeKind {
+	enum class NodeKind(val node: Boolean = false) {
 		/**
 		 * Nodes with [NodeKind] other than [LeafNode] should not use [code] directly, though not
 		 * validated (TODO: validate).
 		 */
-		LeafNode,
+		LeafNode(node = true),
 		
-		Node,
+		Node(node = true),
 		
 		/**
 		 * Exists only for implementation soundness.
@@ -56,14 +56,20 @@ interface CstParseContext : ParseContext {
 		 * Using [structuredNode] as much as available will enable parser internals to cache nodes.
 		 * Caching nodes is a vital component of incremental parsing.
 		 */
-		StructuredNode,
+		StructuredNode(node = true),
 		
 		Discardable,
 		
 		/**
+		 * Peek nodes exist to support the cases where using [Discardable] is unaffordable.
+		 * All resulting nodes from [Peek] should not be inserted into tree via [insertChildNode].
+		 */
+		Peek,
+		
+		/**
 		 * Provides auxiliary data. Some special data such as LocalContext can be used here.
-		 * Data node can call several times to [provideData], then should include a single child
-		 * node.
+		 * Data node can call several times to [provideNodeHintToCurrent], then should include a
+		 * single child node.
 		 */
 		Data,
 	}
@@ -76,7 +82,7 @@ interface CstParseContext : ParseContext {
 	
 	/**
 	 * Can only be used inside [leafNode] by default.
-	 * If needed inside other nodes, call [allowUsingCodeSource].
+	 * If needed inside other nodes, call `provideNodeHintToCurrent(NodeHint.AllowCodeSourceAccess)`.
 	 */
 	val code: CstCodeSource
 	
@@ -96,13 +102,16 @@ interface CstParseContext : ParseContext {
 	 */
 	fun disableAdjacentImplicitNode()
 	
+	@InternalApi
+	val alwaysRequireNodeInfo: Boolean
+	
 	/**
 	 * If there is one or more child nodes in this node, implicit node such as CstWss is parsed
 	 * while [beginChildNode] is being called, to ensure proper spacing between nodes.
 	 * If you don't want this behavior, call [disableAdjacentImplicitNode].
 	 */
 	@InternalApi
-	fun beginChildNode(kind: NodeKind): CstParseContext?
+	fun beginChildNode(kind: NodeKind, info: CstNodeInfo<*>?): CstParseContext?
 	
 	@InternalApi
 	fun beforeEndNodeDebugHint(nodeGroupId: Long) {
@@ -125,12 +134,9 @@ interface CstParseContext : ParseContext {
 	fun <Node : CstNode> endChildNodeWithError(
 		childContext: CstParseContext,
 		throwable: Throwable?,
-		info: CstNodeInfo<Node>?,
 	): Node?
 	
 	val lastEndError: Throwable?
-	
-	fun allowUsingCodeSource()
 	
 	/**
 	 * In most cases, [CstParseContext] can smartly skip unnecessary nodes, so that executing all
@@ -140,13 +146,19 @@ interface CstParseContext : ParseContext {
 	 */
 	fun provideRestartBlock(block: CstParseContext.() -> CstNode)
 	
+	
 	sealed interface NodeHint {
+		sealed interface ToFollowing : NodeHint
+		sealed interface ToCurrent : NodeHint
+		
+		sealed interface Data : NodeHint
+		
 		/**
 		 * Signals that parent node can never be parsed without current node.
 		 *
 		 * Useful for hinting discardable parent node from keyword.
 		 */
-		object Vital : NodeHint
+		data object Vital : ToFollowing
 		
 		/**
 		 * Signal to parent discardable node that, if parsing current node succeeds, parent node
@@ -155,32 +167,12 @@ interface CstParseContext : ParseContext {
 		 *
 		 * Used in keyword to improve performance and to prevent weird parsing in IDE.
 		 */
-		object PreventDiscard : NodeHint
-	}
-	
-	/**
-	 * Hints following [beginChildNode] call that this [hint] should be applied to that child node.
-	 */
-	fun provideNodeHintBeforeBegin(hint: NodeHint)
-	
-	/**
-	 * Informs that child nodes are 'detached'.
-	 * Generally raw node tree is determined by the order of invocation of `node {}`. However,
-	 * calling this in structured manner is sometimes impossible. So, this informs that the raw tree
-	 * of all direct children node of current node should be evaluated manually.
-	 *
-	 * This should be called as soon as you call [beginChildNode] (generally, called first inside
-	 * `node {}`.)
-	 *
-	 * All child nodes which may contain detached node as child should call [markNestedContainsDetached].
-	 */
-	fun markContainsDetached()
-	
-	fun markNestedContainsDetached()
-	
-	
-	sealed interface ProvidedData {
-		class ContextLocal<T>(val key: Key<T>, val value: T) : ProvidedData {
+		data object PreventDiscard : ToFollowing
+		
+		
+		data object AllowCodeSourceAccess : ToCurrent
+		
+		class ContextLocal<T>(val key: Key<T>, val value: T) : Data, ToCurrent {
 			class Key<T>(private val debugName: String? = null, val defaultValue: () -> T) {
 				infix fun provides(value: T): ContextLocal<T> = ContextLocal(this, value)
 				
@@ -189,11 +181,61 @@ interface CstParseContext : ParseContext {
 		}
 	}
 	
-	fun provideData(data: ProvidedData)
+	/**
+	 * Hints current node that this [hint] should be applied.
+	 */
+	fun provideNodeHintToCurrent(hint: NodeHint.ToCurrent)
+	
+	/**
+	 * Hints following [beginChildNode] call that this [hint] should be applied to that child node.
+	 */
+	fun provideNodeHintToFollowing(hint: NodeHint.ToFollowing)
+	
+	
+	/// Detached mode
+	/// - About detached mode, which is an alternative way than DSL-like scope based method to
+	///   parse things. If available, detached mode should be avoided.
+	//  - NOTE: all detached nodes, that are not attached on proper depth, are bound to the
+	//    parent of itself at proper order.
+	
+	/**
+	 * Informs that all child nodes are 'detached'.
+	 * Generally raw node tree is determined by the order of invocation of `node {}`. However,
+	 * calling this in structured manner is sometimes impossible.
+	 *
+	 * Detached mode enables separating 'where it is parsed' and 'where it is attached'. Generally
+	 * all nodes are implicitly attached to where `node {}` was called. But in detached mode, you
+	 * can insert tree node associated with returned node into tree via [insertChildNode].
+	 *
+	 * This should be called as soon as you call [beginChildNode]. (generally, called first inside
+	 * `node {}`.)
+	 * It is caller's responsibility that all llang features like discard, incremental parsing,
+	 * caching etc. would happen efficiently.
+	 *
+	 * All child nodes which may contain detached node as child should call this separately.
+	 */
+	fun markChildrenAsDetached(detached: Boolean = true)
+	
+	
+	/**
+	 * Similar to [markChildrenAsDetached], but only to current node.
+	 *
+	 * This can be called anywhere inside node (of course you should match node depth).
+	 */
+	fun markCurrentAsDetached()
+	
+	fun <Node : CstNode> insertChildNode(node: Node): Node
+}
+
+inline fun <R> CstParseContext.detached(block: () -> R): R = try {
+	markChildrenAsDetached()
+	block()
+} finally {
+	markChildrenAsDetached(detached = false)
 }
 
 
-typealias CstParseContextLocal<T> = CstParseContext.ProvidedData.ContextLocal<T>
+typealias CstParseContextLocal<T> = CstParseContext.NodeHint.ContextLocal<T>
 
 
 object CstParseContextLocals

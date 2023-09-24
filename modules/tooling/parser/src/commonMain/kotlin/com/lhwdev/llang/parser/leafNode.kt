@@ -9,6 +9,6 @@ inline fun <Node : CstLeafNode> CstParseContext.leafNode(
 	crossinline block: CstParseContext.() -> Node,
 ): Node = rawNode(
 	kind = CstParseContext.NodeKind.LeafNode,
-	getInfo = { info },
+	info = info,
 	block = block,
 )

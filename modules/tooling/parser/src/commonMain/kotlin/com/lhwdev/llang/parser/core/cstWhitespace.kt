@@ -2,7 +2,7 @@ package com.lhwdev.llang.parser.core
 
 import com.lhwdev.llang.cst.structure.core.*
 import com.lhwdev.llang.parser.*
-import com.lhwdev.llang.parser.util.cstWsSeparatedListInline
+import com.lhwdev.llang.parsing.discard
 import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.*
 
@@ -15,7 +15,19 @@ fun CstParseContext.cstWsOrNull(): CstWs? = nullableNode(CstWs) {
 	cstWhitespaceOrNull() ?: cstLineBreakOrNull() ?: cstCommentOrNull()
 }
 
-fun CstParseContext.cstWss(): CstWss = node(CstWss) {
+fun CstParseContext.cstWssNonEmpty(): CstWss = node(CstWss) {
+	disableAdjacentImplicitNode() // maybe cause infinite recursion; cstWss is used by CstParseContext
+	val nodes = mutableListOf<CstWs>()
+	while(true) {
+		val node = cstWsOrNull() ?: break
+		nodes += node
+	}
+	
+	if(nodes.isEmpty()) discard { "wss is not empty" }
+	CstWss(nodes)
+}
+
+fun CstParseContext.cstWssOrEmpty(): CstWss = node(CstWss) {
 	disableAdjacentImplicitNode() // maybe cause infinite recursion; cstWss is used by CstParseContext
 	val nodes = mutableListOf<CstWs>()
 	while(true) {
@@ -26,8 +38,19 @@ fun CstParseContext.cstWss(): CstWss = node(CstWss) {
 	CstWss(nodes)
 }
 
-fun CstParseContext.cstWssOrEmpty(): CstWss = node(CstWss) {
-	CstWss(cstWsSeparatedListInline { cstWsOrNull() })
+fun CstParseContext.cstWssOrNull(): CstWss? = nullableNode(CstWss) {
+	disableAdjacentImplicitNode() // maybe cause infinite recursion; cstWss is used by CstParseContext
+	val nodes = mutableListOf<CstWs>()
+	while(true) {
+		val node = cstWsOrNull() ?: break
+		nodes += node
+	}
+	
+	if(nodes.isEmpty()) {
+		null
+	} else {
+		CstWss(nodes)
+	}
 }
 
 
@@ -57,25 +80,33 @@ private fun CstParseContext.parseCstComment(begin: CstComment.Begin): CstComment
 		
 		is TokenKinds.Comment.BlockKind -> {
 			while(true) {
-				val leaf = leafNode(CstComment.Leaf) {
+				val node = leafNode(null) {
 					val token = code.parseInBlockComment(kind)
+					
 					when(token.kind as TokenKinds.Comment) {
-						is TokenKinds.Comment.CommentBegin -> CstComment.Begin(token)
+						is TokenKinds.Comment.CommentBegin -> {
+							markCurrentAsDetached()
+							CstComment.Begin(token)
+						}
+						
 						is TokenKinds.Comment.CommentEnd -> CstComment.End(token)
 						is TokenKinds.Comment.Content -> CstComment.Content(token)
 					}
 				}
-				when(leaf) {
-					is CstComment.Begin ->
-						nodes += node(CstComment) { parseCstComment(leaf) }
+				when(node) {
+					is CstComment.Begin -> {
+						nodes += parseCstComment(node)
+					}
 					
 					is CstComment.End -> {
-						nodes += leaf
+						nodes += node
 						break
 					}
 					
 					is CstComment.Content ->
-						nodes += leaf
+						nodes += node
+					
+					else -> {}
 				}
 			}
 		}

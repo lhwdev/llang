@@ -1,15 +1,10 @@
 Precedence parsing in book.md, but fit into llang system.
 
-**In _push_**, run following tasks sequentially:
-
-- Push `head` into `stack`.
-- Pop `buffer`, then push it into `stack`.
-- Pop `buffer`, then Put it into `head`.
-
 **In _binaryOps_**:
 
-- Pop two tokens(lhs + operator) from `stack`.
-- Combine with `head`(rhs) to become a binary operation.
+- Put `expressions.pop()` into `lhs`.
+- Put `operators.pop()` into `operation`.
+- Combine with `head`(`rhs`) to become a binary operation.
 - Put it into `head`.
 
 **In _unaryOps_**:
@@ -26,10 +21,10 @@ Precedence parsing in book.md, but fit into llang system.
 
 **In _callOps_**:
 
-- Push `head`(function) into `stack`.
+- Save `head` into `function`.
 - Put `buffer.pop()`(group start) into `head`.
 - Run _groupOrTupleOps_ with 'tuple mode'. (Saying 'this was tuple!' in advance)
-- Combine `stack.pop()`(function) and `head`(tuple) into function invocation.
+- Combine `function` and `head`(tuple) into function invocation.
 - Assign it into `head`.
 
 **In _groupOrTupleOps_**:
@@ -53,9 +48,10 @@ Precedence parsing in book.md, but fit into llang system.
 **Main logic**:
 
 - If `buffer` is empty or `buffer.peek()` is group end,
-  - If, stack is empty, we're done. Get your `head`. (Or return it to _groupOrTupleOps_.)
+  - If, expression stack is empty, we're done. Get your `head`.
   - Otherwise, call _binaryOps_.
 - If _expandHeadEager_ returns expression, return.
+- Push `buffer.pop()` into `operators`.
 - If `buffer.peek().precedence <= stack.peek().precedence`, (that is, `state for lookahead` in the
   table is 'descending' or 'equal') call _binaryOps_.
   - Note that, if `buffer.peek()` is identifier, it becomes infix call.
