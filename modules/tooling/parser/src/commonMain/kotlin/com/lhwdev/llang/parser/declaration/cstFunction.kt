@@ -17,7 +17,7 @@ import com.lhwdev.llang.tokenizer.source.parseToken
 import com.lhwdev.llang.tokenizer.source.token
 
 
-fun CstParseContext.cstObjectFunction() = structuredNode(CstMemberFunction) {
+fun CstParseContext.cstObjectFunction() = structuredNode {
 	CstMemberFunction(
 		annotations = cstAnnotations(),
 		context = cstContextDeclarationOrNone(),
@@ -33,7 +33,7 @@ fun CstParseContext.cstObjectFunction() = structuredNode(CstMemberFunction) {
 	)
 }
 
-fun CstParseContext.cstMemberFunction() = structuredNode(CstMemberFunction) {
+fun CstParseContext.cstMemberFunction() = structuredNode {
 	CstMemberFunction(
 		annotations = cstAnnotations(),
 		context = cstContextDeclarationOrNone(),
@@ -49,7 +49,7 @@ fun CstParseContext.cstMemberFunction() = structuredNode(CstMemberFunction) {
 	)
 }
 
-fun CstParseContext.cstLocalFunction() = structuredNode(CstLocalFunction) {
+fun CstParseContext.cstLocalFunction() = structuredNode {
 	CstLocalFunction(
 		annotations = cstAnnotations(),
 		context = cstContextDeclarationOrNone(),
@@ -65,14 +65,14 @@ fun CstParseContext.cstLocalFunction() = structuredNode(CstLocalFunction) {
 	)
 }
 
-fun CstParseContext.cstConstructorFunction() = structuredNode(CstConstructorFunction) {
+fun CstParseContext.cstConstructorFunction() = structuredNode {
 	CstConstructorFunction(
 		annotations = cstAnnotations(),
 		context = cstContextDeclarationOrNone(),
 		modifiers = cstModifiers(),
 		kind = CstFunction.Kind.Constructor,
 		extensionReceiverParameter = cstExtensionReceiverParameterOrNone(),
-		name = keywordLeafNode(CstIdentifier) {
+		name = keywordLeafNode {
 			CstIdentifier(code.parseToken(TokenKinds.SoftKeyword.Constructor, "constructor"))
 		},
 		typeParameters = cstTypeParametersOrNone(),
@@ -83,7 +83,7 @@ fun CstParseContext.cstConstructorFunction() = structuredNode(CstConstructorFunc
 	)
 }
 
-fun CstParseContext.cstPrimaryConstructorFunction() = node(CstConstructorFunction) {
+fun CstParseContext.cstPrimaryConstructorFunction() = node {
 	discardable {
 		CstConstructorFunction(
 			annotations = CstAnnotations(emptyList()),
@@ -104,7 +104,7 @@ fun CstParseContext.cstPrimaryConstructorFunction() = node(CstConstructorFunctio
 		modifiers = cstModifiers(),
 		kind = CstFunction.Kind.Constructor,
 		extensionReceiverParameter = cstExtensionReceiverParameterOrNone(),
-		name = leafNode(CstIdentifier) {
+		name = leafNode {
 			CstIdentifier(code.parseToken(TokenKinds.SoftKeyword.Constructor, "constructor"))
 		},
 		typeParameters = CstOptional.None,
@@ -116,14 +116,14 @@ fun CstParseContext.cstPrimaryConstructorFunction() = node(CstConstructorFunctio
 	
 }
 
-fun CstParseContext.cstAccessorFunction() = structuredNode(CstAccessorFunction) {
+fun CstParseContext.cstAccessorFunction() = structuredNode {
 	CstAccessorFunction(
 		annotations = cstAnnotations(),
 		context = cstContextDeclarationOrNone(),
 		modifiers = cstModifiers(),
 		kind = cstFunKeyword(CstFunction.Kind.Accessor),
 		extensionReceiverParameter = cstExtensionReceiverParameterOrNone(),
-		name = leafNode(CstIdentifier) {
+		name = leafNode {
 			val token = code.token {
 				when(advanceInWordNotEmpty()) {
 					"get" -> TokenKinds.SoftKeyword.Get
@@ -150,19 +150,19 @@ private fun CstParseContext.cstFunKeyword(kind: CstFunction.Kind): CstFunction.K
 }
 
 private fun CstParseContext.cstTypeParameterConstraintsOrNone(): CstOptional<CstTypeParameterConstraints> =
-	nullableStructuredNode(CstTypeParameterConstraints) {
+	nullableStructuredNode {
 		cstSoftKeywordOrNull(TokenKinds.SoftKeyword.Where, "where")
 			?: return@nullableStructuredNode null
 		
 		CstTypeParameterConstraints(
-			constraints = cstCommaSeparatedList(CstTypeParameterConstraint) {
+			constraints = cstCommaSeparatedList {
 				cstTypeParameterConstraint()
 			}.items(),
 		)
 	}.optional
 
 private fun CstParseContext.cstTypeParameterConstraint() =
-	structuredNode(CstTypeParameterConstraint) {
+	structuredNode {
 		val target = cstType()
 		cstLeafColonOrNull()!!
 		val constraint = cstType()

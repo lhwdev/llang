@@ -9,6 +9,9 @@ import com.lhwdev.llang.token.TokenKinds
 
 
 class CstSurround<out Node : CstNode>(val kind: Kind, val content: Node) : CstNode, CstNodeImpl() {
+	override val info
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstSurround<CstNode>> {
 		val Paren = Kind(
 			left = TokenKinds.Operator.Group.LeftParen,

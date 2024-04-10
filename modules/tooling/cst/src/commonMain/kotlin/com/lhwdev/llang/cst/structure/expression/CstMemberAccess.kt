@@ -9,6 +9,9 @@ class CstMemberAccess(
 	val parent: CstExpression,
 	val item: CstNode, // CstIdentifier or CstLiteral.Integer(tuple)
 ) : CstExpression, CstNodeImpl() {
+	override val info
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstMemberAccess> {
 		override fun dummyNode() =
 			CstMemberAccess(CstExpression.dummyNode(), CstNode.dummyNode())

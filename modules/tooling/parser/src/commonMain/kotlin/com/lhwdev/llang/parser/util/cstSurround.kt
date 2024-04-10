@@ -10,7 +10,7 @@ import com.lhwdev.llang.parser.structuredNode
 inline fun <Node : CstNode> CstParseContext.cstSurround(
 	kind: CstSurround.Kind,
 	crossinline block: CstParseContext.() -> Node,
-): CstSurround<Node> = structuredNode(CstSurround.info()) {
+): CstSurround<Node> = structuredNode {
 	cstLeafNode(kind.left, kind.leftContent)
 	val content = block()
 	cstLeafNode(kind.right, kind.rightContent)

@@ -8,6 +8,9 @@ import com.lhwdev.llang.token.TokenImpl
 
 
 class CstModifier(token: Token) : CstLeafNodeImpl(token) {
+	override val info
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstModifier> {
 		override fun dummyNode() = CstModifier(TokenImpl.dummyIllegal())
 	}
@@ -15,6 +18,9 @@ class CstModifier(token: Token) : CstLeafNodeImpl(token) {
 
 
 class CstModifiers(val modifiers: List<CstModifier>) : CstNode, CstNodeImpl() {
+	override val info
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstModifiers> {
 		override fun dummyNode() = CstModifiers(emptyList())
 	}

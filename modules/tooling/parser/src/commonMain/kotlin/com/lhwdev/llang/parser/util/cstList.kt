@@ -8,7 +8,7 @@ import com.lhwdev.llang.parser.node
 
 inline fun <reified Item : CstNode> CstParseContext.cstWsSeparatedList(
 	crossinline block: CstParseContext.() -> Item?,
-): CstWsSeparatedList<Item> = node(CstWsSeparatedList.info()) { cstWsSeparatedListInline(block) }
+): CstWsSeparatedList<Item> = node { cstWsSeparatedListInline(block) }
 
 inline fun <reified Item : CstNode> CstParseContext.cstWsSeparatedListInline(
 	crossinline block: CstParseContext.() -> Item?,

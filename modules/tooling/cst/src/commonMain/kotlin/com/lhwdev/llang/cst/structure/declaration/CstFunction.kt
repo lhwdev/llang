@@ -37,6 +37,9 @@ open class CstFunction(
 	
 	val body: CstOptional<CstBody>,
 ) : CstNamedDeclaration, CstNodeImpl() {
+	override val info
+		get() = Info
+	
 	sealed class Kind {
 		sealed class Standard : Kind()
 		

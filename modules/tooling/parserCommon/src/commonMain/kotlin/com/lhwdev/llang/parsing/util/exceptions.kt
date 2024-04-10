@@ -25,6 +25,11 @@ class NotMatchedException(message: String = "not matched") : DiscardException(me
 	}
 }
 
-open class ParseException(message: String?) : LightException(message, writeStackTrace = true)
+open class ParseException(message: String?) : DiscardException(message, writeStackTrace = true) {
+	var extraInfo: Any? = null
+	
+	override val message: String?
+		get() = if(extraInfo != null) "${super.message}; $extraInfo" else super.message
+}
 
 

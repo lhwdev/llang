@@ -7,7 +7,10 @@ import com.lhwdev.llang.token.TokenKinds
 
 
 fun CodeSource.requireEmpty() {
-	parseRequire(currentSpan.isEmpty()) { "non-empty span" }
+	parseRequire(currentSpan.isEmpty()) {
+		hiddenDebugCommands("requireEmptyErrorMessage")
+		"non-empty span"
+	}
 }
 
 fun CodeSource.requireNotEmpty() {

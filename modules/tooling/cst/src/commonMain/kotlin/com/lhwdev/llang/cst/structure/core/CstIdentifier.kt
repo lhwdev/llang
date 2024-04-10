@@ -6,6 +6,9 @@ import com.lhwdev.llang.token.TokenImpl
 
 
 class CstIdentifier(token: Token) : CstLeafNodeImpl(token) {
+	override val info
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstIdentifier> {
 		override fun dummyNode() = CstIdentifier(TokenImpl.dummyIllegal())
 		

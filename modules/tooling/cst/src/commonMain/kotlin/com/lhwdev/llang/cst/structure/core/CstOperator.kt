@@ -11,6 +11,9 @@ sealed class CstOperator(token: Token) : CstLeafNodeImpl(token) {
 		get() = (token.kind as? TokenKinds.Operator.OperatorWithPrecedence)?.precedence ?: -1
 	
 	class Unary(token: Token) : CstOperator(token) {
+		override val info
+			get() = Info
+		
 		override fun toString() = "CstOperator.Unary(${token.code})"
 		
 		companion object Info : CstNodeInfo<Unary> {
@@ -19,6 +22,9 @@ sealed class CstOperator(token: Token) : CstLeafNodeImpl(token) {
 	}
 	
 	class Binary(token: Token) : CstOperator(token) {
+		override val info
+			get() = Info
+		
 		override fun toString() = "CstOperator.Binary(${token.code})"
 		
 		companion object Info : CstNodeInfo<Binary> {

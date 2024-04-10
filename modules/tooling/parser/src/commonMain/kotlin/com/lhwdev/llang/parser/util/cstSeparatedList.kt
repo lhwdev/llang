@@ -1,7 +1,6 @@
 package com.lhwdev.llang.parser.util
 
 import com.lhwdev.llang.cst.structure.CstNode
-import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.cst.structure.core.CstLeafNode
 import com.lhwdev.llang.cst.structure.util.CstSeparatedList
 import com.lhwdev.llang.cst.structure.util.CstSeparatedListItem
@@ -12,15 +11,14 @@ import com.lhwdev.llang.parser.node
 
 
 inline fun <Item : CstNode, Separator : CstNode> CstParseContext.cstSeparatedList(
-	info: CstNodeInfo<Item>?,
 	crossinline itemBlock: CstParseContext.() -> Item,
 	crossinline separatorBlock: CstParseContext.() -> Separator?,
 	// allowTrailing: Boolean = true // fixed to true
-): CstSeparatedList<Item, Separator> = node(CstSeparatedList.info()) {
+): CstSeparatedList<Item, Separator> = node {
 	val items = mutableListOf<CstSeparatedListItem<Item, Separator>>()
 	
 	while(true) {
-		val item = discardable(info, itemBlock) ?: break
+		val item = discardable(itemBlock) ?: break
 		val separator = separatorBlock()
 		if(separator != null) {
 			items += CstSeparatedListItem(item, separator)
@@ -34,10 +32,7 @@ inline fun <Item : CstNode, Separator : CstNode> CstParseContext.cstSeparatedLis
 }
 
 inline fun <Item : CstNode> CstParseContext.cstCommaSeparatedList(
-	info: CstNodeInfo<Item>,
 	crossinline itemBlock: CstParseContext.() -> Item,
 ): CstSeparatedList<Item, CstLeafNode.Comma> = cstSeparatedList(
-	info = info,
 	itemBlock = itemBlock,
-	separatorBlock = { cstLeafCommaOrNull() },
-)
+) { cstLeafCommaOrNull() }

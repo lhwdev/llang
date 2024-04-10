@@ -1,5 +1,7 @@
 package com.lhwdev.llang.test.lexer
 
+import java.lang.StackWalker.StackFrame
+
 
 val debugTraceStack = true
 
@@ -35,21 +37,48 @@ fun eraseLines(n: Int) {
 	repeat(n - 1) { print("${csi}1A${csi}2K") }
 }
 
-fun meaningfulStackName(n: Int): String =
-	meaningfulStackName(n + 1, or = null)
+
+class StackLocation(val trace: List<StackFrame>) {
+	override fun toString(): String =
+		trace.take(5)
+			.joinToString(separator = "<") { "${it.declaringClass.simpleName}.${it.methodName}" }
+	
+	fun stackTrace(): String = trace.joinToString(separator = "\n") { it.toString() }
+	
+	companion object {
+		val Stub = StackLocation(trace = emptyList())
+	}
+}
+
+fun stackLocation(n: Int = 1, count: Int = 10): StackLocation = if(debugTraceStack) {
+	val frames = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk {
+		it.skip((n + 1).toLong())
+			.filter(::stackFramePredicate)
+			.limit(count.toLong())
+			.toList()
+	}
+	StackLocation(frames)
+} else {
+	StackLocation(emptyList())
+}
+
+private fun stackFramePredicate(frame: StackFrame): Boolean =
+	'$' !in frame.methodName
+
+
+fun StackLocation.meaningfulStackName(): String =
+	meaningfulStackName(or = null)
 
 // do not use default argument: `or: String? = null` as it messes up the stacktrace
-fun meaningfulStackName(n: Int, or: String?): String {
+fun StackLocation.meaningfulStackName(or: String?): String {
 	if(!debugTraceStack) return "(?)"
 	
-	val element = Throwable().stackTrace
-		.drop(n + 1)
-		.first()
+	val element = trace.firstOrNull() ?: return "-"
 	
 	// simplified heuristic for detecting lambda
 	if("$" in element.className && element.methodName == "invoke") {
 		if(or != null) return or
-		return "(lambda)"
+		return "(${element.className} lambda)"
 	}
 	return element.methodName
 }

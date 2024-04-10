@@ -11,6 +11,10 @@ import com.lhwdev.llang.token.TokenImpl
  * Node for tokens with unimportant token kind, such as `Comma`, `Dot` etc.
  */
 interface CstLeafNode : CstNode {
+	
+	override val info: CstNodeInfo<out CstLeafNode>
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstLeafNode> {
 		override fun dummyNode() = CstLeafNodeImpl(TokenImpl.dummyIllegal())
 	}

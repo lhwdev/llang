@@ -8,6 +8,9 @@ import com.lhwdev.llang.cst.structure.CstNodeInfo
 class CstSeparatedList<out Item : CstNode, out Separator : CstNode>(
 	val elements: List<CstSeparatedListItem<Item, Separator>>,
 ) : CstNode, CstNodeImpl() {
+	override val info
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstSeparatedList<CstNode, CstNode>> {
 		@Suppress("UNCHECKED_CAST")
 		fun <Item : CstNode, Separator : CstNode> info(): CstNodeInfo<CstSeparatedList<Item, Separator>> =

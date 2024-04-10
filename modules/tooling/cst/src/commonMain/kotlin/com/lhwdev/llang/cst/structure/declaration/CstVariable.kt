@@ -17,6 +17,9 @@ import com.lhwdev.llang.token.TokenImpl
  * `val` / `var` / `const`
  */
 class CstVariableKind(token: Token) : CstLeafNodeImpl(token) {
+	override val info
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstVariableKind> {
 		override fun dummyNode() = CstVariableKind(TokenImpl.dummyIllegal())
 	}
@@ -41,6 +44,9 @@ sealed class CstVariable(
 	val accessor: Accessor,
 ) : CstNamedDeclaration, CstNodeImpl() {
 	sealed class Accessor : CstNode, CstNodeImpl() {
+		override val info: CstNodeInfo<out Accessor>
+			get() = Info
+		
 		companion object Info : CstNodeInfo<Accessor> {
 			override fun dummyNode() = NoAccessor
 		}
@@ -49,6 +55,9 @@ sealed class CstVariable(
 	object NoAccessor : Accessor()
 	
 	class Delegation(val to: CstExpression) : Accessor() {
+		override val info
+			get() = Info
+		
 		companion object Info : CstNodeInfo<Delegation> {
 			override fun dummyNode() = Delegation(CstExpression.dummyNode())
 		}
@@ -58,6 +67,9 @@ sealed class CstVariable(
 		val initializer: CstOptional<CstExpression>,
 		val accessors: CstDeclarations<CstAccessorFunction>,
 	) : Accessor() {
+		override val info
+			get() = Info
+		
 		companion object Info : CstNodeInfo<Normal> {
 			override fun dummyNode() = Normal(
 				initializer = CstOptional.dummyNode(),
@@ -88,6 +100,9 @@ class CstStandaloneVariable(
 	accessor,
 ),
 	CstStandaloneDeclaration {
+	override val info
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstStandaloneVariable> {
 		override fun dummyNode() = CstStandaloneVariable(
 			annotations = CstAnnotations.dummyNode(),
@@ -120,7 +135,14 @@ class CstLocalVariable(
 	name,
 	type,
 	accessor,
-), CstLocalDeclaration
+), CstLocalDeclaration {
+	override val info
+		get() = Info
+	
+	companion object Info : CstNodeInfo<CstLocalVariable> {
+		override fun dummyNode() = TODO()
+	}
+}
 
 class CstMemberVariable(
 	modifiers: CstModifiers,
@@ -140,4 +162,11 @@ class CstMemberVariable(
 	name,
 	type,
 	accessor,
-), CstMemberDeclaration
+), CstMemberDeclaration {
+	override val info
+		get() = Info
+	
+	companion object Info : CstNodeInfo<CstMemberVariable> {
+		override fun dummyNode() = TODO()
+	}
+}

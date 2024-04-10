@@ -1,7 +1,6 @@
 package com.lhwdev.llang.parser
 
 import com.lhwdev.llang.cst.structure.CstNode
-import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.parsing.ParseContext
 
 
@@ -33,14 +32,14 @@ annotation class CstParseContextMarker
  */
 @CstParseContextMarker
 interface CstParseContext : ParseContext {
-	enum class NodeKind(val node: Boolean = false) {
+	enum class NodeKind(val isNode: Boolean = false) {
 		/**
 		 * Nodes with [NodeKind] other than [LeafNode] should not use [code] directly, though not
 		 * validated (TODO: validate).
 		 */
-		LeafNode(node = true),
+		LeafNode(isNode = true),
 		
-		Node(node = true),
+		Node(isNode = true),
 		
 		/**
 		 * Exists only for implementation soundness.
@@ -56,7 +55,7 @@ interface CstParseContext : ParseContext {
 		 * Using [structuredNode] as much as available will enable parser internals to cache nodes.
 		 * Caching nodes is a vital component of incremental parsing.
 		 */
-		StructuredNode(node = true),
+		StructuredNode(isNode = true),
 		
 		Discardable,
 		
@@ -82,9 +81,15 @@ interface CstParseContext : ParseContext {
 	
 	/**
 	 * Can only be used inside [leafNode] by default.
-	 * If needed inside other nodes, call `provideNodeHintToCurrent(NodeHint.AllowCodeSourceAccess)`.
+	 * If needed inside other nodes, use [dangerousCode].
 	 */
 	val code: CstCodeSource
+	
+	/**
+	 * Writing behavior with [dangerousCode] may cause undefined behavior.
+	 */
+	@InternalApi
+	val dangerousCode: CstCodeSource
 	
 	
 	/// Node
@@ -111,7 +116,7 @@ interface CstParseContext : ParseContext {
 	 * If you don't want this behavior, call [disableAdjacentImplicitNode].
 	 */
 	@InternalApi
-	fun beginChildNode(kind: NodeKind, info: CstNodeInfo<*>?): CstParseContext?
+	fun beginChildNode(kind: NodeKind): CstParseContext?
 	
 	@InternalApi
 	fun beforeEndNodeDebugHint(nodeGroupId: Long) {
@@ -170,8 +175,6 @@ interface CstParseContext : ParseContext {
 		data object PreventDiscard : ToFollowing
 		
 		
-		data object AllowCodeSourceAccess : ToCurrent
-		
 		class ContextLocal<T>(val key: Key<T>, val value: T) : Data, ToCurrent {
 			class Key<T>(private val debugName: String? = null, val defaultValue: () -> T) {
 				infix fun provides(value: T): ContextLocal<T> = ContextLocal(this, value)
@@ -213,8 +216,15 @@ interface CstParseContext : ParseContext {
 	 * caching etc. would happen efficiently.
 	 *
 	 * All child nodes which may contain detached node as child should call this separately.
+	 *
+	 * ### Whitespace handling
+	 * When you call [markCurrentAsDetached], all implicit nodes, including whitespaces, become
+	 * attached to parent, which may not be desirable. Using this, implicit node handling is
+	 * handled by context.
 	 */
-	fun markChildrenAsDetached(detached: Boolean = true)
+	fun markChildrenAsDetached(peek: Boolean = false)
+	
+	fun endChildrenAsDetached()
 	
 	
 	/**
@@ -225,13 +235,13 @@ interface CstParseContext : ParseContext {
 	fun markCurrentAsDetached()
 	
 	fun <Node : CstNode> insertChildNode(node: Node): Node
-}
-
-inline fun <R> CstParseContext.detached(block: () -> R): R = try {
-	markChildrenAsDetached()
-	block()
-} finally {
-	markChildrenAsDetached(detached = false)
+	
+	fun <Node : CstNode> acceptChildNode(node: Node): Node
+	
+	
+	fun hiddenDebugCommands(command: String, vararg args: Any?): Any? {
+		return null
+	}
 }
 
 

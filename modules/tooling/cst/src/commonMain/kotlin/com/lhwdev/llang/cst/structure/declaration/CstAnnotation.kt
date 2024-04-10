@@ -10,6 +10,9 @@ import com.lhwdev.llang.cst.structure.type.CstConcreteType
 
 
 class CstAnnotations(val annotations: List<CstAnnotation>) : CstNode, CstNodeImpl() {
+	override val info: CstNodeInfo<CstAnnotations>
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstAnnotations> {
 		override fun dummyNode() = CstAnnotations(emptyList())
 	}
@@ -17,8 +20,12 @@ class CstAnnotations(val annotations: List<CstAnnotation>) : CstNode, CstNodeImp
 
 
 sealed class CstAnnotation : CstDeclaration, CstNodeImpl() {
+	override val info: CstNodeInfo<CstAnnotation>
+		get() = Info
+	
+	
 	/**
-	 * Like `[hello]`
+	 * Like `hello`
 	 */
 	class Name(val name: CstConcreteType) : CstAnnotation()
 	
@@ -34,6 +41,7 @@ sealed class CstAnnotation : CstDeclaration, CstNodeImpl() {
 	 * Like `[hello(123, "ho", myFunction)]`
 	 */
 	class Call(val name: CstConcreteType, val params: CstTuple) : CstAnnotation()
+	
 	
 	companion object Info : CstNodeInfo<CstAnnotation> {
 		override fun dummyNode() = Name(CstConcreteType.dummyNode())

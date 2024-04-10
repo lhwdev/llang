@@ -15,17 +15,17 @@ import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.parseVariableKind
 
 
-private fun CstParseContext.cstVariableKind(): CstVariableKind = keywordLeafNode(CstVariableKind) {
+private fun CstParseContext.cstVariableKind(): CstVariableKind = keywordLeafNode {
 	CstVariableKind(code.parseVariableKind())
 }
 
 private fun CstParseContext.cstVariableAccessor(): CstVariable.Accessor =
-	node(CstVariable.Accessor) {
+	node {
 		cstDelegationAccessor() ?: discardable { cstNormalAccessor() } ?: CstVariable.NoAccessor
 	}
 
 private fun CstParseContext.cstDelegationAccessor(): CstVariable.Delegation? =
-	nullableStructuredNode(CstVariable.Delegation) {
+	nullableStructuredNode {
 		cstSoftKeywordOrNull(TokenKinds.SoftKeyword.By, "by") ?: return@nullableStructuredNode null
 		
 		CstVariable.Delegation(cstExpression())
@@ -43,7 +43,7 @@ private fun CstParseContext.cstNormalAccessor(): CstVariable.Normal = cstStateme
 	CstVariable.Normal(CstOptional(initializer), CstDeclarations(accessors))
 }
 
-fun CstParseContext.cstStandaloneVariable(): CstVariable = structuredNode(CstStandaloneVariable) {
+fun CstParseContext.cstStandaloneVariable(): CstVariable = structuredNode {
 	CstStandaloneVariable(
 		annotations = cstAnnotations(),
 		context = cstContextDeclarationOrNone(),

@@ -8,6 +8,9 @@ import com.lhwdev.llang.token.TokenKinds
 
 
 class CstVisibility(token: Token) : CstLeafNodeImpl(token) {
+	override val info
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstVisibility> {
 		override fun dummyNode() =
 			CstVisibility(TokenImpl.dummy(TokenKinds.Modifier.Internal, "internal"))

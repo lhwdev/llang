@@ -5,7 +5,6 @@ import com.lhwdev.llang.parsing.discard
 import com.lhwdev.llang.token.Token
 import com.lhwdev.llang.token.TokenKind
 import com.lhwdev.llang.tokenizer.CharacterKind
-import com.lhwdev.llang.tokenizer.TokenizerContext
 
 
 interface CodeSource : ParseContext {
@@ -22,10 +21,9 @@ interface CodeSource : ParseContext {
 	
 	fun resetToSpanStart()
 	
-	
-	/// Context
-	
-	val context: TokenizerContext
+	fun hiddenDebugCommands(command: String, vararg args: Any?): Any? {
+		return null
+	}
 }
 
 inline val CodeSource.eof: Boolean

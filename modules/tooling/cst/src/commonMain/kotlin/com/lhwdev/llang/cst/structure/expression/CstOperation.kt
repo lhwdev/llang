@@ -9,6 +9,9 @@ sealed class CstOperation : CstExpression, CstNodeImpl() {
 		val operator: CstOperator.Unary,
 		val operand: CstExpression,
 	) : CstOperation() {
+		override val info
+			get() = Info
+		
 		companion object Info : CstNodeInfo<UnaryPrefix> {
 			override fun dummyNode() = UnaryPrefix(
 				operator = CstOperator.Unary.dummyNode(),
@@ -21,6 +24,9 @@ sealed class CstOperation : CstExpression, CstNodeImpl() {
 		val operand: CstExpression,
 		val operator: CstOperator.Unary,
 	) : CstOperation() {
+		override val info
+			get() = Info
+		
 		companion object Info : CstNodeInfo<UnaryPostfix> {
 			override fun dummyNode() = UnaryPostfix(
 				operand = CstExpression.dummyNode(),
@@ -34,6 +40,9 @@ sealed class CstOperation : CstExpression, CstNodeImpl() {
 		val operator: CstOperator.Binary,
 		val rhs: CstExpression,
 	) : CstOperation() {
+		override val info
+			get() = Info
+		
 		companion object Info : CstNodeInfo<Binary> {
 			override fun dummyNode() = Binary(
 				lhs = CstExpression.dummyNode(),

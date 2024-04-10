@@ -7,15 +7,15 @@ import com.lhwdev.llang.token.TokenKinds
 import com.lhwdev.llang.tokenizer.*
 
 
-fun CstParseContext.cstWs(): CstWs = node(CstWs) {
+fun CstParseContext.cstWs(): CstWs = node {
 	cstWhitespaceOrNull() ?: cstLineBreakOrNull() ?: cstCommentOrNull() ?: discard()
 }
 
-fun CstParseContext.cstWsOrNull(): CstWs? = nullableNode(CstWs) {
+fun CstParseContext.cstWsOrNull(): CstWs? = nullableNode {
 	cstWhitespaceOrNull() ?: cstLineBreakOrNull() ?: cstCommentOrNull()
 }
 
-fun CstParseContext.cstWssNonEmpty(): CstWss = node(CstWss) {
+fun CstParseContext.cstWssNonEmpty(): CstWss = node {
 	disableAdjacentImplicitNode() // maybe cause infinite recursion; cstWss is used by CstParseContext
 	val nodes = mutableListOf<CstWs>()
 	while(true) {
@@ -27,7 +27,7 @@ fun CstParseContext.cstWssNonEmpty(): CstWss = node(CstWss) {
 	CstWss(nodes)
 }
 
-fun CstParseContext.cstWssOrEmpty(): CstWss = node(CstWss) {
+fun CstParseContext.cstWssOrEmpty(): CstWss = node {
 	disableAdjacentImplicitNode() // maybe cause infinite recursion; cstWss is used by CstParseContext
 	val nodes = mutableListOf<CstWs>()
 	while(true) {
@@ -38,7 +38,7 @@ fun CstParseContext.cstWssOrEmpty(): CstWss = node(CstWss) {
 	CstWss(nodes)
 }
 
-fun CstParseContext.cstWssOrNull(): CstWss? = nullableNode(CstWss) {
+fun CstParseContext.cstWssOrNull(): CstWss? = nullableNode {
 	disableAdjacentImplicitNode() // maybe cause infinite recursion; cstWss is used by CstParseContext
 	val nodes = mutableListOf<CstWs>()
 	while(true) {
@@ -55,15 +55,15 @@ fun CstParseContext.cstWssOrNull(): CstWss? = nullableNode(CstWss) {
 
 
 fun CstParseContext.cstWhitespaceOrNull(): CstWhitespace? =
-	nullableLeafNode(CstWhitespace) { code.parseWhitespace()?.let { CstWhitespace(it) } }
+	nullableLeafNode { code.parseWhitespace()?.let { CstWhitespace(it) } }
 
 
 fun CstParseContext.cstLineBreakOrNull(): CstLineBreak? =
-	nullableLeafNode(CstLineBreak) { code.parseLineBreak()?.let { CstLineBreak(it) } }
+	nullableLeafNode { code.parseLineBreak()?.let { CstLineBreak(it) } }
 
 
-fun CstParseContext.cstCommentOrNull(): CstComment? = nullableNode(CstComment) {
-	val begin = nullableLeafNode(CstComment.Begin) {
+fun CstParseContext.cstCommentOrNull(): CstComment? = nullableNode {
+	val begin = nullableLeafNode {
 		code.parseCommentBeginOrNull()
 			?.let { CstComment.Begin(it) }
 	}
@@ -75,12 +75,12 @@ private fun CstParseContext.parseCstComment(begin: CstComment.Begin): CstComment
 	
 	when(val kind = (begin.token.kind as TokenKinds.Comment.CommentBegin).kind) {
 		TokenKinds.Comment.Eol -> {
-			nodes += leafNode(CstComment.Content) { CstComment.Content(code.parseInEolComment()) }
+			nodes += leafNode { CstComment.Content(code.parseInEolComment()) }
 		}
 		
 		is TokenKinds.Comment.BlockKind -> {
 			while(true) {
-				val node = leafNode(null) {
+				val node = leafNode {
 					val token = code.parseInBlockComment(kind)
 					
 					when(token.kind as TokenKinds.Comment) {

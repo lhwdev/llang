@@ -6,6 +6,9 @@ import com.lhwdev.llang.cst.structure.CstNodeInfo
 
 
 class CstOptional<out T : CstNode>(val inner: T? = null) : CstNode, CstNodeImpl() {
+	override val info
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstOptional<*>> {
 		val None = CstOptional(null)
 		

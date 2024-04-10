@@ -7,4 +7,4 @@ import com.lhwdev.llang.tokenizer.parseIdentifier
 
 
 fun CstParseContext.cstIdentifier(): CstIdentifier =
-	leafNode(CstIdentifier) { CstIdentifier(code.parseIdentifier()) }
+	leafNode { CstIdentifier(code.parseIdentifier()) }

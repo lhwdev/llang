@@ -11,6 +11,9 @@ import com.lhwdev.llang.token.TokenKinds
 
 
 class CstWss(val nodes: List<CstWs>) : CstNode, CstNodeImpl() {
+	override val info
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstWss> {
 		override fun dummyNode() = CstWss(emptyList())
 	}
@@ -18,6 +21,9 @@ class CstWss(val nodes: List<CstWs>) : CstNode, CstNodeImpl() {
 
 
 interface CstWs : CstNode {
+	override val info: CstNodeInfo<out CstWs>
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstWs> {
 		override fun dummyNode() = CstWhitespace.dummyNode()
 	}
@@ -25,6 +31,9 @@ interface CstWs : CstNode {
 
 
 class CstWhitespace(token: Token) : CstWs, CstLeafNodeImpl(token) {
+	override val info: CstNodeInfo<out CstWhitespace>
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstWhitespace> {
 		override fun dummyNode(): CstWhitespace =
 			CstWhitespace(TokenImpl.dummy(TokenKinds.Whitespace, " "))
@@ -32,6 +41,9 @@ class CstWhitespace(token: Token) : CstWs, CstLeafNodeImpl(token) {
 }
 
 class CstLineBreak(token: Token) : CstWs, CstLeafNodeImpl(token) {
+	override val info
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstLineBreak> {
 		override fun dummyNode(): CstLineBreak =
 			CstLineBreak(TokenImpl.dummy(TokenKinds.LineBreak, "\n"))
@@ -44,24 +56,36 @@ class CstLineBreak(token: Token) : CstWs, CstLeafNodeImpl(token) {
  * `nodes.last()` should be an instance of [End].
  */
 class CstComment(val nodes: List<CstWs>) : CstWs, CstNodeImpl() {
+	override val info: CstNodeInfo<out CstComment>
+		get() = Info
+	
 	companion object Info : CstNodeInfo<CstComment> {
 		override fun dummyNode(): CstComment =
 			CstComment(emptyList())
 	}
 	
 	sealed class Leaf(token: Token) : CstLeafNodeImpl(token) {
+		override val info: CstNodeInfo<out Leaf>
+			get() = Info
+		
 		companion object Info : CstNodeInfo<Leaf> {
 			override fun dummyNode() = null
 		}
 	}
 	
 	class Begin(token: Token) : CstWs, Leaf(token) {
+		override val info
+			get() = Info
+		
 		companion object Info : CstNodeInfo<Begin> {
 			override fun dummyNode() = Begin(TokenImpl.dummyIllegal())
 		}
 	}
 	
 	class End(token: Token) : CstWs, Leaf(token) {
+		override val info
+			get() = Info
+		
 		companion object Info : CstNodeInfo<End> {
 			override fun dummyNode() = End(TokenImpl.dummyIllegal())
 		}
@@ -69,6 +93,9 @@ class CstComment(val nodes: List<CstWs>) : CstWs, CstNodeImpl() {
 	
 	
 	class Content(token: Token) : CstWs, Leaf(token) {
+		override val info
+			get() = Info
+		
 		companion object Info : CstNodeInfo<Content> {
 			override fun dummyNode() = Content(TokenImpl.dummyIllegal())
 		}

@@ -10,8 +10,8 @@ import com.lhwdev.llang.tokenizer.parseModifierOrNull
 
 
 fun CstParseContext.cstModifierOrNull(): CstModifier? =
-	nullableLeafNode(CstModifier) { code.parseModifierOrNull()?.let { CstModifier(it) } }
+	nullableLeafNode { code.parseModifierOrNull()?.let { CstModifier(it) } }
 
-fun CstParseContext.cstModifiers(): CstModifiers = structuredNode(CstModifiers) {
+fun CstParseContext.cstModifiers(): CstModifiers = structuredNode {
 	CstModifiers(cstWsSeparatedList { cstModifierOrNull() })
 }

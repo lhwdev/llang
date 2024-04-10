@@ -13,5 +13,7 @@ commonConfig.kotlin {
 		implementation(projects.tooling.cst)
 		implementation(projects.tooling.module)
 		implementation(projects.utils)
+		
+		implementation(kotlin("reflect"))
 	}
 }

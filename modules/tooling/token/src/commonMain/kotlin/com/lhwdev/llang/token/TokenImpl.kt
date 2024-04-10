@@ -19,5 +19,5 @@ class TokenImpl(override var kind: TokenKind, override val code: String) : Token
 	
 	override fun hashCode(): Int = kind.hashCode() * 31 + code.hashCode()
 	
-	override fun toString(): String = "Token(kind=$kind, code=$code)"
+	override fun toString(): String = "Token(kind=$kind, code=\u001B[34m$code\u001B[0m)"
 }

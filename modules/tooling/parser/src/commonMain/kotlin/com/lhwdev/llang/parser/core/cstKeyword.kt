@@ -1,6 +1,5 @@
 package com.lhwdev.llang.parser.core
 
-import com.lhwdev.llang.cst.structure.CstNodeInfo
 import com.lhwdev.llang.cst.structure.core.CstKeyword
 import com.lhwdev.llang.cst.structure.core.CstLeafNode
 import com.lhwdev.llang.parser.CstParseContext
@@ -14,25 +13,24 @@ import com.lhwdev.llang.tokenizer.source.parseTokenOrNull
 
 
 inline fun <Node : CstLeafNode> CstParseContext.keywordLeafNode(
-	info: CstNodeInfo<Node>?,
 	crossinline block: CstParseContext.() -> Node,
 ): Node {
 	provideNodeHintToFollowing(CstParseContext.NodeHint.Vital)
 	provideNodeHintToFollowing(CstParseContext.NodeHint.PreventDiscard)
-	return leafNode(info, block)
+	return leafNode(block)
 }
 
 fun CstParseContext.cstKeyword(): CstKeyword =
-	keywordLeafNode(CstKeyword) { CstKeyword(code.parseKeyword()) }
+	keywordLeafNode { CstKeyword(code.parseKeyword()) }
 
 fun CstParseContext.cstKeyword(tokenKind: TokenKind, content: String): CstKeyword =
-	keywordLeafNode(CstKeyword) { CstKeyword(code.parseToken(tokenKind, content)) }
+	keywordLeafNode { CstKeyword(code.parseToken(tokenKind, content)) }
 
 
 fun CstParseContext.cstSoftKeywordOrNull(tokenKind: TokenKind, content: String): CstKeyword? =
-	nullableLeafNode(CstKeyword) {
+	nullableLeafNode {
 		code.parseTokenOrNull(tokenKind, content)?.let { CstKeyword(it) }
 	}
 
 fun CstParseContext.cstSoftKeyword(): CstKeyword =
-	leafNode(CstKeyword) { CstKeyword(code.parseSoftKeyword()) }
+	leafNode { CstKeyword(code.parseSoftKeyword()) }

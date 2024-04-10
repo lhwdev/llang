@@ -65,7 +65,7 @@ abstract class KotlinScope(internal val commonConfig: CommonConfig) :
 
 open class KotlinMultiplatformScope(
 	commonConfig: CommonConfig,
-	override val kotlin: KotlinMultiplatformExtension,
+	final override val kotlin: KotlinMultiplatformExtension,
 ) :
 	KotlinScope(commonConfig) {
 	

@@ -15,12 +15,12 @@ import com.lhwdev.llang.tokenizer.parseStringLiteralBegin
 import com.lhwdev.llang.tokenizer.parseStringLiteralEnd
 
 
-fun CstParseContext.cstConstLiteral(): CstConstLiteral = leafNode(null) {
+fun CstParseContext.cstConstLiteral(): CstConstLiteral = leafNode {
 	TODO()
 }
 
 
-fun CstParseContext.cstStringLiteral(): CstConstLiteral.String = node(CstConstLiteral.String) {
+fun CstParseContext.cstStringLiteral(): CstConstLiteral.String = node {
 	val begin = cstStringLiteralBegin()
 	val list = mutableListOf<CstConstLiteral.String.Element>(begin)
 	
@@ -62,14 +62,14 @@ fun CstParseContext.cstStringLiteral(): CstConstLiteral.String = node(CstConstLi
 }
 
 private fun CstParseContext.cstStringLiteralBegin(): CstConstLiteral.String.Begin =
-	leafNode(null) { CstConstLiteral.String.Begin(code.parseStringLiteralBegin()) }
+	leafNode { CstConstLiteral.String.Begin(code.parseStringLiteralBegin()) }
 
 private fun CstParseContext.cstStringLiteralEnd(): CstConstLiteral.String.End =
-	leafNode(null) { CstConstLiteral.String.End(code.parseStringLiteralEnd()) }
+	leafNode { CstConstLiteral.String.End(code.parseStringLiteralEnd()) }
 
 private fun CstParseContext.cstContentInStringLiteral(
 	quote: TokenKinds.StringLiteral.Quote,
-): CstNode = leafNode(null) {
+): CstNode = leafNode {
 	val token = code.parseInStringLiteral(quote)
 	when(token.kind) {
 		TokenKinds.StringLiteral.TemplateExpression -> {
