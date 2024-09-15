@@ -4,7 +4,14 @@ import com.lhwdev.llang.parser.CstParserNode
 
 
 class Groups {
-	val stack = mutableListOf<CstParserNode>()
+	private val list = mutableListOf<CstParserNode>()
 	
 	
+	val stack: List<CstParserNode>
+		get() = list
+	
+	
+	fun push(node: CstParserNode) {
+		list.addLast(node)
+	}
 }
