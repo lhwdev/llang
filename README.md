@@ -1,5 +1,9 @@
 # llang
 
+> ![NOTE]
+> This branch is working on rust based implementation of llang.
+> Why? cause it looks cool; Kotlin shall support proc-macro
+
 > A hard work of innocent student who haven't learned anything about parser/compiler.
 
 Note that 'llang' is alias and I really couldn't come up with cool name.
