@@ -19,7 +19,7 @@ export class CstIntermediateGroupImpl<
 > extends CstIntermediateGroupBase<Node, Info> {
   constructor(
     override readonly meta: CstIntermediateMetadata<Info>,
-    override readonly state: CstIntermediateState<Node>,
+    override readonly state: CstIntermediateState<Node, Info>,
     override readonly intrinsics: CstParseIntrinsics<Info>, // TODO: better location?
   ) {
     super();
@@ -66,29 +66,29 @@ export class CstIntermediateGroupImpl<
   override beginChild<Info extends CstNodeInfo<any>>(
     info: Info,
   ): CstIntermediateGroup<InstanceType<Info>, Info> {
-    return this.state.items.beginChild(this, info);
+    return this.state.beginChild(this, info);
   }
 
   override beginSpecialChild<Info extends CstSpecialNodeInfo<any>>(
     info: Info,
   ): CstIntermediateGroup<InstanceType<Info>, Info> {
-    return this.state.items.beginSpecialChild(this, info);
+    return this.state.beginSpecialChild(this, info);
   }
 
-  override skipCurrent(): CstNode | null {
-    return this.state.items.skipCurrent();
+  override skipCurrent(): Node | null {
+    return this.state.skipCurrent();
   }
 
   override beforeEnd(node: Node): CstTree<Node> {
-    return this.state.items.beforeEnd(node);
+    return this.state.beforeEnd(node);
   }
 
   override end(node: Node): Node {
-    return this.state.items.end(node);
+    return this.state.end(this, node);
   }
 
   override endWithError(error: unknown | null): Node | null {
-    return this.state.items.endWithError(error);
+    return this.state.endWithError(this, error);
   }
 
   override getParentForEnd(): CstIntermediateGroup<any> {

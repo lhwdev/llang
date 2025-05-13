@@ -30,20 +30,17 @@ export namespace intrinsics {
   }
 
   export function debugName(name: string) {
-    currentGroup().hintType(new NodeHints.DebugName(name));
+    currentGroup().intrinsics.debugHint("name", name);
   }
 
   export function debugNodeName(name: string) {
-    currentGroup().hintType(new NodeHints.DebugNodeName(name));
-  }
-
-  export function hintSelf(hint: NodeHint<any>) {
-    currentGroup().hintType(hint);
+    currentGroup().intrinsics.debugHint("nodeName", name);
   }
 }
 
 export function insertNode<Node extends CstNode>(node: Node): Node {
-  return currentGroup().intrinsics.insertChild(node);
+  const self = currentGroup();
+  return self.intrinsics.insertChild(self, node);
 }
 
 export function provideContext(value: CstContextLocal<any>): void {

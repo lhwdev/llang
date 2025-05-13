@@ -7,8 +7,6 @@ import {
   green,
   italic,
   magenta,
-  red,
-  rgb8,
   stripAnsiCode,
   yellow,
 } from "./ansi.ts";
@@ -99,6 +97,7 @@ export namespace format {
           return fmt.magenta(this.constructor.name);
         });
     } else {
+      throw "TODO";
     }
   });
 }
@@ -442,6 +441,10 @@ class StyleEntry extends Entry {
 
 export type FormatEntry = Entry;
 
+interface NormalFormatFn {
+  (value: unknown): Entry;
+  (strings: TemplateStringsArray, ...args: any[]): Entry;
+}
 interface FormatFn<F extends (value: string, ...args: any) => string> {
   (
     value: Entry | (() => Entry | string) | string,
@@ -467,7 +470,7 @@ interface Fmt extends Formats {
 
   symbol(name: unknown): Entry;
   parameter(name: unknown): Entry;
-  code(content: unknown): Entry;
+  code: NormalFormatFn;
   lazy(fn: (context: FormatContext) => Entry | string): Entry;
 
   join(entries: Entry[], separator?: Entry): Entry;
@@ -479,6 +482,17 @@ function mapInput(input: Entry | unknown): Entry {
   if (input instanceof Entry) return input;
   if (typeof input === "symbol") return new ValueEntry(input.toString());
   return new ValueEntry(`${input}`);
+}
+
+function mapNormal(str: unknown, ...args: any[]) {
+  if (Array.isArray(str) && typeof str.at(0) === "string" && "raw" in str) {
+    return fmt(str as any, ...args);
+  } else {
+    return mapInput(str);
+  }
+}
+function mappedNormal(fn: (value: Entry) => Entry): NormalFormatFn {
+  return (...args) => fn(mapNormal(...args));
 }
 
 const CommonStyled = {
@@ -532,12 +546,10 @@ export const fmt: Fmt = Object.assign((a?: any, ...args: any): any => {
   },
 
   parameter(name: unknown) {
-    return new ValueEntry(red(`${name}`));
+    return this.red(`${name}`);
   },
 
-  code(content: unknown) {
-    return new ValueEntry(rgb8(`${content}`, 110));
-  },
+  code: mappedNormal((entry) => fmt.rgb8(entry, 110)),
 
   lazy(fn: (context: FormatContext) => Entry | string) {
     return new LazyEntry((context) => mapInput(fn(context)));

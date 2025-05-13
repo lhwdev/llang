@@ -6,7 +6,12 @@ import type { CstProvidableContextLocalMap } from "./CstContextLocal.ts";
 import type { CstTree } from "../../cst/CstTree.ts";
 import type { CstSpecialNodeInfo } from "../CstSpecialNode.ts";
 import type { CstNodeType } from "./CstNodeType.ts";
-import { withGroupFn } from "./currentGroup.ts";
+import {
+  currentGroup,
+  intrinsicBeginGroup,
+  intrinsicEndGroup,
+  withGroupFn,
+} from "./currentGroup.ts";
 
 export abstract class CstIntermediateGroup<
   out Node extends CstNode,
@@ -33,6 +38,50 @@ export abstract class CstIntermediateGroup<
     return withGroupFn(this);
   }
 
+  buildNode(fn: (self: this) => Node): Node {
+    const parent = currentGroup();
+    intrinsicBeginGroup(this);
+    try {
+      const skip = this.skipCurrent();
+      if (skip) return skip;
+
+      const node = fn(this);
+      return this.end(node);
+    } catch (e) {
+      const result = this.endWithError(e);
+      if (!result) throw e;
+      return result;
+    } finally {
+      intrinsicEndGroup(parent);
+    }
+  }
+
+  buildNullableNode(fn: (self: this) => Node | null): Node | null {
+    const parent = currentGroup();
+    intrinsicBeginGroup(this);
+    try {
+      const skip = this.skipCurrent();
+      if (skip) return skip;
+
+      this.intrinsics.markNullable();
+      const node = fn(this);
+      return node ? this.end(node) : this.endWithError(node);
+    } catch (e) {
+      const result = this.endWithError(e);
+      if (!result) throw e;
+      return result;
+    } finally {
+      intrinsicEndGroup(parent);
+    }
+  }
+
+  as<T extends CstIntermediateGroup<Node, Info>>(type: abstract new (...args: any) => T): T {
+    if (!(this instanceof type)) {
+      throw new TypeError();
+    }
+    return this;
+  }
+
   /// Slots
 
   static EmptySlot = Symbol("EmptySlot");
@@ -50,7 +99,7 @@ export abstract class CstIntermediateGroup<
     info: Info,
   ): CstIntermediateGroup<InstanceType<Info>, Info>;
 
-  abstract skipCurrent(): CstNode | null;
+  abstract skipCurrent(): Node | null;
 
   abstract beforeEnd(node: Node): CstTree<Node>;
 

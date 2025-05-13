@@ -104,7 +104,7 @@ export function parser<Params extends any[], Node extends CstNode>(
     intrinsicBeginGroup(child);
     try {
       const skip = child.skipCurrent();
-      if (skip) return skip as Node;
+      if (skip) return skip;
 
       const node = impl(...args);
       return child.end(node);
@@ -133,12 +133,13 @@ export function nullableParser<Params extends any[], Node extends CstNode>(
   rawParserInit(info, impl, options);
   const invoke = (...args: Params): Node | null => {
     const parent = currentGroup();
-    const child = parent.intrinsics.withNullableChild().beginChild(info);
+    const child = parent.beginChild(info);
     intrinsicBeginGroup(child);
     try {
       const skip = child.skipCurrent();
-      if (skip) return skip as Node;
+      if (skip) return skip;
 
+      child.intrinsics.markNullable();
       const node = impl(...args);
       if (node) {
         return child.end(node);

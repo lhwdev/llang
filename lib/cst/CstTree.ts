@@ -7,11 +7,14 @@ import type { CstNodeInfo } from "./CstNodeInfo.ts";
 
 export type CstTreeItem = CstTree | Token;
 
-export abstract class CstTree<out Node extends CstNode = CstNode> implements Spanned {
+export abstract class CstTree<
+  out Node extends CstNode = CstNode,
+  Info extends CstNodeInfo<Node> = CstNodeInfo<Node>,
+> implements Spanned {
   abstract node: Node;
-  abstract readonly info: CstNodeInfo<Node>;
+  abstract readonly info: Info;
 
-  abstract readonly source: CstTree<Node>;
+  abstract readonly source: CstTree<Node, Info>;
 
   abstract readonly isRead: boolean;
   abstract readonly isAttached: boolean;

@@ -9,5 +9,5 @@ export abstract class CstIntermediateGroupBase<
   Info extends CstNodeInfo<Node> = CstNodeInfo<Node>,
 > extends CstIntermediateGroup<Node, Info> {
   abstract readonly meta: CstIntermediateMetadata<Info>;
-  abstract readonly state: CstIntermediateState<Node>;
+  abstract readonly state: CstIntermediateState<Node, Info>;
 }
